@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Source maps (not needed for production)
+js/*.map
+css/*.css.map
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nextcloud
+config/
+
+# Composer
+composer.lock

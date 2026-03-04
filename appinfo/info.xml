@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>linkboard</id>
+    <name>LinkBoard</name>
+    <summary>Personal service dashboard inspired by Gethomepage</summary>
+    <description><![CDATA[
+**LinkBoard** – A beautiful, customizable service dashboard for your homelab.
+
+Organize your services in categories, monitor their status,
+and access everything from within Nextcloud.
+
+### Features
+- 🏠 Personal dashboard with service tiles grouped by category
+- 🎨 Dark/Light mode with customizable backgrounds
+- 🖼️ Flexible icon system (upload, URL, Material Design Icons)
+- 📋 YAML & JSON import/export (Gethomepage compatible)
+- 🔍 Quick search across all services
+- ✏️ Inline editing with drag & drop sorting
+- 🩺 Service health checks with status indicators
+- 📊 Widget system for live data from external APIs
+
+Each user gets their own personal dashboard – up to 500 services.
+    ]]></description>
+    <version>1.0.0</version>
+    <licence>AGPL-3.0-or-later</licence>
+    <author mail="tschuegy@hotmail.com">Andreas Busslinger</author>
+    <namespace>LinkBoard</namespace>
+    <category>dashboard</category>
+    <category>tools</category>
+    <bugs>https://github.com/tschuegy/linkboard-nextcloud/issues</bugs>
+    <repository type="git">https://github.com/tschuegy/linkboard-nextcloud</repository>
+    <dependencies>
+        <nextcloud min-version="30" max-version="33"/>
+        <php min-version="8.1" max-version="8.4"/>
+    </dependencies>
+    <navigations>
+        <navigation>
+            <name>LinkBoard</name>
+            <route>linkboard.page.index</route>
+            <icon>app.svg</icon>
+            <order>10</order>
+        </navigation>
+    </navigations>
+    <background-jobs>
+        <job>OCA\LinkBoard\BackgroundJob\StatusCheckJob</job>
+    </background-jobs>
+</info>
