@@ -112,5 +112,9 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "無効なJSON: %s",
     "Invalid JSON": "無効なJSON",
     "Import failed: %s": "インポート失敗: %s",
-    "Maximum number of services reached (%s)": "サービスの最大数に達しました（%s）"
+    "Maximum number of services reached (%s)": "サービスの最大数に達しました（%s）",
+    "Drop here to ungroup": "Drop here to ungroup",
+    "Failed to move category": "Failed to move category",
+    "Parent category": "Parent category",
+    "None (top-level)": "None (top-level)"
 }, "nplurals=1; plural=0;");

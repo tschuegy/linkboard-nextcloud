@@ -46,11 +46,16 @@ class CategoryApiController extends ApiController {
         ?string $tab = null,
         ?int $columns = null,
         bool $collapsed = false,
+        ?int $parentId = null,
     ): DataResponse {
-        $category = $this->categoryService->create(
-            $this->userId, $name, $icon, $tab, $columns, $collapsed
-        );
-        return new DataResponse($category, Http::STATUS_CREATED);
+        try {
+            $category = $this->categoryService->create(
+                $this->userId, $name, $icon, $tab, $columns, $collapsed, $parentId
+            );
+            return new DataResponse($category, Http::STATUS_CREATED);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        }
     }
 
     #[NoAdminRequired]
@@ -61,14 +66,18 @@ class CategoryApiController extends ApiController {
         ?string $tab = null,
         ?int $columns = null,
         ?bool $collapsed = null,
+        ?int $parentId = null,
     ): DataResponse {
         try {
+            $updateParent = $this->request->getParam('parentId') !== null;
             $category = $this->categoryService->update(
-                $id, $this->userId, $name, $icon, $tab, $columns, $collapsed
+                $id, $this->userId, $name, $icon, $tab, $columns, $collapsed, $updateParent, $parentId
             );
             return new DataResponse($category);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -79,6 +88,20 @@ class CategoryApiController extends ApiController {
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    #[NoAdminRequired]
+    public function moveCategory(int $id): DataResponse {
+        $parentId = $this->request->getParam('parentId');
+        $parentId = $parentId !== null && $parentId !== '' ? (int)$parentId : null;
+        try {
+            $category = $this->categoryService->moveCategory($id, $parentId, $this->userId);
+            return new DataResponse($category);
+        } catch (NotFoundException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
     }
 

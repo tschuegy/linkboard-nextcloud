@@ -39,7 +39,6 @@ class ImportExportService {
         $exportCategories = [];
         foreach ($categories as $category) {
             $catData = $category->jsonSerialize();
-            // Remove internal fields
             unset($catData['userId']);
             $catData['services'] = array_map(function ($svc) {
                 unset($svc['userId'], $svc['categoryId']);
@@ -83,12 +82,15 @@ class ImportExportService {
             }
         }
 
-        // Import categories and services
+        // Import categories and services (two-pass for parentId)
         if (isset($data['categories']) && is_array($data['categories'])) {
             $now = (new DateTime())->format('Y-m-d H:i:s');
+            $oldIdToNewId = [];
 
+            // Pass 1: Create all categories without parentId
             foreach ($data['categories'] as $catData) {
                 if (empty($catData['name'])) continue;
+                $oldId = $catData['id'] ?? null;
 
                 $category = $this->categoryService->create(
                     $userId,
@@ -99,6 +101,10 @@ class ImportExportService {
                     (bool)($catData['collapsed'] ?? false),
                 );
                 $stats['categories']++;
+
+                if ($oldId !== null) {
+                    $oldIdToNewId[$oldId] = $category->getId();
+                }
 
                 // Import services for this category
                 $services = $catData['services'] ?? [];
@@ -120,6 +126,24 @@ class ImportExportService {
                         $svcData['widgetConfig'] ?? null,
                     );
                     $stats['services']++;
+                }
+            }
+
+            // Pass 2: Set parentId for child categories
+            foreach ($data['categories'] as $catData) {
+                $oldParentId = $catData['parentId'] ?? null;
+                $oldId = $catData['id'] ?? null;
+                if ($oldParentId !== null && $oldId !== null
+                    && isset($oldIdToNewId[$oldId]) && isset($oldIdToNewId[$oldParentId])) {
+                    try {
+                        $this->categoryService->moveCategory(
+                            $oldIdToNewId[$oldId],
+                            $oldIdToNewId[$oldParentId],
+                            $userId
+                        );
+                    } catch (\Exception $e) {
+                        // Skip if nesting fails
+                    }
                 }
             }
         }
@@ -210,6 +234,9 @@ class ImportExportService {
                 }
                 if (!empty($cat['collapsed'])) {
                     $lines[] = "    collapsed: true";
+                }
+                if (!empty($cat['parentId'])) {
+                    $lines[] = "    parentId: " . $cat['parentId'];
                 }
 
                 if (!empty($cat['services'])) {

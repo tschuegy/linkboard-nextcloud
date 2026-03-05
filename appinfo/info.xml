@@ -16,13 +16,14 @@ and access everything from within Nextcloud.
 - 🖼️ Flexible icon system (upload, URL, Material Design Icons)
 - 📋 YAML & JSON import/export (Gethomepage compatible)
 - 🔍 Quick search across all services
+- 📂 Nested categories with drag & drop grouping
 - ✏️ Inline editing with drag & drop sorting
 - 🩺 Service health checks with status indicators
 - 📊 Widget system for live data from external APIs
 
 Each user gets their own personal dashboard – up to 500 services.
     ]]></description>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="tschuegy@hotmail.com">Andreas Busslinger</author>
     <namespace>LinkBoard</namespace>

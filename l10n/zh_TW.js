@@ -112,5 +112,9 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "無效的 JSON：%s",
     "Invalid JSON": "無效的 JSON",
     "Import failed: %s": "匯入失败：%s",
-    "Maximum number of services reached (%s)": "已達到服务最大數量（%s）"
+    "Maximum number of services reached (%s)": "已達到服务最大數量（%s）",
+    "Drop here to ungroup": "Drop here to ungroup",
+    "Failed to move category": "Failed to move category",
+    "Parent category": "Parent category",
+    "None (top-level)": "None (top-level)"
 }, "nplurals=1; plural=0;");

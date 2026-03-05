@@ -38,7 +38,10 @@ class CategoryService {
         ?string $tab = null,
         ?int $columns = null,
         bool $collapsed = false,
+        ?int $parentId = null,
     ): Category {
+        $this->validateNesting($parentId, $userId);
+
         $now = (new DateTime())->format('Y-m-d H:i:s');
         $slug = $this->generateSlug($name, $userId);
         $sortOrder = $this->categoryMapper->getMaxSortOrder($userId) + 1;
@@ -52,6 +55,7 @@ class CategoryService {
         $category->setCollapsed($collapsed);
         $category->setTab($tab);
         $category->setColumns($columns);
+        $category->setParentId($parentId);
         $category->setCreatedAt($now);
         $category->setUpdatedAt($now);
 
@@ -67,6 +71,8 @@ class CategoryService {
         ?string $tab = null,
         ?int $columns = null,
         ?bool $collapsed = null,
+        bool $updateParent = false,
+        ?int $parentId = null,
     ): Category {
         $category = $this->find($id, $userId);
 
@@ -86,6 +92,10 @@ class CategoryService {
         if ($collapsed !== null) {
             $category->setCollapsed($collapsed);
         }
+        if ($updateParent) {
+            $this->validateNesting($parentId, $userId, $id);
+            $category->setParentId($parentId);
+        }
 
         $category->setUpdatedAt((new DateTime())->format('Y-m-d H:i:s'));
 
@@ -95,8 +105,19 @@ class CategoryService {
     /** @throws NotFoundException */
     public function delete(int $id, string $userId): Category {
         $category = $this->find($id, $userId);
+        // Promote children to top-level before deleting
+        $this->categoryMapper->clearParent($id, $userId);
         $this->serviceMapper->deleteByCategory($id, $userId);
         return $this->categoryMapper->delete($category);
+    }
+
+    /** Move a category to a new parent (or top-level if null) */
+    public function moveCategory(int $id, ?int $newParentId, string $userId): Category {
+        $category = $this->find($id, $userId);
+        $this->validateNesting($newParentId, $userId, $id);
+        $category->setParentId($newParentId);
+        $category->setUpdatedAt((new DateTime())->format('Y-m-d H:i:s'));
+        return $this->categoryMapper->update($category);
     }
 
     /**
@@ -113,6 +134,23 @@ class CategoryService {
             } catch (DoesNotExistException | MultipleObjectsReturnedException) {
                 // Skip invalid IDs
             }
+        }
+    }
+
+    private function validateNesting(?int $parentId, string $userId, ?int $excludeId = null): void {
+        if ($parentId === null) {
+            return;
+        }
+        if ($excludeId !== null && $parentId === $excludeId) {
+            throw new \InvalidArgumentException('A category cannot be its own parent');
+        }
+        try {
+            $parent = $this->categoryMapper->findById($parentId, $userId);
+        } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
+            throw new \InvalidArgumentException('Parent category not found');
+        }
+        if ($parent->getParentId() !== null) {
+            throw new \InvalidArgumentException('Cannot nest deeper than one level');
         }
     }
 

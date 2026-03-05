@@ -89,6 +89,18 @@ class CategoryMapper extends QBMapper {
     }
 
     /**
+     * Set parent_id = NULL for all children of a given parent
+     */
+    public function clearParent(int $parentId, string $userId): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update($this->getTableName())
+            ->set('parent_id', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+            ->where($qb->expr()->eq('parent_id', $qb->createNamedParameter($parentId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        $qb->executeStatement();
+    }
+
+    /**
      * Delete all categories for a user
      */
     public function deleteAllByUser(string $userId): void {

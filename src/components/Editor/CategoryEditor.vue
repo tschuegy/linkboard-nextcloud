@@ -26,6 +26,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcSelect v-model="form.columns" :options="columnOptions" :clearable="true" :placeholder="t('linkboard', 'Automatic')" />
             </div>
 
+            <div class="category-editor__field">
+                <label>{{ t('linkboard', 'Parent category') }}</label>
+                <NcSelect v-model="selectedParent" :options="parentOptions" :clearable="true" :placeholder="t('linkboard', 'None (top-level)')" label="label" />
+            </div>
+
             <NcCheckboxRadioSwitch :checked.sync="form.collapsed" type="switch">
                 {{ t('linkboard', 'Initially collapsed') }}
             </NcCheckboxRadioSwitch>
@@ -42,6 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <script>
 import { t } from '@nextcloud/l10n'
 import { NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch } from '@nextcloud/vue'
+import { useDashboardStore } from '../../store/dashboard.js'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 
 export default {
@@ -55,6 +61,25 @@ export default {
             form: { ...this.category },
             columnOptions: [1, 2, 3, 4, 5, 6],
         }
+    },
+    computed: {
+        parentOptions() {
+            var store = useDashboardStore()
+            var self = this
+            var childIds = (this.category.children || []).map(function(c) { return c.id })
+            return store.topLevelCategories
+                .filter(function(c) { return c.id !== self.category.id && childIds.indexOf(c.id) === -1 })
+                .map(function(c) { return { id: c.id, label: c.name } })
+        },
+        selectedParent: {
+            get: function() {
+                if (!this.form.parentId) return null
+                return this.parentOptions.find(function(o) { return o.id === this.form.parentId }.bind(this)) || null
+            },
+            set: function(val) {
+                this.form.parentId = val ? val.id : null
+            },
+        },
     },
     watch: {
         category: {
@@ -72,6 +97,7 @@ export default {
                 tab: this.form.tab,
                 columns: this.form.columns,
                 collapsed: this.form.collapsed,
+                parentId: this.form.parentId,
             })
         },
     },

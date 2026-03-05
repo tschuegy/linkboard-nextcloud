@@ -112,5 +112,9 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "Nieprawidłowy JSON: %s",
     "Invalid JSON": "Nieprawidłowy JSON",
     "Import failed: %s": "Import nie powiódł się: %s",
-    "Maximum number of services reached (%s)": "Osiągnięto maksymalną liczbę usług (%s)"
+    "Maximum number of services reached (%s)": "Osiągnięto maksymalną liczbę usług (%s)",
+    "Drop here to ungroup": "Drop here to ungroup",
+    "Failed to move category": "Failed to move category",
+    "Parent category": "Parent category",
+    "None (top-level)": "None (top-level)"
 }, "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

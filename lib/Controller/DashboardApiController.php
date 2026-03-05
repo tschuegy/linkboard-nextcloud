@@ -46,17 +46,30 @@ class DashboardApiController extends ApiController {
             $servicesByCategory[$catId][] = $svcData;
         }
 
-        // Build the response
-        $dashboard = [];
+        // Build flat list with services
+        $catMap = [];
         foreach ($categories as $category) {
             $catData = $category->jsonSerialize();
             $catData['services'] = $servicesByCategory[$category->getId()] ?? [];
-            $dashboard[] = $catData;
+            $catData['children'] = [];
+            $catMap[$category->getId()] = $catData;
         }
+
+        // Build tree: attach children to parents
+        $dashboard = [];
+        foreach ($catMap as $id => $catData) {
+            $parentId = $catData['parentId'];
+            if ($parentId !== null && isset($catMap[$parentId])) {
+                $catMap[$parentId]['children'][] = &$catMap[$id];
+            } else {
+                $dashboard[] = &$catMap[$id];
+            }
+        }
+        unset($catData);
 
         return new DataResponse([
             'settings' => $settings,
-            'categories' => $dashboard,
+            'categories' => array_values($dashboard),
         ]);
     }
 }

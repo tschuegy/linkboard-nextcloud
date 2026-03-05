@@ -25,35 +25,37 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :class="{ 'category-group__chevron--collapsed': isCollapsed }" />
             </div>
             <div v-if="editMode" class="category-group__actions">
-                <NcButton type="tertiary" :aria-label="t('linkboard', 'Add service')" @click="$emit('add-service')">
+                <NcButton type="tertiary" :aria-label="t('linkboard', 'Add service')" @click="$emit('add-service', category.id)">
                     <template #icon><PlusIcon :size="20" /></template>
                 </NcButton>
-                <NcButton type="tertiary" :aria-label="t('linkboard', 'Edit category')" @click="$emit('edit-category')">
+                <NcButton type="tertiary" :aria-label="t('linkboard', 'Edit category')" @click="$emit('edit-category', category.id)">
                     <template #icon><PencilIcon :size="20" /></template>
                 </NcButton>
-                <NcButton type="tertiary" :aria-label="t('linkboard', 'Delete category')" @click="$emit('delete-category')">
+                <NcButton type="tertiary" :aria-label="t('linkboard', 'Delete category')" @click="$emit('delete-category', category.id)">
                     <template #icon><DeleteIcon :size="20" /></template>
                 </NcButton>
             </div>
         </div>
 
         <transition name="collapse">
-            <div
-                v-show="!isCollapsed"
-                ref="serviceGrid"
-                class="category-group__grid"
-                :style="gridStyle">
-                <ServiceCard
-                    v-for="service in category.services"
-                    :key="service.id"
-                    :data-service-id="String(service.id)"
-                    :service="service"
-                    :edit-mode="editMode"
-                    :card-style="cardStyle"
-                    :status-style="statusStyle"
-                    :widget-data="getWidgetData(service.id)"
-                    @click="handleServiceClick(service)"
-                    @edit="$emit('edit-service', service.id)" />
+            <div v-show="!isCollapsed">
+                <div
+                    ref="serviceGrid"
+                    class="category-group__grid"
+                    :style="gridStyle">
+                    <ServiceCard
+                        v-for="service in category.services"
+                        :key="service.id"
+                        :data-service-id="String(service.id)"
+                        :service="service"
+                        :edit-mode="editMode"
+                        :card-style="cardStyle"
+                        :status-style="statusStyle"
+                        :widget-data="getWidgetData(service.id)"
+                        @click="handleServiceClick(service)"
+                        @edit="$emit('edit-service', service.id)" />
+                </div>
+
             </div>
         </transition>
     </div>
@@ -129,7 +131,9 @@ export default {
             var self = this
             this.saveCollapsed(val)
             if (!val && this.editMode) {
-                this.$nextTick(function() { self.initSortable() })
+                this.$nextTick(function() {
+                    self.initSortable()
+                })
             } else {
                 this.destroySortable()
             }
@@ -139,7 +143,9 @@ export default {
     mounted: function() {
         if (this.editMode && !this.isCollapsed) {
             var self = this
-            this.$nextTick(function() { self.initSortable() })
+            this.$nextTick(function() {
+                self.initSortable()
+            })
         }
     },
 
@@ -205,6 +211,7 @@ export default {
                 this.sortableInstance = null
             }
         },
+
 
         loadCollapsed: function() {
             try {

@@ -22,6 +22,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setTab(?string $tab)
  * @method int|null getColumns()
  * @method void setColumns(?int $columns)
+ * @method int|null getParentId()
+ * @method void setParentId(?int $parentId)
  * @method string|null getCreatedAt()
  * @method void setCreatedAt(?string $createdAt)
  * @method string|null getUpdatedAt()
@@ -37,6 +39,7 @@ class Category extends Entity implements JsonSerializable {
     protected bool $collapsed = false;
     protected ?string $tab = null;
     protected ?int $columns = null;
+    protected ?int $parentId = null;
     protected $createdAt = null;
     protected $updatedAt = null;
 
@@ -45,6 +48,7 @@ class Category extends Entity implements JsonSerializable {
         $this->addType('sortOrder', 'integer');
         $this->addType('collapsed', 'boolean');
         $this->addType('columns', 'integer');
+        $this->addType('parentId', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -58,6 +62,7 @@ class Category extends Entity implements JsonSerializable {
             'collapsed' => $this->getCollapsed(),
             'tab' => $this->getTab(),
             'columns' => $this->getColumns(),
+            'parentId' => $this->getParentId(),
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
         ];

@@ -113,7 +113,11 @@
     "Invalid JSON in payload: %s": "JSON inválido: %s",
     "Invalid JSON": "JSON inválido",
     "Import failed: %s": "Error en la importación: %s",
-    "Maximum number of services reached (%s)": "Número máximo de servicios alcanzado (%s)"
+    "Maximum number of services reached (%s)": "Número máximo de servicios alcanzado (%s)",
+    "Drop here to ungroup": "Drop here to ungroup",
+    "Failed to move category": "Failed to move category",
+    "Parent category": "Parent category",
+    "None (top-level)": "None (top-level)"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

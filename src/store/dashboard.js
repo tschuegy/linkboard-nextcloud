@@ -7,6 +7,31 @@ import { defineStore } from 'pinia'
 import { t } from '@nextcloud/l10n'
 import { dashboardApi, categoryApi, serviceApi, settingsApi, statusApi, widgetApi, importExportApi } from '../services/api.js'
 
+function findCategoryInTree(categories, id) {
+    for (var i = 0; i < categories.length; i++) {
+        if (categories[i].id === id) {
+            return { category: categories[i], parent: null, index: i, list: categories }
+        }
+        var children = categories[i].children || []
+        for (var j = 0; j < children.length; j++) {
+            if (children[j].id === id) {
+                return { category: children[j], parent: categories[i], index: j, list: children }
+            }
+        }
+    }
+    return null
+}
+
+function forEachCategory(categories, fn) {
+    for (var i = 0; i < categories.length; i++) {
+        fn(categories[i])
+        var children = categories[i].children || []
+        for (var j = 0; j < children.length; j++) {
+            fn(children[j])
+        }
+    }
+}
+
 export const useDashboardStore = defineStore('dashboard', {
     state: () => ({
         categories: [],
@@ -26,45 +51,68 @@ export const useDashboardStore = defineStore('dashboard', {
     getters: {
         filteredCategories(state) {
             if (!state.searchQuery) return state.categories
-            const q = state.searchQuery.toLowerCase()
+            var q = state.searchQuery.toLowerCase()
+            function matchSvc(svc) {
+                return svc.name.toLowerCase().includes(q)
+                    || (svc.description && svc.description.toLowerCase().includes(q))
+            }
             return state.categories
-                .map(cat => ({
-                    ...cat,
-                    services: cat.services.filter(svc =>
-                        svc.name.toLowerCase().includes(q)
-                        || (svc.description && svc.description.toLowerCase().includes(q)),
-                    ),
-                }))
-                .filter(cat => cat.services.length > 0 || cat.name.toLowerCase().includes(q))
+                .map(function(cat) {
+                    var filteredChildren = (cat.children || [])
+                        .map(function(child) {
+                            return { ...child, services: child.services.filter(matchSvc) }
+                        })
+                        .filter(function(child) {
+                            return child.services.length > 0 || child.name.toLowerCase().includes(q)
+                        })
+                    return {
+                        ...cat,
+                        services: cat.services.filter(matchSvc),
+                        children: filteredChildren,
+                    }
+                })
+                .filter(function(cat) {
+                    return cat.services.length > 0 || cat.children.length > 0 || cat.name.toLowerCase().includes(q)
+                })
         },
 
         totalServices(state) {
-            return state.categories.reduce((sum, cat) => sum + (cat.services?.length || 0), 0)
+            var sum = 0
+            forEachCategory(state.categories, function(cat) { sum += (cat.services?.length || 0) })
+            return sum
         },
 
         editingService(state) {
             if (!state.editingServiceId) return null
-            for (const cat of state.categories) {
-                const svc = cat.services?.find(s => s.id === state.editingServiceId)
-                if (svc) return svc
-            }
-            return null
+            var result = null
+            forEachCategory(state.categories, function(cat) {
+                if (result) return
+                var svc = cat.services?.find(function(s) { return s.id === state.editingServiceId })
+                if (svc) result = svc
+            })
+            return result
         },
 
         editingCategory(state) {
             if (!state.editingCategoryId) return null
-            return state.categories.find(c => c.id === state.editingCategoryId) || null
+            var found = findCategoryInTree(state.categories, state.editingCategoryId)
+            return found ? found.category : null
         },
 
         /** Count of services with ping enabled */
         pingEnabledCount(state) {
-            let count = 0
-            for (const cat of state.categories) {
-                for (const svc of (cat.services || [])) {
-                    if (svc.pingEnabled) count++
+            var count = 0
+            forEachCategory(state.categories, function(cat) {
+                for (var s of (cat.services || [])) {
+                    if (s.pingEnabled) count++
                 }
-            }
+            })
             return count
+        },
+
+        /** All top-level categories (for parent selector) */
+        topLevelCategories(state) {
+            return state.categories.filter(function(c) { return !c.parentId })
         },
     },
 
@@ -92,7 +140,18 @@ export const useDashboardStore = defineStore('dashboard', {
         async createCategory(categoryData) {
             try {
                 const { data } = await categoryApi.create(categoryData)
-                this.categories.push({ ...data, services: [] })
+                var newCat = { ...data, services: [], children: [] }
+                if (data.parentId) {
+                    var parentFound = findCategoryInTree(this.categories, data.parentId)
+                    if (parentFound) {
+                        if (!parentFound.category.children) parentFound.category.children = []
+                        parentFound.category.children.push(newCat)
+                    } else {
+                        this.categories.push(newCat)
+                    }
+                } else {
+                    this.categories.push(newCat)
+                }
                 return data
             } catch (err) {
                 this.error = t('linkboard', 'Failed to create category')
@@ -103,10 +162,11 @@ export const useDashboardStore = defineStore('dashboard', {
         async updateCategory(id, categoryData) {
             try {
                 const { data } = await categoryApi.update(id, categoryData)
-                const idx = this.categories.findIndex(c => c.id === id)
-                if (idx !== -1) {
-                    const services = this.categories[idx].services
-                    this.categories[idx] = { ...data, services }
+                var found = findCategoryInTree(this.categories, id)
+                if (found) {
+                    var services = found.category.services
+                    var children = found.category.children
+                    Object.assign(found.category, data, { services, children })
                 }
                 return data
             } catch (err) {
@@ -118,9 +178,43 @@ export const useDashboardStore = defineStore('dashboard', {
         async deleteCategory(id) {
             try {
                 await categoryApi.delete(id)
-                this.categories = this.categories.filter(c => c.id !== id)
+                var found = findCategoryInTree(this.categories, id)
+                if (found) {
+                    // Promote children to top-level
+                    var children = found.category.children || []
+                    for (var i = 0; i < children.length; i++) {
+                        children[i].parentId = null
+                        this.categories.push(children[i])
+                    }
+                    found.list.splice(found.index, 1)
+                }
             } catch (err) {
                 this.error = t('linkboard', 'Failed to delete category')
+                throw err
+            }
+        },
+
+        async moveCategoryToParent(categoryId, parentId) {
+            try {
+                const { data } = await categoryApi.move(categoryId, parentId)
+                var found = findCategoryInTree(this.categories, categoryId)
+                if (found) {
+                    var cat = found.category
+                    found.list.splice(found.index, 1)
+                    cat.parentId = parentId
+                    if (parentId) {
+                        var parentFound = findCategoryInTree(this.categories, parentId)
+                        if (parentFound) {
+                            if (!parentFound.category.children) parentFound.category.children = []
+                            parentFound.category.children.push(cat)
+                        }
+                    } else {
+                        this.categories.push(cat)
+                    }
+                }
+                return data
+            } catch (err) {
+                this.error = t('linkboard', 'Failed to move category')
                 throw err
             }
         },
@@ -134,10 +228,10 @@ export const useDashboardStore = defineStore('dashboard', {
         async createService(serviceData) {
             try {
                 const { data } = await serviceApi.create(serviceData)
-                const cat = this.categories.find(c => c.id === data.categoryId)
-                if (cat) {
-                    if (!cat.services) cat.services = []
-                    cat.services.push(data)
+                var catFound = findCategoryInTree(this.categories, data.categoryId)
+                if (catFound) {
+                    if (!catFound.category.services) catFound.category.services = []
+                    catFound.category.services.push(data)
                 }
                 return data
             } catch (err) {
@@ -149,20 +243,25 @@ export const useDashboardStore = defineStore('dashboard', {
         async updateService(id, serviceData) {
             try {
                 const { data } = await serviceApi.update(id, serviceData)
-                for (const cat of this.categories) {
-                    const idx = cat.services?.findIndex(s => s.id === id)
+                var removed = false
+                forEachCategory(this.categories, function(cat) {
+                    if (removed) return
+                    var idx = cat.services?.findIndex(function(s) { return s.id === id })
                     if (idx !== undefined && idx !== -1) {
                         if (data.categoryId !== cat.id) {
                             cat.services.splice(idx, 1)
-                            const newCat = this.categories.find(c => c.id === data.categoryId)
-                            if (newCat) {
-                                if (!newCat.services) newCat.services = []
-                                newCat.services.push(data)
-                            }
+                            removed = true
                         } else {
                             cat.services[idx] = data
+                            removed = true
                         }
-                        break
+                    }
+                })
+                if (removed && data.categoryId) {
+                    var targetCat = findCategoryInTree(this.categories, data.categoryId)
+                    if (targetCat && !targetCat.category.services?.find(function(s) { return s.id === id })) {
+                        if (!targetCat.category.services) targetCat.category.services = []
+                        targetCat.category.services.push(data)
                     }
                 }
                 return data
@@ -175,27 +274,26 @@ export const useDashboardStore = defineStore('dashboard', {
         async deleteService(id) {
             try {
                 await serviceApi.delete(id)
-                for (const cat of this.categories) {
-                    const idx = cat.services?.findIndex(s => s.id === id)
+                forEachCategory(this.categories, function(cat) {
+                    var idx = cat.services?.findIndex(function(s) { return s.id === id })
                     if (idx !== undefined && idx !== -1) {
                         cat.services.splice(idx, 1)
-                        break
                     }
-                }
+                })
             } catch (err) { this.error = t('linkboard', 'Failed to delete service'); throw err }
         },
 
         async moveService(id, newCategoryId) {
             try {
                 const { data } = await serviceApi.move(id, newCategoryId)
-                for (const cat of this.categories) {
-                    const idx = cat.services?.findIndex(s => s.id === id)
-                    if (idx !== undefined && idx !== -1) { cat.services.splice(idx, 1); break }
-                }
-                const newCat = this.categories.find(c => c.id === newCategoryId)
-                if (newCat) {
-                    if (!newCat.services) newCat.services = []
-                    newCat.services.push(data)
+                forEachCategory(this.categories, function(cat) {
+                    var idx = cat.services?.findIndex(function(s) { return s.id === id })
+                    if (idx !== undefined && idx !== -1) { cat.services.splice(idx, 1) }
+                })
+                var newCatFound = findCategoryInTree(this.categories, newCategoryId)
+                if (newCatFound) {
+                    if (!newCatFound.category.services) newCatFound.category.services = []
+                    newCatFound.category.services.push(data)
                 }
                 return data
             } catch (err) { this.error = t('linkboard', 'Failed to move service'); throw err }
@@ -218,11 +316,10 @@ export const useDashboardStore = defineStore('dashboard', {
         async checkServiceStatus(serviceId) {
             try {
                 const { data } = await statusApi.check(serviceId)
-                // Update status in local state
-                for (const cat of this.categories) {
-                    const svc = cat.services?.find(s => s.id === serviceId)
-                    if (svc) { svc.status = data; break }
-                }
+                forEachCategory(this.categories, function(cat) {
+                    var svc = cat.services?.find(function(s) { return s.id === serviceId })
+                    if (svc) { svc.status = data }
+                })
                 return data
             } catch (err) { console.error('Status check failed', err) }
         },
@@ -231,15 +328,14 @@ export const useDashboardStore = defineStore('dashboard', {
             this.statusChecking = true
             try {
                 const { data } = await statusApi.checkAll()
-                // Update all statuses in local state
                 if (data.statuses) {
-                    for (const cat of this.categories) {
-                        for (const svc of (cat.services || [])) {
+                    forEachCategory(this.categories, function(cat) {
+                        for (var svc of (cat.services || [])) {
                             if (data.statuses[svc.id]) {
                                 svc.status = data.statuses[svc.id]
                             }
                         }
-                    }
+                    })
                 }
                 return data
             } catch (err) {

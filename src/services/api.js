@@ -25,6 +25,7 @@ export const categoryApi = {
     update: (id, data) => axios.put(url(`/categories/${id}`), data),
     delete: (id) => axios.delete(url(`/categories/${id}`)),
     reorder: (order) => axios.post(url('/categories/reorder'), { order: JSON.stringify(order) }),
+    move: (id, parentId) => axios.put(url(`/categories/${id}/move`), { parentId }),
 }
 
 // ── Services ──────────────────────────────────────────

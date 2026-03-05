@@ -18,6 +18,7 @@ return [
         ['name' => 'category_api#show',    'url' => '/api/v1/categories/{id}',    'verb' => 'GET',    'requirements' => ['id' => '\d+']],
         ['name' => 'category_api#update',  'url' => '/api/v1/categories/{id}',    'verb' => 'PUT',    'requirements' => ['id' => '\d+']],
         ['name' => 'category_api#destroy', 'url' => '/api/v1/categories/{id}',    'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
+        ['name' => 'category_api#moveCategory', 'url' => '/api/v1/categories/{id}/move', 'verb' => 'PUT', 'requirements' => ['id' => '\d+']],
 
 
         // ── Services API ──────────────────────────────────────

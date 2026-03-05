@@ -64,6 +64,13 @@
                 <notnull>false</notnull>
             </field>
             <field>
+                <name>parent_id</name>
+                <type>integer</type>
+                <length>8</length>
+                <unsigned>true</unsigned>
+                <notnull>false</notnull>
+            </field>
+            <field>
                 <name>created_at</name>
                 <type>timestamp</type>
                 <notnull>true</notnull>
@@ -88,6 +95,12 @@
                 </field>
                 <field>
                     <name>sort_order</name>
+                </field>
+            </index>
+            <index>
+                <name>lb_cat_parent_idx</name>
+                <field>
+                    <name>parent_id</name>
                 </field>
             </index>
             <index>

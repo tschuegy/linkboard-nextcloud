@@ -74,23 +74,47 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- Dashboard Grid -->
         <div v-else ref="categoryList" class="linkboard__grid">
-            <CategoryGroup
-                v-for="category in displayCategories"
-                :key="category.id"
-                :data-category-id="String(category.id)"
-                :category="category"
-                :edit-mode="editMode"
-                :max-columns="settings.max_columns"
-                :card-style="settings.card_style"
-                :status-style="settings.status_style"
-                :show-count="settings.show_category_count !== 'false'"
-                @edit-category="selectCategoryForEdit(category.id)"
-                @edit-service="selectServiceForEdit"
-                @delete-category="handleDeleteCategory(category.id)"
-                @add-service="showNewServiceDialog(category.id)"
-                @reorder-services="handleReorderServices"
-                @service-moved="handleServiceMoved" />
+            <div v-for="cat in displayCategories" :key="cat.id"
+                 :data-category-id="String(cat.id)"
+                 class="linkboard__row">
+                <span v-if="editMode" class="linkboard__row-handle">
+                    <DragVerticalIcon :size="18" />
+                </span>
+                <CategoryGroup
+                    :data-category-id="String(cat.id)"
+                    :category="stripChildren(cat)"
+                    :edit-mode="editMode"
+                    :max-columns="settings.max_columns"
+                    :card-style="settings.card_style"
+                    :status-style="settings.status_style"
+                    :show-count="settings.show_category_count !== 'false'"
+                    @edit-category="selectCategoryForEdit"
+                    @edit-service="selectServiceForEdit"
+                    @delete-category="handleDeleteCategory"
+                    @add-service="showNewServiceDialog"
+                    @reorder-services="handleReorderServices"
+                    @service-moved="handleServiceMoved" />
+                <CategoryGroup
+                    v-for="child in (cat.children || [])" :key="child.id"
+                    :data-category-id="String(child.id)"
+                    :category="child"
+                    :edit-mode="editMode"
+                    :max-columns="settings.max_columns"
+                    :card-style="settings.card_style"
+                    :status-style="settings.status_style"
+                    :show-count="settings.show_category_count !== 'false'"
+                    @edit-category="selectCategoryForEdit"
+                    @edit-service="selectServiceForEdit"
+                    @delete-category="handleDeleteCategory"
+                    @add-service="showNewServiceDialog"
+                    @reorder-services="handleReorderServices"
+                    @service-moved="handleServiceMoved" />
+            </div>
 
+            <div v-if="editMode" ref="ungroupZone" class="linkboard__ungroup-zone">
+                <ArrowExpandIcon :size="20" />
+                <span>{{ t('linkboard', 'Drop here to ungroup') }}</span>
+            </div>
             <div v-if="editMode" class="linkboard__add-category" @click="showNewCategoryDialog">
                 <PlusIcon :size="32" />
                 <span>{{ t('linkboard', 'New category') }}</span>
@@ -162,6 +186,8 @@ import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 import CogIcon from 'vue-material-design-icons/Cog.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import RefreshIcon from 'vue-material-design-icons/Refresh.vue'
+import DragVerticalIcon from 'vue-material-design-icons/DragVertical.vue'
+import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue'
 
 export default {
     name: 'DashboardView',
@@ -169,7 +195,7 @@ export default {
     components: {
         NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField,
         CategoryGroup, ServiceEditor, CategoryEditor, SearchBar, EmptyState,
-        PencilIcon, CogIcon, PlusIcon, RefreshIcon,
+        PencilIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon, ArrowExpandIcon,
     },
 
     data() {
@@ -182,6 +208,8 @@ export default {
             newService: { name: '', description: '', href: '', icon: '' },
             showShortcutHint: false,
             categorySortable: null,
+            rowSortables: [],
+            ungroupSortable: null,
         }
     },
 
@@ -223,6 +251,11 @@ export default {
                 for (const svc of (cat.services || [])) {
                     if (svc.widgetType) return true
                 }
+                for (const child of (cat.children || [])) {
+                    for (const svc of (child.services || [])) {
+                        if (svc.widgetType) return true
+                    }
+                }
             }
             return false
         },
@@ -233,14 +266,24 @@ export default {
             this.$nextTick(() => {
                 if (isEdit) {
                     this.initCategorySortable()
+                    this.initRowSortables()
                 } else {
                     this.destroyCategorySortable()
+                    this.destroyRowSortables()
                 }
             })
         },
         loading(isLoading) {
             if (!isLoading && this.editMode) {
-                this.$nextTick(() => this.initCategorySortable())
+                this.$nextTick(() => {
+                    this.initCategorySortable()
+                    this.initRowSortables()
+                })
+            }
+        },
+        displayCategories() {
+            if (this.editMode) {
+                this.$nextTick(() => this.initRowSortables())
             }
         },
     },
@@ -253,6 +296,7 @@ export default {
     beforeDestroy() {
         document.removeEventListener('keydown', this.handleGlobalKeydown)
         this.destroyCategorySortable()
+        this.destroyRowSortables()
     },
 
     methods: {
@@ -263,7 +307,7 @@ export default {
             'toggleEditMode', 'selectServiceForEdit', 'selectCategoryForEdit',
             'clearSelection', 'clearError', 'checkAllStatuses',
             'reorderCategories', 'reorderServices', 'moveService',
-            'fetchAllWidgetData',
+            'moveCategoryToParent', 'fetchAllWidgetData',
         ]),
 
         handleRefreshAll() {
@@ -271,25 +315,34 @@ export default {
             if (this.hasWidgets) this.fetchAllWidgetData()
         },
 
-        // SortableJS: Category-level drag
+        stripChildren(cat) {
+            var copy = Object.assign({}, cat)
+            delete copy.children
+            return copy
+        },
+
+        // SortableJS: Row-level drag (reorder rows in the grid)
         initCategorySortable() {
-            const el = this.$refs.categoryList
+            this.destroyCategorySortable()
+            var el = this.$refs.categoryList
             if (!el) return
+            var self = this
             this.categorySortable = Sortable.create(el, {
                 animation: 250,
-                handle: '.category-group__drag-handle',
-                ghostClass: 'category-group--ghost',
-                filter: '.linkboard__add-category',
-                onEnd: (evt) => {
+                draggable: '.linkboard__row',
+                handle: '.linkboard__row-handle',
+                ghostClass: 'linkboard__row--ghost',
+                filter: '.linkboard__add-category,.linkboard__ungroup-zone',
+                onEnd: function(evt) {
                     if (evt.oldIndex === evt.newIndex) return
-                    const store = useDashboardStore()
-                    const cats = [...store.categories]
-                    const moved = cats.splice(evt.oldIndex, 1)[0]
+                    var store = useDashboardStore()
+                    var cats = store.categories.slice()
+                    var moved = cats.splice(evt.oldIndex, 1)[0]
                     cats.splice(evt.newIndex, 0, moved)
                     store.categories = cats
-                    const order = Object.fromEntries(cats.map((cat, idx) => [cat.id, idx]))
-                    this.reorderCategories(order).catch((err) => {
-                        this.fetchDashboard()
+                    var order = Object.fromEntries(cats.map(function(cat, idx) { return [cat.id, idx] }))
+                    self.reorderCategories(order).catch(function() {
+                        self.fetchDashboard()
                     })
                 },
             })
@@ -300,6 +353,64 @@ export default {
                 this.categorySortable.destroy()
                 this.categorySortable = null
             }
+        },
+
+        // SortableJS: Category-within-row drag (move categories between rows)
+        initRowSortables() {
+            this.destroyRowSortables()
+            var el = this.$refs.categoryList
+            if (!el) return
+            var self = this
+            var rows = el.querySelectorAll('.linkboard__row')
+            rows.forEach(function(row) {
+                var rowLeaderId = parseInt(row.dataset.categoryId)
+                var s = Sortable.create(row, {
+                    group: 'categories',
+                    animation: 200,
+                    handle: '.category-group__drag-handle',
+                    ghostClass: 'category-group--ghost',
+                    filter: '.linkboard__row-handle',
+                    preventOnFilter: false,
+                    onAdd: function(evt) {
+                        var categoryId = parseInt(evt.item.dataset.categoryId)
+                        self.handleRowAdd(categoryId, rowLeaderId)
+                    },
+                    onEnd: function() {
+                        // Categories reordered within same row — no action needed
+                    },
+                })
+                self.rowSortables.push(s)
+            })
+            // Ungroup zone sortable
+            var ungroupEl = self.$refs.ungroupZone
+            if (ungroupEl) {
+                self.ungroupSortable = Sortable.create(ungroupEl, {
+                    group: { name: 'categories', pull: false, put: true },
+                    ghostClass: 'category-group--ghost',
+                    onAdd: function(evt) {
+                        var categoryId = parseInt(evt.item.dataset.categoryId)
+                        self.moveCategoryToParent(categoryId, null).then(function() {
+                            return self.fetchDashboard()
+                        }).catch(function() { self.fetchDashboard() })
+                    },
+                })
+            }
+        },
+
+        destroyRowSortables() {
+            this.rowSortables.forEach(function(s) { s.destroy() })
+            this.rowSortables = []
+            if (this.ungroupSortable) {
+                this.ungroupSortable.destroy()
+                this.ungroupSortable = null
+            }
+        },
+
+        async handleRowAdd(categoryId, rowLeaderId) {
+            try {
+                await this.moveCategoryToParent(categoryId, rowLeaderId)
+                await this.fetchDashboard()
+            } catch (err) { await this.fetchDashboard() }
         },
 
         // Keyboard Shortcuts
@@ -354,9 +465,16 @@ export default {
         // Drag & Drop: Services
         async handleReorderServices({ categoryId, services }) {
             const store = useDashboardStore()
-            const cat = store.categories.find(c => c.id === categoryId)
-            if (cat) {
-                cat.services = services
+            var found = null
+            for (var c of store.categories) {
+                if (c.id === categoryId) { found = c; break }
+                for (var ch of (c.children || [])) {
+                    if (ch.id === categoryId) { found = ch; break }
+                }
+                if (found) break
+            }
+            if (found) {
+                found.services = services
                 const order = Object.fromEntries(services.map((svc, idx) => [svc.id, idx]))
                 try { await this.reorderServices(order) }
                 catch (err) { await this.fetchDashboard() }
@@ -367,6 +485,7 @@ export default {
             try { await this.moveService(serviceId, toCategoryId) }
             catch (err) { await this.fetchDashboard() }
         },
+
 
         // CRUD
         showNewCategoryDialog() {
@@ -398,7 +517,8 @@ export default {
         async handleSaveService(sd) { await this.updateService(sd.id, sd); this.clearSelection() },
         async handleSaveCategory(cd) { await this.updateCategory(cd.id, cd); this.clearSelection() },
         async handleDeleteCategory(id) {
-            if (confirm(t('linkboard', 'Really delete category and all services?'))) { await this.deleteCategory(id) }
+            var catId = typeof id === 'number' ? id : id
+            if (confirm(t('linkboard', 'Really delete category and all services?'))) { await this.deleteCategory(catId) }
         },
         async handleDeleteService(id) {
             if (confirm(t('linkboard', 'Really delete service?'))) { await this.deleteService(id); this.clearSelection() }
@@ -436,7 +556,53 @@ export default {
     &__title { font-size: 24px; font-weight: 700; margin: 0; color: var(--color-main-text); }
     &__header-actions { display: flex; align-items: center; gap: 8px; }
     &__loading { display: flex; justify-content: center; margin-top: 80px; }
-    &__grid { display: flex; flex-direction: column; gap: 32px; }
+    &__grid {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        align-items: stretch;
+    }
+    &__row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        align-items: flex-start;
+    }
+    &__row > .category-group {
+        flex: 1 1 0;
+        min-width: 300px;
+    }
+    &__row-handle {
+        display: flex;
+        align-items: center;
+        cursor: grab;
+        color: var(--color-text-maxcontrast);
+        opacity: 0.4;
+        transition: opacity 0.15s;
+        &:hover { opacity: 1; }
+        &:active { cursor: grabbing; }
+    }
+    &__row--ghost {
+        opacity: 0.3;
+        background: var(--color-primary-element-light);
+        border-radius: 12px;
+    }
+    &__ungroup-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px;
+        border: 2px dashed var(--color-border);
+        border-radius: 12px;
+        color: var(--color-text-maxcontrast);
+        min-height: 48px;
+        transition: all 0.2s;
+        &:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+    }
 
     &__shortcut-hint {
         display: flex; align-items: center; gap: 16px;
@@ -465,6 +631,12 @@ export default {
 }
 
 .category-group--ghost { opacity: 0.3; background: var(--color-primary-element-light); border-radius: 12px; }
+
+@media (max-width: 600px) {
+    .linkboard__row > .category-group {
+        min-width: 100% !important;
+    }
+}
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
