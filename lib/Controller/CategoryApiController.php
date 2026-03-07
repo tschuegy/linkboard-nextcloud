@@ -47,10 +47,12 @@ class CategoryApiController extends ApiController {
         ?int $columns = null,
         bool $collapsed = false,
         ?int $parentId = null,
+        ?string $type = null,
+        ?string $config = null,
     ): DataResponse {
         try {
             $category = $this->categoryService->create(
-                $this->userId, $name, $icon, $tab, $columns, $collapsed, $parentId
+                $this->userId, $name, $icon, $tab, $columns, $collapsed, $parentId, $type ?? 'default', $config
             );
             return new DataResponse($category, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
@@ -67,11 +69,13 @@ class CategoryApiController extends ApiController {
         ?int $columns = null,
         ?bool $collapsed = null,
         ?int $parentId = null,
+        ?string $type = null,
+        ?string $config = null,
     ): DataResponse {
         try {
             $updateParent = $this->request->getParam('parentId') !== null;
             $category = $this->categoryService->update(
-                $id, $this->userId, $name, $icon, $tab, $columns, $collapsed, $updateParent, $parentId
+                $id, $this->userId, $name, $icon, $tab, $columns, $collapsed, $updateParent, $parentId, $type, $config
             );
             return new DataResponse($category);
         } catch (NotFoundException $e) {

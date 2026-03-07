@@ -71,6 +71,11 @@ export const widgetApi = {
     getData: (serviceId) => axios.get(url(`/widgets/${serviceId}/data`)),
 }
 
+// ── Resources ────────────────────────────────────────
+export var resourceApi = {
+    getData: function(categoryId) { return axios.get(url('/resources/' + categoryId)) },
+}
+
 // ── Import/Export (Phase 2) ──────────────────────────
 // IMPORTANT: NC can't inject nested arrays as method params.
 // We serialize the data as a JSON string in 'payload'.

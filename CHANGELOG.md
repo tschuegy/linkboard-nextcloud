@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.0 – 2026-03-07
+
+### Added
+- System Resources widget displaying CPU, memory, disk usage, uptime, and CPU temperature with progress bars (new `resources` category type)
+- Category spacers with multiple decorative styles (solid, dashed, dotted, dots, stars, diamonds, arrows, fade, wave)
+- Card background options: Glass, Solid, Flat, Transparent
+- Version check in footer with optional update notifications from GitHub
+- MDI inline SVG rendering for Material Design Icons (replaces letter fallbacks)
+- GitHub Sponsors badge in README
+
+### Changed
+- Consolidated database migrations (merged into single v1.4 migration adding `parent_id`, `type`, `config` columns)
+- Removed "ungroup" drop zone from dashboard (simplification)
+- Dialogs use `:open` prop pattern instead of `v-if`
+
+## 1.1.0 – 2026-03-05
+
+### Added
+- Category nesting with drag-and-drop grouping
+
 ## 1.0.0 – 2026-03-01
 
 ### Added

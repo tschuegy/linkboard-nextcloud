@@ -21,9 +21,11 @@ class SettingMapper extends QBMapper {
         'background_blur' => 'md',
         'max_columns' => '4',
         'card_style' => 'default',
+        'card_background' => 'glass',
         'status_style' => 'dot',
         'show_search' => 'true',
         'show_category_count' => 'true',
+        'check_for_updates' => 'true',
     ];
 
     public function __construct(IDBConnection $db) {

@@ -156,6 +156,7 @@ use OCA\LinkBoard\Widget\Widgets\KarakeepWidget;
 use OCA\LinkBoard\Widget\Widgets\GameDigWidget;
 use OCA\LinkBoard\Widget\Widgets\MinecraftWidget;
 use OCA\LinkBoard\Widget\Widgets\ArcaneWidget;
+use OCA\LinkBoard\Widget\Widgets\ResourcesWidget;
 
 /**
  * Registry holding all available widget definitions.
@@ -322,6 +323,8 @@ class WidgetRegistry {
         $this->register(new GameDigWidget());
         $this->register(new MinecraftWidget());
         $this->register(new ArcaneWidget());
+        // Local widgets
+        $this->register(new ResourcesWidget());
     }
 
     public function register(AbstractWidget $widget): void {

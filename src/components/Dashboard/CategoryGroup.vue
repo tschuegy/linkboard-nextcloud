@@ -7,57 +7,123 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <template>
     <div class="category-group">
-        <div class="category-group__header">
-            <div class="category-group__title-row" @click="toggleCollapse">
-                <span v-if="editMode" class="category-group__drag-handle drag-handle">
-                    <DragIcon :size="18" />
-                </span>
-                <ServiceIcon
-                    v-if="category.icon"
-                    :icon="category.icon"
-                    :size="24"
-                    class="category-group__icon" />
-                <h3 class="category-group__name">{{ category.name }}</h3>
-                <span v-if="showCount" class="category-group__count">{{ category.services.length }}</span>
-                <ChevronDownIcon
-                    :size="20"
-                    class="category-group__chevron"
-                    :class="{ 'category-group__chevron--collapsed': isCollapsed }" />
-            </div>
-            <div v-if="editMode" class="category-group__actions">
-                <NcButton type="tertiary" :aria-label="t('linkboard', 'Add service')" @click="$emit('add-service', category.id)">
-                    <template #icon><PlusIcon :size="20" /></template>
-                </NcButton>
-                <NcButton type="tertiary" :aria-label="t('linkboard', 'Edit category')" @click="$emit('edit-category', category.id)">
-                    <template #icon><PencilIcon :size="20" /></template>
-                </NcButton>
-                <NcButton type="tertiary" :aria-label="t('linkboard', 'Delete category')" @click="$emit('delete-category', category.id)">
-                    <template #icon><DeleteIcon :size="20" /></template>
-                </NcButton>
-            </div>
-        </div>
+        <!-- Spacer: view mode -->
+        <template v-if="isSpacer && !editMode">
+            <hr v-if="!isUnicodeSpacer" class="category-group__spacer" :style="spacerBorderStyle">
+            <div v-else class="category-group__spacer category-group__spacer--unicode">{{ spacerUnicodeText }}</div>
+        </template>
 
-        <transition name="collapse">
-            <div v-show="!isCollapsed">
-                <div
-                    ref="serviceGrid"
-                    class="category-group__grid"
-                    :style="gridStyle">
-                    <ServiceCard
-                        v-for="service in category.services"
-                        :key="service.id"
-                        :data-service-id="String(service.id)"
-                        :service="service"
-                        :edit-mode="editMode"
-                        :card-style="cardStyle"
-                        :status-style="statusStyle"
-                        :widget-data="getWidgetData(service.id)"
-                        @click="handleServiceClick(service)"
-                        @edit="$emit('edit-service', service.id)" />
+        <!-- Spacer: edit mode -->
+        <template v-else-if="isSpacer && editMode">
+            <div class="category-group__header category-group__header--spacer">
+                <div class="category-group__title-row">
+                    <span class="category-group__drag-handle drag-handle">
+                        <DragIcon :size="18" />
+                    </span>
+                    <h3 class="category-group__name category-group__name--spacer">{{ category.name }}</h3>
+                    <span class="category-group__spacer-badge">{{ t('linkboard', 'Spacer') }}</span>
                 </div>
-
+                <div class="category-group__actions">
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Edit category')" @click="$emit('edit-category', category.id)">
+                        <template #icon><PencilIcon :size="20" /></template>
+                    </NcButton>
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Delete category')" @click="$emit('delete-category', category.id)">
+                        <template #icon><DeleteIcon :size="20" /></template>
+                    </NcButton>
+                </div>
             </div>
-        </transition>
+        </template>
+
+        <!-- Resources: view mode -->
+        <template v-else-if="isResources && !editMode">
+            <div class="category-group__header">
+                <div class="category-group__title-row">
+                    <ServiceIcon v-if="category.icon" :icon="category.icon" :size="24" class="category-group__icon" />
+                    <h3 class="category-group__name">{{ category.name }}</h3>
+                </div>
+            </div>
+            <ResourceDisplay :data="resourceData" :config="category.config || {}" />
+        </template>
+
+        <!-- Resources: edit mode -->
+        <template v-else-if="isResources && editMode">
+            <div class="category-group__header category-group__header--spacer">
+                <div class="category-group__title-row">
+                    <span class="category-group__drag-handle drag-handle">
+                        <DragIcon :size="18" />
+                    </span>
+                    <ServiceIcon v-if="category.icon" :icon="category.icon" :size="24" class="category-group__icon" />
+                    <h3 class="category-group__name">{{ category.name }}</h3>
+                    <span class="category-group__spacer-badge">{{ t('linkboard', 'Resources') }}</span>
+                </div>
+                <div class="category-group__actions">
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Edit category')" @click="$emit('edit-category', category.id)">
+                        <template #icon><PencilIcon :size="20" /></template>
+                    </NcButton>
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Delete category')" @click="$emit('delete-category', category.id)">
+                        <template #icon><DeleteIcon :size="20" /></template>
+                    </NcButton>
+                </div>
+            </div>
+            <ResourceDisplay :data="resourceData" :config="category.config || {}" />
+        </template>
+
+        <!-- Normal category -->
+        <template v-else>
+            <div class="category-group__header">
+                <div class="category-group__title-row" @click="toggleCollapse">
+                    <span v-if="editMode" class="category-group__drag-handle drag-handle">
+                        <DragIcon :size="18" />
+                    </span>
+                    <ServiceIcon
+                        v-if="category.icon"
+                        :icon="category.icon"
+                        :size="24"
+                        class="category-group__icon" />
+                    <h3 class="category-group__name">{{ category.name }}</h3>
+                    <span v-if="showCount" class="category-group__count">{{ category.services.length }}</span>
+                    <ChevronDownIcon
+                        :size="20"
+                        class="category-group__chevron"
+                        :class="{ 'category-group__chevron--collapsed': isCollapsed }" />
+                </div>
+                <div v-if="editMode" class="category-group__actions">
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Add service')" @click="$emit('add-service', category.id)">
+                        <template #icon><PlusIcon :size="20" /></template>
+                    </NcButton>
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Edit category')" @click="$emit('edit-category', category.id)">
+                        <template #icon><PencilIcon :size="20" /></template>
+                    </NcButton>
+                    <NcButton type="tertiary" :aria-label="t('linkboard', 'Delete category')" @click="$emit('delete-category', category.id)">
+                        <template #icon><DeleteIcon :size="20" /></template>
+                    </NcButton>
+                </div>
+            </div>
+
+            <transition name="collapse">
+                <div v-show="!isCollapsed">
+                    <div
+                        ref="serviceGrid"
+                        class="category-group__grid"
+                        :style="gridStyle">
+                        <ServiceCard
+                            v-for="service in category.services"
+                            :key="service.id"
+                            :class="{ 'service-card--wide': service.widgetType === 'resources' }"
+                            :data-service-id="String(service.id)"
+                            :service="service"
+                            :edit-mode="editMode"
+                            :card-style="cardStyle"
+                            :card-background="cardBackground"
+                            :status-style="statusStyle"
+                            :widget-data="getWidgetData(service.id)"
+                            @click="handleServiceClick(service)"
+                            @edit="$emit('edit-service', service.id)" />
+                    </div>
+
+                </div>
+            </transition>
+        </template>
     </div>
 </template>
 
@@ -66,7 +132,9 @@ import { t } from '@nextcloud/l10n'
 import Sortable from 'sortablejs'
 import { NcButton } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
+import { isUnicodeStyle, getSpacerChar, SPACER_CHARS } from '../../utils/spacerStyles.js'
 import ServiceCard from './ServiceCard.vue'
+import ResourceDisplay from './ResourceDisplay.vue'
 import ServiceIcon from '../Shared/ServiceIcon.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
@@ -80,7 +148,7 @@ export default {
     name: 'CategoryGroup',
 
     components: {
-        NcButton, ServiceCard, ServiceIcon,
+        NcButton, ServiceCard, ServiceIcon, ResourceDisplay,
         PlusIcon, PencilIcon, DeleteIcon, ChevronDownIcon, DragIcon,
     },
 
@@ -89,8 +157,10 @@ export default {
         editMode: { type: Boolean, default: false },
         maxColumns: { type: [String, Number], default: null },
         cardStyle: { type: String, default: 'default' },
+        cardBackground: { type: String, default: 'glass' },
         statusStyle: { type: String, default: 'dot' },
         showCount: { type: Boolean, default: true },
+        spacerStyle: { type: String, default: 'solid' },
     },
 
     data: function() {
@@ -101,6 +171,35 @@ export default {
     },
 
     computed: {
+        isSpacer: function() {
+            return this.category.type === 'spacer'
+        },
+        isResources: function() {
+            return this.category.type === 'resources'
+        },
+        resourceData: function() {
+            var store = useDashboardStore()
+            return store.resourceData[this.category.id] || null
+        },
+        isUnicodeSpacer: function() {
+            return isUnicodeStyle(this.spacerStyle)
+        },
+        spacerBorderStyle: function() {
+            return { borderTopStyle: this.spacerStyle }
+        },
+        spacerUnicodeText: function() {
+            var ch = getSpacerChar(this.spacerStyle)
+            if (this.spacerStyle === 'fade') {
+                var segment = SPACER_CHARS.fade
+                var text = ''
+                for (var i = 0; i < 8; i++) { text += segment }
+                return text
+            }
+            var sep = (this.spacerStyle === 'dots' || this.spacerStyle === 'stars' || this.spacerStyle === 'diamonds' || this.spacerStyle === 'arrows') ? ' ' : ''
+            var result = ''
+            for (var j = 0; j < 80; j++) { result += (j > 0 ? sep : '') + ch }
+            return result
+        },
         gridStyle: function() {
             var cols = this.category.columns
             if (cols) {
@@ -263,6 +362,36 @@ export default {
     &__grid {
         display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 12px; min-height: 40px;
+
+        .service-card--wide {
+            grid-column: span 2;
+        }
+    }
+    &__spacer {
+        border: none;
+        border-top: 2px solid var(--color-border);
+        margin: 8px 0;
+
+        &--unicode {
+            border: none;
+            overflow: hidden;
+            white-space: nowrap;
+            text-align: center;
+            color: var(--color-border);
+            font-size: 14px;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+    }
+    &__spacer-badge {
+        font-size: 11px; color: var(--color-text-maxcontrast);
+        background: var(--color-background-dark); padding: 1px 8px; border-radius: 10px;
+    }
+    &__header--spacer {
+        opacity: 0.6;
+    }
+    &__name--spacer {
+        color: var(--color-text-maxcontrast);
     }
 }
 

@@ -39,6 +39,8 @@ class CategoryService {
         ?int $columns = null,
         bool $collapsed = false,
         ?int $parentId = null,
+        string $type = 'default',
+        ?string $config = null,
     ): Category {
         $this->validateNesting($parentId, $userId);
 
@@ -56,6 +58,8 @@ class CategoryService {
         $category->setTab($tab);
         $category->setColumns($columns);
         $category->setParentId($parentId);
+        $category->setType($type);
+        $category->setConfig($config);
         $category->setCreatedAt($now);
         $category->setUpdatedAt($now);
 
@@ -73,6 +77,8 @@ class CategoryService {
         ?bool $collapsed = null,
         bool $updateParent = false,
         ?int $parentId = null,
+        ?string $type = null,
+        ?string $config = null,
     ): Category {
         $category = $this->find($id, $userId);
 
@@ -95,6 +101,12 @@ class CategoryService {
         if ($updateParent) {
             $this->validateNesting($parentId, $userId, $id);
             $category->setParentId($parentId);
+        }
+        if ($type !== null) {
+            $category->setType($type);
+        }
+        if ($config !== null) {
+            $category->setConfig($config);
         }
 
         $category->setUpdatedAt((new DateTime())->format('Y-m-d H:i:s'));

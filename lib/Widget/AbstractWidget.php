@@ -76,6 +76,13 @@ abstract class AbstractWidget {
     abstract public function mapResponse(array $responses, array $config): array;
 
     /**
+     * Whether this widget reads local system data instead of making HTTP requests.
+     */
+    public function isLocal(): bool {
+        return false;
+    }
+
+    /**
      * Catalog representation for the frontend (no secrets).
      */
     public function toCatalog(): array {

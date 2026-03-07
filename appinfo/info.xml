@@ -23,7 +23,7 @@ and access everything from within Nextcloud.
 
 Each user gets their own personal dashboard – up to 500 services.
     ]]></description>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="tschuegy@hotmail.com">Andreas Busslinger</author>
     <namespace>LinkBoard</namespace>
@@ -31,6 +31,14 @@ Each user gets their own personal dashboard – up to 500 services.
     <category>tools</category>
     <bugs>https://github.com/tschuegy/linkboard-nextcloud/issues</bugs>
     <repository type="git">https://github.com/tschuegy/linkboard-nextcloud</repository>
+    <donation title="Donate to support LinkBoard" type="paypal">https://paypal.me/linkboard</donation>
+    <website>https://github.com/tschuegy/linkboard-nextcloud</website>
+    <documentation>
+        <user>https://github.com/tschuegy/linkboard-nextcloud#readme</user>
+    </documentation>
+    <discussion>https://github.com/tschuegy/linkboard-nextcloud/discussions</discussion>
+    <screenshot>https://raw.githubusercontent.com/tschuegy/linkboard-nextcloud/main/img/screenshots/screenshot_GUI.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/tschuegy/linkboard-nextcloud/main/img/screenshots/screenshot_Settings.png</screenshot>
     <dependencies>
         <nextcloud min-version="30" max-version="33"/>
         <php min-version="8.1" max-version="8.4"/>

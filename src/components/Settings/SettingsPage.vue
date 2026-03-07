@@ -42,8 +42,39 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcSelect v-model="form.card_style" :options="cardStyleOptions" :clearable="false" />
             </div>
             <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Card background') }}</label>
+                <NcSelect
+                    v-model="form.card_background"
+                    :options="cardBackgroundOptions"
+                    :reduce="opt => opt.id"
+                    label="label"
+                    :clearable="false" />
+            </div>
+            <div class="settings-page__field">
                 <label>{{ t('linkboard', 'Status display') }}</label>
                 <NcSelect v-model="form.status_style" :options="statusStyleOptions" :clearable="false" />
+            </div>
+            <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Spacer style') }}</label>
+                <NcSelect
+                    v-model="form.spacer_style"
+                    :options="spacerStyleOptions"
+                    :reduce="opt => opt.id"
+                    label="label"
+                    :clearable="false">
+                    <template #option="opt">
+                        <div class="spacer-option">
+                            <span class="spacer-option__label">{{ opt.label }}</span>
+                            <span class="spacer-option__preview" v-html="getSpacerPreview(opt.id)" />
+                        </div>
+                    </template>
+                    <template #selected-option="opt">
+                        <div class="spacer-option">
+                            <span class="spacer-option__label">{{ opt.label }}</span>
+                            <span class="spacer-option__preview" v-html="getSpacerPreview(opt.id)" />
+                        </div>
+                    </template>
+                </NcSelect>
             </div>
             <NcCheckboxRadioSwitch
                 :checked="form.show_search === 'true'"
@@ -56,6 +87,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 type="switch"
                 @update:checked="form.show_category_count = $event ? 'true' : 'false'">
                 {{ t('linkboard', 'Show service count per category') }}
+            </NcCheckboxRadioSwitch>
+            <NcCheckboxRadioSwitch
+                :checked="form.check_for_updates === 'true'"
+                type="switch"
+                @update:checked="form.check_for_updates = $event ? 'true' : 'false'">
+                {{ t('linkboard', 'Check for updates') }}
             </NcCheckboxRadioSwitch>
         </div>
 
@@ -139,6 +176,7 @@ import { NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch, NcNoteCard } fr
 import { mapState, mapActions } from 'pinia'
 import { useDashboardStore } from '../../store/dashboard.js'
 import { iconApi, importExportApi } from '../../services/api.js'
+import { SPACER_STYLES, SPACER_LABELS, SPACER_CHARS, isUnicodeStyle } from '../../utils/spacerStyles.js'
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
 import UploadIcon from 'vue-material-design-icons/Upload.vue'
 import DownloadIcon from 'vue-material-design-icons/Download.vue'
@@ -158,7 +196,16 @@ export default {
             columnOptions: ['2', '3', '4', '5', '6'],
             cardStyleOptions: ['default', 'compact', 'minimal'],
             statusStyleOptions: ['dot', 'basic'],
+            cardBackgroundOptions: [
+                { id: 'glass', label: t('linkboard', 'Glass') },
+                { id: 'solid', label: t('linkboard', 'Solid (opaque)') },
+                { id: 'flat', label: t('linkboard', 'Flat') },
+                { id: 'transparent', label: t('linkboard', 'Transparent') },
+            ],
             blurOptions: ['none', 'sm', 'md', 'lg', 'xl'],
+            spacerStyleOptions: SPACER_STYLES.map(function(s) {
+                return { id: s.id, label: t('linkboard', SPACER_LABELS[s.id]) }
+            }),
             importMode: 'replace',
             importResult: null,
             importError: null,
@@ -205,6 +252,22 @@ export default {
                 await iconApi.delete(name)
                 await this.loadIcons()
             }
+        },
+
+        getSpacerPreview(id) {
+            if (isUnicodeStyle(id)) {
+                var ch = SPACER_CHARS[id]
+                if (id === 'fade') {
+                    return '<span style="letter-spacing:0;opacity:0.6">' + ch + ch + ch + '</span>'
+                }
+                var sep = (id === 'dots' || id === 'stars' || id === 'diamonds' || id === 'arrows') ? ' ' : ''
+                var text = ''
+                for (var i = 0; i < 12; i++) {
+                    text += (i > 0 ? sep : '') + ch
+                }
+                return '<span style="opacity:0.6">' + text + '</span>'
+            }
+            return '<span style="display:inline-block;width:80px;border-top:2px ' + id + ' var(--color-border);vertical-align:middle"></span>'
         },
 
         // ── Import/Export ────────────────────────────
@@ -515,6 +578,27 @@ export default {
     &__footer {
         padding: 20px 0;
         border-top: 1px solid var(--color-border);
+    }
+}
+
+.spacer-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    overflow: hidden;
+
+    &__label {
+        flex-shrink: 0;
+        min-width: 90px;
+    }
+
+    &__preview {
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 13px;
+        line-height: 1;
     }
 }
 </style>

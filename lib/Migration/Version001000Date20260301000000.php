@@ -26,11 +26,15 @@ class Version001000Date20260301000000 extends SimpleMigrationStep {
             $table->addColumn('collapsed', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
             $table->addColumn('tab', Types::STRING, ['notnull' => false, 'length' => 128]);
             $table->addColumn('columns', Types::INTEGER, ['notnull' => false, 'default' => null]);
+            $table->addColumn('parent_id', Types::BIGINT, ['notnull' => false, 'unsigned' => true, 'default' => null]);
+            $table->addColumn('type', Types::STRING, ['notnull' => true, 'length' => 32, 'default' => 'default']);
+            $table->addColumn('config', Types::TEXT, ['notnull' => false, 'default' => null]);
             $table->addColumn('created_at', Types::DATETIME, ['notnull' => true]);
             $table->addColumn('updated_at', Types::DATETIME, ['notnull' => true]);
             $table->setPrimaryKey(['id']);
             $table->addIndex(['user_id'], 'lb_cat_user_idx');
             $table->addIndex(['user_id', 'sort_order'], 'lb_cat_user_sort_idx');
+            $table->addIndex(['parent_id'], 'lb_cat_parent_idx');
             $table->addUniqueIndex(['user_id', 'slug'], 'lb_cat_user_slug_uniq');
         }
 

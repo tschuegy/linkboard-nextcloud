@@ -4,6 +4,7 @@ namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\ServiceService;
+use OCA\LinkBoard\Service\ResourceService;
 use OCA\LinkBoard\Service\NotFoundException;
 use OCA\LinkBoard\Widget\WidgetRegistry;
 use OCP\AppFramework\ApiController;
@@ -26,6 +27,7 @@ class WidgetProxyController extends ApiController {
         IRequest $request,
         private WidgetRegistry $widgetRegistry,
         private ServiceService $serviceService,
+        private ResourceService $resourceService,
         private LoggerInterface $logger,
         private IL10N $l10n,
         private ?string $userId,
@@ -59,7 +61,7 @@ class WidgetProxyController extends ApiController {
             if (!$widget) continue;
 
             $baseUrl = $service->getHref();
-            if (empty($baseUrl)) continue;
+            if (empty($baseUrl) && !$widget->isLocal()) continue;
 
             $configRaw = $service->getWidgetConfig();
             $config = $configRaw ? json_decode($configRaw, true) : [];
@@ -107,7 +109,7 @@ class WidgetProxyController extends ApiController {
         }
 
         $baseUrl = $service->getHref();
-        if (empty($baseUrl)) {
+        if (empty($baseUrl) && !$widget->isLocal()) {
             return new DataResponse(['error' => $this->l10n->t('Service has no URL configured')], Http::STATUS_BAD_REQUEST);
         }
 
@@ -141,7 +143,12 @@ class WidgetProxyController extends ApiController {
      * - _*_login / _*_needs_token: Generic token auth (Kavita, PhotoPrism, Flood, etc.)
      * - _transmission_rpc: Transmission CSRF retry (409 → X-Transmission-Session-Id)
      */
-    private function fetchWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, string $baseUrl, array $config): array {
+    private function fetchWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, ?string $baseUrl, array $config): array {
+        if ($widget->isLocal()) {
+            $data = $this->getLocalWidgetData($widget, $config);
+            return $widget->mapResponse([$data], $config);
+        }
+
         $requestSpecs = $widget->buildRequests($baseUrl, $config);
         $responses = [];
         $authToken = null;
@@ -257,6 +264,27 @@ class WidgetProxyController extends ApiController {
 
         $decoded = json_decode((string)$body, true);
         return $decoded ?? [];
+    }
+
+    /**
+     * Fetch data for a local widget (no HTTP requests).
+     */
+    private function getLocalWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, array $config): array {
+        $diskPathsRaw = $config['diskPaths'] ?? '/';
+        $diskPaths = array_filter(array_map('trim', explode(',', (string)$diskPathsRaw)));
+        if (empty($diskPaths)) {
+            $diskPaths = ['/'];
+        }
+        $tempUnit = $config['tempUnit'] ?? 'C';
+
+        return $this->resourceService->getResources([
+            'showCpu' => true,
+            'showMemory' => true,
+            'showUptime' => true,
+            'showCpuTemp' => true,
+            'tempUnit' => $tempUnit,
+            'diskPaths' => $diskPaths,
+        ]);
     }
 
     /**

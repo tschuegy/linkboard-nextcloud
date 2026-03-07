@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { t } from '@nextcloud/l10n'
-import { dashboardApi, categoryApi, serviceApi, settingsApi, statusApi, widgetApi, importExportApi } from '../services/api.js'
+import { dashboardApi, categoryApi, serviceApi, settingsApi, statusApi, widgetApi, resourceApi, importExportApi } from '../services/api.js'
 
 function findCategoryInTree(categories, id) {
     for (var i = 0; i < categories.length; i++) {
@@ -46,6 +46,10 @@ export const useDashboardStore = defineStore('dashboard', {
         widgetData: {},
         widgetCatalog: [],
         widgetLoading: false,
+        resourceData: {},
+        appVersion: null,
+        latestVersion: null,
+        latestVersionUrl: null,
     }),
 
     getters: {
@@ -125,9 +129,13 @@ export const useDashboardStore = defineStore('dashboard', {
                 const { data } = await dashboardApi.getAll()
                 this.categories = data.categories || []
                 this.settings = data.settings || {}
-                // Fetch widget catalog and data in parallel
+                this.appVersion = data.version || null
+                this.latestVersion = data.latestVersion || null
+                this.latestVersionUrl = data.latestVersionUrl || null
+                // Fetch widget catalog, widget data, and resource data in parallel
                 this.fetchWidgetCatalog()
                 this.fetchAllWidgetData()
+                this.fetchAllResourceData()
             } catch (err) {
                 this.error = t('linkboard', 'Failed to load dashboard')
                 console.error('LinkBoard: Failed to load dashboard', err)
@@ -371,9 +379,28 @@ export const useDashboardStore = defineStore('dashboard', {
         async fetchWidgetData(serviceId) {
             try {
                 const { data } = await widgetApi.getData(serviceId)
-                this.widgetData[serviceId] = data
+                this.widgetData = { ...this.widgetData, [serviceId]: data }
             } catch (err) {
                 console.error('LinkBoard: Failed to load widget data for service ' + serviceId, err)
+            }
+        },
+
+        // ── Resource Actions ─────────────────────────────
+        async fetchAllResourceData() {
+            var self = this
+            forEachCategory(this.categories, function(cat) {
+                if (cat.type === 'resources') {
+                    self.fetchResourceData(cat.id)
+                }
+            })
+        },
+
+        async fetchResourceData(categoryId) {
+            try {
+                const { data } = await resourceApi.getData(categoryId)
+                this.resourceData = { ...this.resourceData, [categoryId]: data }
+            } catch (err) {
+                console.error('LinkBoard: Failed to load resource data for category ' + categoryId, err)
             }
         },
 

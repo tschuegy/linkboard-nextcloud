@@ -7,6 +7,7 @@ use OCA\LinkBoard\Service\CategoryService;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\SettingsService;
 use OCA\LinkBoard\Service\StatusCheckService;
+use OCA\LinkBoard\Service\VersionCheckService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
@@ -20,6 +21,7 @@ class DashboardApiController extends ApiController {
         private ServiceService $serviceService,
         private SettingsService $settingsService,
         private StatusCheckService $statusCheckService,
+        private VersionCheckService $versionCheckService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
@@ -67,9 +69,16 @@ class DashboardApiController extends ApiController {
         }
         unset($catData);
 
+        $versionInfo = $this->versionCheckService->getVersionInfo(
+            ($settings['check_for_updates'] ?? 'true') === 'true'
+        );
+
         return new DataResponse([
             'settings' => $settings,
             'categories' => array_values($dashboard),
+            'version' => $versionInfo['version'],
+            'latestVersion' => $versionInfo['latestVersion'],
+            'latestVersionUrl' => $versionInfo['latestVersionUrl'],
         ]);
     }
 }

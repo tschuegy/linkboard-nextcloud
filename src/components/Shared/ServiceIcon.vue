@@ -17,6 +17,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             class="service-icon__img"
             @error="handleImgError">
 
+        <!-- MDI icon (inline SVG) -->
+        <svg
+            v-else-if="mdiPath"
+            class="service-icon__mdi"
+            :width="size"
+            :height="size"
+            viewBox="0 0 24 24">
+            <path :d="mdiPath" fill="currentColor" />
+        </svg>
+
         <!-- Avatar fallback -->
         <span
             v-else
@@ -29,6 +39,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script>
 import { iconApi } from '../../services/api.js'
+
+var mdiModuleCache = null
 
 export default {
     name: 'ServiceIcon',
@@ -56,6 +68,7 @@ export default {
         return {
             imgError: false,
             cdnFailed: false,
+            mdiPath: null,
         }
     },
 
@@ -75,8 +88,8 @@ export default {
                 return this.icon
             }
 
-            // MDI icon (handled differently in the future - for now show fallback)
-            if (this.icon.startsWith('mdi-') || this.icon.startsWith('si-')) {
+            // MDI icons rendered via inline SVG (mdiPath)
+            if (this.icon.startsWith('mdi-')) {
                 return null
             }
 
@@ -88,10 +101,6 @@ export default {
         },
 
         fallbackLetter() {
-            // Use icon name for MDI
-            if (this.icon && this.icon.startsWith('mdi-')) {
-                return this.icon.replace('mdi-', '').charAt(0).toUpperCase()
-            }
             return (this.name || '?').charAt(0).toUpperCase()
         },
 
@@ -111,10 +120,40 @@ export default {
         icon() {
             this.imgError = false
             this.cdnFailed = false
+            if (this.icon && this.icon.startsWith('mdi-')) {
+                this.loadMdiIcon(this.icon)
+            } else {
+                this.mdiPath = null
+            }
         },
     },
 
+    mounted() {
+        if (this.icon && this.icon.startsWith('mdi-')) {
+            this.loadMdiIcon(this.icon)
+        }
+    },
+
     methods: {
+        loadMdiIcon(iconName) {
+            var self = this
+            // Convert kebab-case to camelCase: mdi-server -> mdiServer
+            var camel = iconName.replace(/-([a-z])/g, function(m, c) {
+                return c.toUpperCase()
+            })
+            var promise = mdiModuleCache
+                ? Promise.resolve(mdiModuleCache)
+                : import('@mdi/js').then(function(mod) {
+                    mdiModuleCache = mod
+                    return mod
+                })
+            promise.then(function(mod) {
+                if (self.icon === iconName) {
+                    self.mdiPath = mod[camel] || null
+                }
+            })
+        },
+
         dashboardIconUrl(icon) {
             const dot = icon.lastIndexOf('.')
             let name, ext
@@ -161,6 +200,10 @@ export default {
         height: 100%;
         object-fit: contain;
         border-radius: 8px;
+    }
+
+    &__mdi {
+        color: var(--color-main-text);
     }
 
     &__fallback {

@@ -24,6 +24,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setColumns(?int $columns)
  * @method int|null getParentId()
  * @method void setParentId(?int $parentId)
+ * @method string getType()
+ * @method void setType(string $type)
+ * @method string|null getConfig()
+ * @method void setConfig(?string $config)
  * @method string|null getCreatedAt()
  * @method void setCreatedAt(?string $createdAt)
  * @method string|null getUpdatedAt()
@@ -40,6 +44,8 @@ class Category extends Entity implements JsonSerializable {
     protected ?string $tab = null;
     protected ?int $columns = null;
     protected ?int $parentId = null;
+    protected string $type = 'default';
+    protected ?string $config = null;
     protected $createdAt = null;
     protected $updatedAt = null;
 
@@ -63,6 +69,8 @@ class Category extends Entity implements JsonSerializable {
             'tab' => $this->getTab(),
             'columns' => $this->getColumns(),
             'parentId' => $this->getParentId(),
+            'type' => $this->getType(),
+            'config' => $this->getConfig() ? json_decode($this->getConfig(), true) : null,
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
         ];

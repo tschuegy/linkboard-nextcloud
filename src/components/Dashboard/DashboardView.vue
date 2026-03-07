@@ -86,8 +86,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :edit-mode="editMode"
                     :max-columns="settings.max_columns"
                     :card-style="settings.card_style"
+                    :card-background="settings.card_background || 'glass'"
                     :status-style="settings.status_style"
                     :show-count="settings.show_category_count !== 'false'"
+                    :spacer-style="settings.spacer_style || 'solid'"
                     @edit-category="selectCategoryForEdit"
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
@@ -101,8 +103,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :edit-mode="editMode"
                     :max-columns="settings.max_columns"
                     :card-style="settings.card_style"
+                    :card-background="settings.card_background || 'glass'"
                     :status-style="settings.status_style"
                     :show-count="settings.show_category_count !== 'false'"
+                    :spacer-style="settings.spacer_style || 'solid'"
                     @edit-category="selectCategoryForEdit"
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
@@ -111,10 +115,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     @service-moved="handleServiceMoved" />
             </div>
 
-            <div v-if="editMode" ref="ungroupZone" class="linkboard__ungroup-zone">
-                <ArrowExpandIcon :size="20" />
-                <span>{{ t('linkboard', 'Drop here to ungroup') }}</span>
-            </div>
             <div v-if="editMode" class="linkboard__add-category" @click="showNewCategoryDialog">
                 <PlusIcon :size="32" />
                 <span>{{ t('linkboard', 'New category') }}</span>
@@ -138,12 +138,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- New Category Dialog -->
         <NcDialog
-            v-if="showNewCategory"
+            :open="showNewCategory"
             :name="t('linkboard', 'New category')"
-            @close="showNewCategory = false">
+            @update:open="showNewCategory = $event">
             <div class="linkboard__dialog-form">
                 <NcTextField v-model="newCategoryName" :label="t('linkboard', 'Name')" :placeholder="t('linkboard', 'e.g. Proxmox, Switches, ...')" />
-                <NcTextField v-model="newCategoryIcon" :label="t('linkboard', 'Icon (optional)')" :placeholder="t('linkboard', 'e.g. proxmox.png or mdi-server')" />
+                <NcTextField v-if="newCategoryType === 'default'" v-model="newCategoryIcon" :label="t('linkboard', 'Icon (optional)')" :placeholder="t('linkboard', 'e.g. proxmox.png or mdi-server')" />
+                <div class="linkboard__dialog-field">
+                    <label>{{ t('linkboard', 'Category type') }}</label>
+                    <NcSelect v-model="newCategoryType" :options="typeOptions" :clearable="false" label="label" :reduce="opt => opt.id" />
+                </div>
             </div>
             <template #actions>
                 <NcButton @click="showNewCategory = false">{{ t('linkboard', 'Cancel') }}</NcButton>
@@ -153,9 +157,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- New Service Dialog -->
         <NcDialog
-            v-if="showNewService"
+            :open="showNewService"
             :name="t('linkboard', 'New service')"
-            @close="showNewService = false">
+            @update:open="showNewService = $event">
             <div class="linkboard__dialog-form">
                 <NcTextField v-model="newService.name" :label="t('linkboard', 'Name')" placeholder="z.B. SP0001016" />
                 <NcTextField v-model="newService.description" :label="t('linkboard', 'Description')" placeholder="z.B. Minisforum 795S7 on RZ0" />
@@ -167,6 +171,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcButton type="primary" @click="handleCreateService">{{ t('linkboard', 'Create') }}</NcButton>
             </template>
         </NcDialog>
+        <div v-if="appVersion" class="linkboard__version-footer">
+            <a :href="latestVersionUrl || 'https://github.com/tschuegy/linkboard-nextcloud'"
+               target="_blank" rel="noopener noreferrer"
+               class="linkboard__version-link">
+                {{ t('linkboard', 'Version {version}', { version: appVersion }) }}
+            </a>
+            <span v-if="latestVersion && latestVersionUrl"
+                  class="linkboard__version-update">
+                {{ t('linkboard', 'New version available: {version}', { version: latestVersion }) }}
+            </span>
+        </div>
         </div>
     </div>
 </template>
@@ -174,7 +189,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <script>
 import { t } from '@nextcloud/l10n'
 import Sortable from 'sortablejs'
-import { NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField } from '@nextcloud/vue'
+import { NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField, NcCheckboxRadioSwitch, NcSelect } from '@nextcloud/vue'
 import { mapState, mapActions } from 'pinia'
 import { useDashboardStore } from '../../store/dashboard.js'
 import CategoryGroup from './CategoryGroup.vue'
@@ -187,15 +202,14 @@ import CogIcon from 'vue-material-design-icons/Cog.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import RefreshIcon from 'vue-material-design-icons/Refresh.vue'
 import DragVerticalIcon from 'vue-material-design-icons/DragVertical.vue'
-import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue'
 
 export default {
     name: 'DashboardView',
 
     components: {
-        NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField,
+        NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField, NcCheckboxRadioSwitch, NcSelect,
         CategoryGroup, ServiceEditor, CategoryEditor, SearchBar, EmptyState,
-        PencilIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon, ArrowExpandIcon,
+        PencilIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon,
     },
 
     data() {
@@ -203,13 +217,19 @@ export default {
             showNewCategory: false,
             newCategoryName: '',
             newCategoryIcon: '',
+            newCategoryType: 'default',
             showNewService: false,
             newServiceCategoryId: null,
             newService: { name: '', description: '', href: '', icon: '' },
+            typeOptions: [
+                { id: 'default', label: t('linkboard', 'Default') },
+                { id: 'spacer', label: t('linkboard', 'Spacer') },
+                { id: 'resources', label: t('linkboard', 'Resources') },
+            ],
             showShortcutHint: false,
             categorySortable: null,
             rowSortables: [],
-            ungroupSortable: null,
+            resourceRefreshInterval: null,
         }
     },
 
@@ -218,6 +238,7 @@ export default {
             'categories', 'settings', 'loading', 'error',
             'editMode', 'editingService', 'editingCategory',
             'statusChecking', 'pingEnabledCount',
+            'appVersion', 'latestVersion', 'latestVersionUrl',
         ]),
         searchQuery: {
             get() { return useDashboardStore().searchQuery },
@@ -259,6 +280,15 @@ export default {
             }
             return false
         },
+        hasResources() {
+            for (const cat of this.categories) {
+                if (cat.type === 'resources') return true
+                for (const child of (cat.children || [])) {
+                    if (child.type === 'resources') return true
+                }
+            }
+            return false
+        },
     },
 
     watch: {
@@ -291,12 +321,14 @@ export default {
     mounted() {
         this.fetchDashboard()
         document.addEventListener('keydown', this.handleGlobalKeydown)
+        this.startResourceRefresh()
     },
 
     beforeDestroy() {
         document.removeEventListener('keydown', this.handleGlobalKeydown)
         this.destroyCategorySortable()
         this.destroyRowSortables()
+        this.stopResourceRefresh()
     },
 
     methods: {
@@ -307,12 +339,29 @@ export default {
             'toggleEditMode', 'selectServiceForEdit', 'selectCategoryForEdit',
             'clearSelection', 'clearError', 'checkAllStatuses',
             'reorderCategories', 'reorderServices', 'moveService',
-            'moveCategoryToParent', 'fetchAllWidgetData',
+            'moveCategoryToParent', 'fetchAllWidgetData', 'fetchAllResourceData',
         ]),
 
         handleRefreshAll() {
             if (this.pingEnabledCount > 0) this.checkAllStatuses()
             if (this.hasWidgets) this.fetchAllWidgetData()
+            if (this.hasResources) this.fetchAllResourceData()
+        },
+
+        startResourceRefresh() {
+            var self = this
+            this.resourceRefreshInterval = setInterval(function() {
+                if (self.hasResources) {
+                    self.fetchAllResourceData()
+                }
+            }, 10000)
+        },
+
+        stopResourceRefresh() {
+            if (this.resourceRefreshInterval) {
+                clearInterval(this.resourceRefreshInterval)
+                this.resourceRefreshInterval = null
+            }
         },
 
         stripChildren(cat) {
@@ -332,7 +381,7 @@ export default {
                 draggable: '.linkboard__row',
                 handle: '.linkboard__row-handle',
                 ghostClass: 'linkboard__row--ghost',
-                filter: '.linkboard__add-category,.linkboard__ungroup-zone',
+                filter: '.linkboard__add-category',
                 onEnd: function(evt) {
                     if (evt.oldIndex === evt.newIndex) return
                     var store = useDashboardStore()
@@ -381,29 +430,11 @@ export default {
                 })
                 self.rowSortables.push(s)
             })
-            // Ungroup zone sortable
-            var ungroupEl = self.$refs.ungroupZone
-            if (ungroupEl) {
-                self.ungroupSortable = Sortable.create(ungroupEl, {
-                    group: { name: 'categories', pull: false, put: true },
-                    ghostClass: 'category-group--ghost',
-                    onAdd: function(evt) {
-                        var categoryId = parseInt(evt.item.dataset.categoryId)
-                        self.moveCategoryToParent(categoryId, null).then(function() {
-                            return self.fetchDashboard()
-                        }).catch(function() { self.fetchDashboard() })
-                    },
-                })
-            }
         },
 
         destroyRowSortables() {
             this.rowSortables.forEach(function(s) { s.destroy() })
             this.rowSortables = []
-            if (this.ungroupSortable) {
-                this.ungroupSortable.destroy()
-                this.ungroupSortable = null
-            }
         },
 
         async handleRowAdd(categoryId, rowLeaderId) {
@@ -491,11 +522,27 @@ export default {
         showNewCategoryDialog() {
             this.newCategoryName = ''
             this.newCategoryIcon = ''
+            this.newCategoryType = 'default'
             this.showNewCategory = true
         },
         async handleCreateCategory() {
             if (!this.newCategoryName.trim()) return
-            await this.createCategory({ name: this.newCategoryName.trim(), icon: this.newCategoryIcon.trim() || null })
+            var payload = {
+                name: this.newCategoryName.trim(),
+                icon: this.newCategoryType === 'default' ? (this.newCategoryIcon.trim() || null) : null,
+                type: this.newCategoryType,
+            }
+            if (this.newCategoryType === 'resources') {
+                payload.config = JSON.stringify({
+                    showCpu: true,
+                    showMemory: true,
+                    showUptime: true,
+                    showCpuTemp: false,
+                    tempUnit: 'C',
+                    diskPaths: ['/'],
+                })
+            }
+            await this.createCategory(payload)
             this.showNewCategory = false
         },
         showNewServiceDialog(categoryId) {
@@ -587,23 +634,6 @@ export default {
         background: var(--color-primary-element-light);
         border-radius: 12px;
     }
-    &__ungroup-zone {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 16px;
-        border: 2px dashed var(--color-border);
-        border-radius: 12px;
-        color: var(--color-text-maxcontrast);
-        min-height: 48px;
-        transition: all 0.2s;
-        &:hover {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
-        }
-    }
-
     &__shortcut-hint {
         display: flex; align-items: center; gap: 16px;
         padding: 8px 16px; background: var(--color-background-dark);
@@ -628,6 +658,31 @@ export default {
     }
 
     &__dialog-form { display: flex; flex-direction: column; gap: 12px; padding: 16px 0; }
+    &__dialog-field {
+        display: flex; flex-direction: column; gap: 4px;
+        label { font-size: 13px; font-weight: 500; color: var(--color-text-maxcontrast); }
+    }
+
+    &__version-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding: 8px 0;
+        font-size: 14px;
+        color: var(--color-text-maxcontrast);
+    }
+
+    &__version-link {
+        color: inherit;
+        text-decoration: none;
+        &:hover { text-decoration: underline; }
+    }
+
+    &__version-update {
+        font-weight: bold;
+    }
 }
 
 .category-group--ghost { opacity: 0.3; background: var(--color-primary-element-light); border-radius: 12px; }

@@ -58,6 +58,9 @@ return [
         ['name' => 'import_export#importJson',  'url' => '/api/v1/import/json',  'verb' => 'POST'],
         ['name' => 'import_export#importYaml',  'url' => '/api/v1/import/yaml',  'verb' => 'POST'],
 
+        // ── Resources API ────────────────────────────────────
+        ['name' => 'resource_api#getData', 'url' => '/api/v1/resources/{categoryId}', 'verb' => 'GET', 'requirements' => ['categoryId' => '\d+']],
+
         // ── Dashboard (full data endpoint) ────────────────────
         ['name' => 'dashboard_api#index', 'url' => '/api/v1/dashboard', 'verb' => 'GET'],
     ],

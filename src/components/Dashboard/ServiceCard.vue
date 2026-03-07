@@ -11,6 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         :class="[
             { 'service-card--edit': editMode },
             'service-card--style-' + cardStyle,
+            'service-card--bg-' + cardBackground,
             statusClass,
         ]"
         @click="$emit('click')">
@@ -36,7 +37,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             :class="'service-card__status--' + service.status.status"
             :title="statusTooltip" />
 
-        <div class="service-card__content">
+        <div v-if="service.name || service.icon" class="service-card__content">
             <ServiceIcon
                 :icon="service.icon"
                 :name="service.name"
@@ -50,8 +51,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </span>
             </div>
         </div>
+        <ResourceDisplay
+            v-if="service.widgetType === 'resources' && widgetData"
+            :data="widgetData.data || null"
+            :config="resourceConfig" />
         <WidgetContainer
-            v-if="service.widgetType && widgetData"
+            v-else-if="service.widgetType && widgetData"
             :data="widgetData.data || {}"
             :field-labels="widgetData.fieldLabels || {}"
             :error="widgetData.error || null" />
@@ -62,16 +67,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 import { t } from '@nextcloud/l10n'
 import ServiceIcon from '../Shared/ServiceIcon.vue'
 import WidgetContainer from '../Widget/WidgetContainer.vue'
+import ResourceDisplay from './ResourceDisplay.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 import DragIcon from 'vue-material-design-icons/DragVertical.vue'
 
 export default {
     name: 'ServiceCard',
-    components: { ServiceIcon, WidgetContainer, PencilIcon, DragIcon },
+    components: { ServiceIcon, WidgetContainer, ResourceDisplay, PencilIcon, DragIcon },
     props: {
         service: { type: Object, required: true },
         editMode: { type: Boolean, default: false },
         cardStyle: { type: String, default: 'default' },
+        cardBackground: { type: String, default: 'glass' },
         statusStyle: { type: String, default: 'dot' },
         widgetData: { type: Object, default: null },
     },
@@ -79,6 +86,9 @@ export default {
         t,
     },
     computed: {
+        resourceConfig: function() {
+            return { showCpu: true, showMemory: true, showUptime: true }
+        },
         iconSize: function() {
             if (this.cardStyle === 'compact') return 28
             if (this.cardStyle === 'minimal') return 24
@@ -105,16 +115,12 @@ export default {
     display: flex;
     flex-direction: column;
     padding: 12px 16px;
-    background: var(--color-background-dark);
-    border: 1px solid var(--color-border);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.15s ease;
     min-height: 64px;
 
     &:hover {
-        background: var(--color-background-hover);
-        border-color: var(--color-border-dark);
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
@@ -134,8 +140,8 @@ export default {
     &__drag-handle {
         position: absolute;
         left: 8px;
-        top: 50%;
-        transform: translateY(-50%);
+        top: 12px;
+        z-index: 1;
         cursor: grab;
         color: var(--color-text-maxcontrast);
         opacity: 0.4;
@@ -175,6 +181,66 @@ export default {
     &--status-online { border-left: 3px solid #22c55e; }
     &--status-offline { border-left: 3px solid #ef4444; }
     &--status-unknown { border-left: 3px solid #a3a3a3; }
+
+    // Card background: glass (default)
+    &--bg-glass {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        &:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+    }
+    [data-themes*="dark"] &--bg-glass {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+        &:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+    @media (prefers-color-scheme: dark) {
+        body:not([data-themes]) &--bg-glass {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+            &:hover {
+                background: rgba(255, 255, 255, 0.14);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+        }
+    }
+
+    // Card background: solid (original look)
+    &--bg-solid {
+        background: var(--color-background-dark);
+        border: 1px solid var(--color-border);
+        &:hover {
+            background: var(--color-background-hover);
+            border-color: var(--color-border-dark);
+        }
+    }
+
+    // Card background: flat
+    &--bg-flat {
+        background: var(--color-background-dark);
+        border: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        &:hover {
+            background: var(--color-background-hover);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    // Card background: transparent
+    &--bg-transparent {
+        background: transparent;
+        border: none;
+        &:hover {
+            background: var(--color-background-hover);
+        }
+    }
 
     // Card style: compact
     &--style-compact {
