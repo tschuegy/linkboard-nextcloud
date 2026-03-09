@@ -42,6 +42,20 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 {{ t('linkboard', 'Status check enabled') }}
             </NcCheckboxRadioSwitch>
 
+            <template v-if="form.pingEnabled && notificationChannels.length">
+                <div class="service-editor__field">
+                    <label>{{ t('linkboard', 'Notification channels') }}</label>
+                    <NcCheckboxRadioSwitch
+                        v-for="ch in notificationChannels"
+                        :key="ch.id"
+                        :checked="channelEffectiveState(ch)"
+                        type="switch"
+                        @update:checked="toggleChannelOverride(ch, $event)">
+                        {{ ch.name }}
+                    </NcCheckboxRadioSwitch>
+                </div>
+            </template>
+
             <div class="service-editor__section-title">{{ t('linkboard', 'Widget') }}</div>
             <div class="service-editor__field">
                 <label>{{ t('linkboard', 'Widget type') }}</label>
@@ -80,12 +94,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                             {{ t('linkboard', '+ Add mapping') }}
                         </NcButton>
                     </div>
+                    <div v-else-if="field.type === 'select'" :key="field.key" class="service-editor__field">
+                        <label>{{ field.label }}</label>
+                        <NcSelect
+                            :value="widgetConfigValue(field.key) || field.options[0]"
+                            :options="field.options"
+                            :clearable="false"
+                            @input="setWidgetConfigValue(field.key, $event)" />
+                    </div>
                     <div v-else :key="field.key" class="service-editor__field">
                         <NcTextField
                             :value="widgetConfigValue(field.key)"
                             :label="field.label"
                             :type="field.type === 'password' ? 'password' : 'text'"
                             :placeholder="field.placeholder || ''"
+                            :autocomplete="field.type === 'password' ? 'off' : undefined"
                             @update:value="setWidgetConfigValue(field.key, $event)" />
                     </div>
                 </template>
@@ -110,6 +133,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 import { t } from '@nextcloud/l10n'
 import { NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
+import { notificationChannelApi } from '../../services/api.js'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import DeleteIcon from 'vue-material-design-icons/Delete.vue'
 
@@ -125,9 +149,16 @@ export default {
             form: {
                 ...this.service,
                 widgetConfig: this.service.widgetConfig ? { ...this.service.widgetConfig } : {},
+                notificationOverrides: this.service.notificationOverrides ? { ...this.service.notificationOverrides } : {},
             },
             targetOptions: ['_blank', '_self'],
+            notificationChannels: [],
         }
+    },
+    created() {
+        notificationChannelApi.getAll().then(function(res) {
+            this.notificationChannels = res.data || []
+        }.bind(this)).catch(function() {})
     },
     computed: {
         categoryOptions() {
@@ -160,6 +191,7 @@ export default {
                 this.form = {
                     ...newVal,
                     widgetConfig: newVal.widgetConfig ? { ...newVal.widgetConfig } : {},
+                    notificationOverrides: newVal.notificationOverrides ? { ...newVal.notificationOverrides } : {},
                 }
             },
             deep: true,
@@ -186,6 +218,24 @@ export default {
     },
     methods: {
         t,
+        channelEffectiveState(ch) {
+            var overrides = this.form.notificationOverrides || {}
+            var key = String(ch.id)
+            if (key in overrides) {
+                return !!overrides[key]
+            }
+            return !!ch.enabled
+        },
+        toggleChannelOverride(ch, enabled) {
+            var overrides = { ...(this.form.notificationOverrides || {}) }
+            var key = String(ch.id)
+            if (enabled === !!ch.enabled) {
+                delete overrides[key]
+            } else {
+                overrides[key] = enabled
+            }
+            this.$set(this.form, 'notificationOverrides', overrides)
+        },
         widgetConfigValue(key) {
             return (this.form.widgetConfig && this.form.widgetConfig[key]) || ''
         },
@@ -227,6 +277,7 @@ export default {
             } else {
                 payload.widgetType = ''
             }
+            payload.notificationOverrides = this.form.notificationOverrides || {}
             this.$emit('save', payload)
         },
     },

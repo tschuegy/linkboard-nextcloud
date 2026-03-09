@@ -52,6 +52,14 @@ return [
         ['name' => 'widget_proxy#getAllData',  'url' => '/api/v1/widgets/data',             'verb' => 'GET'],
         ['name' => 'widget_proxy#getData',     'url' => '/api/v1/widgets/{serviceId}/data', 'verb' => 'GET', 'requirements' => ['serviceId' => '\d+']],
 
+        // ── Notification Channels API ───────────────────────
+        ['name' => 'notification_channel_api#providers', 'url' => '/api/v1/notification-channels/providers', 'verb' => 'GET'],
+        ['name' => 'notification_channel_api#index',     'url' => '/api/v1/notification-channels',           'verb' => 'GET'],
+        ['name' => 'notification_channel_api#create',    'url' => '/api/v1/notification-channels',           'verb' => 'POST'],
+        ['name' => 'notification_channel_api#update',    'url' => '/api/v1/notification-channels/{id}',      'verb' => 'PUT',    'requirements' => ['id' => '\d+']],
+        ['name' => 'notification_channel_api#destroy',   'url' => '/api/v1/notification-channels/{id}',      'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
+        ['name' => 'notification_channel_api#test',      'url' => '/api/v1/notification-channels/{id}/test', 'verb' => 'POST',   'requirements' => ['id' => '\d+']],
+
         // ── Import/Export API (Phase 2) ──────────────────────
         ['name' => 'import_export#exportJson',  'url' => '/api/v1/export/json',  'verb' => 'GET'],
         ['name' => 'import_export#exportYaml',  'url' => '/api/v1/export/yaml',  'verb' => 'GET'],

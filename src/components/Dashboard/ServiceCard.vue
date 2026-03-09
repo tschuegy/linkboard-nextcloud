@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             'service-card--bg-' + cardBackground,
             statusClass,
         ]"
+        :style="manualColors.cardBg ? { backgroundColor: manualColors.cardBg } : {}"
         @click="$emit('click')">
 
         <!-- Drag handle (edit mode only) -->
@@ -45,8 +46,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 :size="iconSize"
                 class="service-card__icon" />
             <div class="service-card__info">
-                <span class="service-card__name">{{ service.name }}</span>
-                <span v-if="service.description && cardStyle !== 'minimal'" class="service-card__description">
+                <span class="service-card__name" :style="manualColors.service ? { color: manualColors.service } : {}">{{ service.name }}</span>
+                <span v-if="service.description && cardStyle !== 'minimal'" class="service-card__description" :style="manualColors.description ? { color: manualColors.description } : {}">
                     {{ service.description }}
                 </span>
             </div>
@@ -81,6 +82,7 @@ export default {
         cardBackground: { type: String, default: 'glass' },
         statusStyle: { type: String, default: 'dot' },
         widgetData: { type: Object, default: null },
+        manualColors: { type: Object, default: function() { return {} } },
     },
     methods: {
         t,
@@ -177,11 +179,6 @@ export default {
 
     &--edit &__status { left: 34px; }
 
-    // Status style: basic — colored left border
-    &--status-online { border-left: 3px solid #22c55e; }
-    &--status-offline { border-left: 3px solid #ef4444; }
-    &--status-unknown { border-left: 3px solid #a3a3a3; }
-
     // Card background: glass (default)
     &--bg-glass {
         background: rgba(255, 255, 255, 0.12);
@@ -265,6 +262,11 @@ export default {
         &:hover { background: var(--color-background-hover); transform: none; box-shadow: none; }
     }
     &--style-minimal#{&}--edit { padding-left: 24px; border: 1px dashed var(--color-border); }
+
+    // Status style: basic — colored left border (must come after background/style rules to win specificity)
+    &--status-online { border-left: 3px solid #22c55e; }
+    &--status-offline { border-left: 3px solid #ef4444; }
+    &--status-unknown { border-left: 3px solid #a3a3a3; }
 
     &__content {
         display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0;

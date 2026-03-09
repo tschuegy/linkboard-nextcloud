@@ -7,6 +7,7 @@ use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Db\Service;
 use OCA\LinkBoard\Db\ServiceMapper;
 use OCA\LinkBoard\Db\CategoryMapper;
+use OCA\LinkBoard\Db\StatusCacheMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\IL10N;
@@ -16,7 +17,9 @@ class ServiceService {
     public function __construct(
         private ServiceMapper $serviceMapper,
         private CategoryMapper $categoryMapper,
+        private StatusCacheMapper $statusCacheMapper,
         private IL10N $l10n,
+        private NotificationService $notificationService,
     ) {
     }
 
@@ -56,6 +59,7 @@ class ServiceService {
         bool $pingEnabled = false,
         ?string $widgetType = null,
         ?array $widgetConfig = null,
+        ?array $notificationOverrides = null,
     ): Service {
         // Validate category exists and belongs to user
         try {
@@ -89,6 +93,7 @@ class ServiceService {
         $service->setPingEnabled($pingEnabled);
         $service->setWidgetType($widgetType);
         $service->setWidgetConfig($widgetConfig ? json_encode($widgetConfig) : null);
+        $service->setNotificationOverrides($notificationOverrides ? json_encode($notificationOverrides) : null);
         $service->setCreatedAt($now);
         $service->setUpdatedAt($now);
 
@@ -110,6 +115,7 @@ class ServiceService {
         ?bool $pingEnabled = null,
         ?string $widgetType = null,
         ?array $widgetConfig = null,
+        ?array $notificationOverrides = null,
     ): Service {
         $service = $this->find($id, $userId);
 
@@ -128,7 +134,12 @@ class ServiceService {
         if ($iconColor !== null) { $service->setIconColor($iconColor); }
         if ($target !== null) { $service->setTarget($target); }
         if ($pingUrl !== null) { $service->setPingUrl($pingUrl); }
-        if ($pingEnabled !== null) { $service->setPingEnabled($pingEnabled); }
+        if ($pingEnabled !== null) {
+            $service->setPingEnabled($pingEnabled);
+            if ($pingEnabled === false) {
+                $this->statusCacheMapper->deleteByServiceId($id);
+            }
+        }
         if ($widgetType !== null) {
             if ($widgetType === '') {
                 // Empty string = clear widget
@@ -139,6 +150,7 @@ class ServiceService {
             }
         }
         if ($widgetConfig !== null) { $service->setWidgetConfig(json_encode($widgetConfig)); }
+        if ($notificationOverrides !== null) { $service->setNotificationOverrides(json_encode($notificationOverrides)); }
 
         $service->setUpdatedAt((new DateTime())->format('Y-m-d H:i:s'));
 
@@ -148,6 +160,7 @@ class ServiceService {
     /** @throws NotFoundException */
     public function delete(int $id, string $userId): Service {
         $service = $this->find($id, $userId);
+        $this->notificationService->clearOfflineNotifications($userId, $id);
         return $this->serviceMapper->delete($service);
     }
 

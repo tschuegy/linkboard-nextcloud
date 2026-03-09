@@ -124,6 +124,7 @@ class ImportExportService {
                         (bool)($svcData['pingEnabled'] ?? false),
                         $svcData['widgetType'] ?? null,
                         $svcData['widgetConfig'] ?? null,
+                        $svcData['notificationOverrides'] ?? null,
                     );
                     $stats['services']++;
                 }

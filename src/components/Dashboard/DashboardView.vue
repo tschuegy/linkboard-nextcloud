@@ -90,6 +90,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :status-style="settings.status_style"
                     :show-count="settings.show_category_count !== 'false'"
                     :spacer-style="settings.spacer_style || 'solid'"
+                    :manual-colors="manualColors"
                     @edit-category="selectCategoryForEdit"
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
@@ -107,6 +108,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :status-style="settings.status_style"
                     :show-count="settings.show_category_count !== 'false'"
                     :spacer-style="settings.spacer_style || 'solid'"
+                    :manual-colors="manualColors"
                     @edit-category="selectCategoryForEdit"
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
@@ -288,6 +290,15 @@ export default {
                 }
             }
             return false
+        },
+        manualColors() {
+            if (this.settings.theme !== 'manual') return {}
+            return {
+                category: this.settings.manual_color_category || null,
+                service: this.settings.manual_color_service || null,
+                description: this.settings.manual_color_description || null,
+                cardBg: this.settings.manual_color_card_bg || null,
+            }
         },
     },
 

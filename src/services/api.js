@@ -76,6 +76,16 @@ export var resourceApi = {
     getData: function(categoryId) { return axios.get(url('/resources/' + categoryId)) },
 }
 
+// ── Notification Channels ────────────────────────────
+export const notificationChannelApi = {
+    getProviders: () => axios.get(url('/notification-channels/providers')),
+    getAll: () => axios.get(url('/notification-channels')),
+    create: (data) => axios.post(url('/notification-channels'), data),
+    update: (id, data) => axios.put(url(`/notification-channels/${id}`), data),
+    delete: (id) => axios.delete(url(`/notification-channels/${id}`)),
+    test: (id) => axios.post(url(`/notification-channels/${id}/test`)),
+}
+
 // ── Import/Export (Phase 2) ──────────────────────────
 // IMPORTANT: NC can't inject nested arrays as method params.
 // We serialize the data as a JSON string in 'payload'.

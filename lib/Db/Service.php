@@ -32,6 +32,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setWidgetType(?string $widgetType)
  * @method string|null getWidgetConfig()
  * @method void setWidgetConfig(?string $widgetConfig)
+ * @method string|null getNotificationOverrides()
+ * @method void setNotificationOverrides(?string $notificationOverrides)
  * @method string|null getCreatedAt()
  * @method void setCreatedAt(?string $createdAt)
  * @method string|null getUpdatedAt()
@@ -52,6 +54,7 @@ class Service extends Entity implements JsonSerializable {
     protected bool $pingEnabled = false;
     protected ?string $widgetType = null;
     protected ?string $widgetConfig = null;
+    protected ?string $notificationOverrides = null;
     protected $createdAt = null;
     protected $updatedAt = null;
 
@@ -78,6 +81,7 @@ class Service extends Entity implements JsonSerializable {
             'pingEnabled' => $this->getPingEnabled(),
             'widgetType' => $this->getWidgetType(),
             'widgetConfig' => $this->getWidgetConfig() ? json_decode($this->getWidgetConfig(), true) : null,
+            'notificationOverrides' => $this->getNotificationOverrides() ? json_decode($this->getNotificationOverrides(), true) : null,
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
         ];

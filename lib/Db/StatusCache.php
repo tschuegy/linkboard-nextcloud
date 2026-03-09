@@ -16,6 +16,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setLastCheck(?string $lastCheck)
  * @method string|null getDetails()
  * @method void setDetails(?string $details)
+ * @method int getConsecutiveFailures()
+ * @method void setConsecutiveFailures(int $consecutiveFailures)
+ * @method bool getNotified()
+ * @method void setNotified(bool $notified)
  */
 class StatusCache extends Entity implements JsonSerializable {
 
@@ -24,11 +28,15 @@ class StatusCache extends Entity implements JsonSerializable {
     protected $responseMs = null;
     protected $lastCheck = null;
     protected $details = null;
+    protected int $consecutiveFailures = 0;
+    protected bool $notified = false;
 
     public function __construct() {
         $this->addType('id', 'integer');
         $this->addType('serviceId', 'integer');
         $this->addType('responseMs', 'integer');
+        $this->addType('consecutiveFailures', 'integer');
+        $this->addType('notified', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -39,6 +47,8 @@ class StatusCache extends Entity implements JsonSerializable {
             'responseMs' => $this->getResponseMs(),
             'lastCheck' => $this->getLastCheck(),
             'details' => $this->getDetails() ? json_decode($this->getDetails(), true) : null,
+            'consecutiveFailures' => $this->getConsecutiveFailures(),
+            'notified' => $this->getNotified(),
         ];
     }
 }

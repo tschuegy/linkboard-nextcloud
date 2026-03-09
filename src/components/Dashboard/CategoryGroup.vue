@@ -80,7 +80,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         :icon="category.icon"
                         :size="24"
                         class="category-group__icon" />
-                    <h3 class="category-group__name">{{ category.name }}</h3>
+                    <h3 class="category-group__name" :style="manualColors.category ? { color: manualColors.category } : {}">{{ category.name }}</h3>
                     <span v-if="showCount" class="category-group__count">{{ category.services.length }}</span>
                     <ChevronDownIcon
                         :size="20"
@@ -117,6 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                             :card-background="cardBackground"
                             :status-style="statusStyle"
                             :widget-data="getWidgetData(service.id)"
+                            :manual-colors="manualColors"
                             @click="handleServiceClick(service)"
                             @edit="$emit('edit-service', service.id)" />
                     </div>
@@ -161,6 +162,7 @@ export default {
         statusStyle: { type: String, default: 'dot' },
         showCount: { type: Boolean, default: true },
         spacerStyle: { type: String, default: 'solid' },
+        manualColors: { type: Object, default: function() { return {} } },
     },
 
     data: function() {

@@ -59,12 +59,13 @@ class ServiceApiController extends ApiController {
         bool $pingEnabled = false,
         ?string $widgetType = null,
         ?array $widgetConfig = null,
+        ?array $notificationOverrides = null,
     ): DataResponse {
         try {
             $service = $this->serviceService->create(
                 $this->userId, $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
-                $widgetType, $widgetConfig,
+                $widgetType, $widgetConfig, $notificationOverrides,
             );
             return new DataResponse($service, Http::STATUS_CREATED);
         } catch (NotFoundException $e) {
@@ -88,12 +89,13 @@ class ServiceApiController extends ApiController {
         ?bool $pingEnabled = null,
         ?string $widgetType = null,
         ?array $widgetConfig = null,
+        ?array $notificationOverrides = null,
     ): DataResponse {
         try {
             $service = $this->serviceService->update(
                 $id, $this->userId, $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
-                $widgetType, $widgetConfig,
+                $widgetType, $widgetConfig, $notificationOverrides,
             );
             return new DataResponse($service);
         } catch (NotFoundException $e) {

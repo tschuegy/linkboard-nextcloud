@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.4.1 – 2026-03-09
+
+### Added
+- Per-service notification channel overrides: disable globally-enabled channels or enable globally-disabled channels on individual services
+
+### Fixed
+- Clear status cache when disabling status checks to prevent stale data on re-enable
+
+## 1.4.0 – 2026-03-09
+
+### Added
+- External notification channels with 19 providers: Webhook, Discord, Slack, Telegram, Matrix, Microsoft Teams, Nextcloud Talk, Google Chat, Signal, Threema, CallMeBot, Home Assistant, Gotify, Ntfy, Pushover, Brevo, SendGrid, Resend, and E-Mail (SMTP)
+- Provider registry system (following the widget pattern) for easy extensibility
+- Nextcloud notifications toggle (enable/disable built-in notifications independently)
+- Test button for each notification channel to verify configuration
+- Per-channel enable/disable toggle
+
 ## 1.2.0 – 2026-03-07
 
 ### Added

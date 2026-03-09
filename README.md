@@ -26,6 +26,8 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 
 - **Service Dashboard** – Organize services in categories with drag & drop sorting
 - **Status Checks** – Live health checks with dot or border indicators
+- **Offline Notifications** – Nextcloud notifications when services go down, with configurable threshold and recovery alerts
+- **External Notification Channels** – 19 providers: Discord, Slack, Telegram, Matrix, Teams, Ntfy, Gotify, Pushover, E-Mail (SMTP), and more, with per-service overrides
 - **135 Built-in Widgets** – Real-time data from Proxmox, Patchman, Immich, Uptime Kuma, and 130+ more ([full list](WIDGETS.md))
 - **System Resources** – Monitor CPU, memory, disk usage, uptime, and CPU temperature with progress bars
 - **Category Spacers** – Decorative separator categories with multiple styles (solid, dashed, dotted, dots, stars, and more)

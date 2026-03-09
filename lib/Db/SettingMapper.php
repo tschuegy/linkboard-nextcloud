@@ -26,6 +26,15 @@ class SettingMapper extends QBMapper {
         'show_search' => 'true',
         'show_category_count' => 'true',
         'check_for_updates' => 'true',
+        'notify_failures_threshold' => '3',
+        'notify_recovery' => 'true',
+        'notify_nextcloud' => 'true',
+        'status_check_timeout' => '5000',
+        'status_checks_parallel' => 'true',
+        'manual_color_category' => '',
+        'manual_color_service' => '',
+        'manual_color_description' => '',
+        'manual_color_card_bg' => '',
     ];
 
     public function __construct(IDBConnection $db) {

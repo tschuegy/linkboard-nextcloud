@@ -12,7 +12,7 @@ class CustomApiWidget extends AbstractWidget {
     public function getConfigFields(): array {
         return [
             ['key' => 'url', 'label' => 'API URL (optional)', 'type' => 'text', 'required' => false, 'placeholder' => 'https://...'],
-            ['key' => 'method', 'label' => 'HTTP Method', 'type' => 'text', 'required' => false, 'placeholder' => 'GET'],
+            ['key' => 'method', 'label' => 'HTTP Method', 'type' => 'select', 'required' => false, 'options' => ['GET', 'POST']],
             ['key' => 'auth_header', 'label' => 'Authorization Header', 'type' => 'password', 'required' => false, 'placeholder' => 'Basic abc... / Bearer xyz...'],
             ['key' => 'mappings', 'label' => 'Feld-Mappings', 'type' => 'mappings', 'required' => true],
         ];
@@ -35,7 +35,7 @@ class CustomApiWidget extends AbstractWidget {
 
     public function buildRequests(string $baseUrl, array $config): array {
         $url = !empty($config['url']) ? $config['url'] : rtrim($baseUrl, '/');
-        $method = !empty($config['method']) ? strtoupper($config['method']) : 'GET';
+        $method = !empty($config['method']) && in_array(strtoupper($config['method']), ['GET', 'POST']) ? strtoupper($config['method']) : 'GET';
         $headers = [];
         if (!empty($config['auth_header'])) {
             $headers[] = 'Authorization: ' . $config['auth_header'];

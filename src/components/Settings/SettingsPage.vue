@@ -24,6 +24,32 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <label>{{ t('linkboard', 'Theme') }}</label>
                 <NcSelect v-model="form.theme" :options="themeOptions" :clearable="false" />
             </div>
+            <template v-if="form.theme === 'manual'">
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Category font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_category">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_category || '#000' }" /></template> {{ form.manual_color_category || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Service font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_service">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_service || '#000' }" /></template> {{ form.manual_color_service || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Description font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_description">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_description || '#000' }" /></template> {{ form.manual_color_description || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Card background color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_card_bg">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_card_bg || '#000' }" /></template> {{ form.manual_color_card_bg || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+            </template>
             <NcTextField v-model="form.background_url" :label="t('linkboard', 'Background image URL (optional)')" placeholder="https://..." />
             <div class="settings-page__field">
                 <label>{{ t('linkboard', 'Background blur') }}</label>
@@ -94,6 +120,45 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 @update:checked="form.check_for_updates = $event ? 'true' : 'false'">
                 {{ t('linkboard', 'Check for updates') }}
             </NcCheckboxRadioSwitch>
+        </div>
+
+        <div class="settings-page__section">
+            <h3>{{ t('linkboard', 'Notifications') }}</h3>
+            <NcCheckboxRadioSwitch
+                :checked="form.notify_nextcloud === 'true'"
+                type="switch"
+                @update:checked="form.notify_nextcloud = $event ? 'true' : 'false'">
+                {{ t('linkboard', 'Nextcloud notifications') }}
+            </NcCheckboxRadioSwitch>
+            <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Status check timeout (per check)') }}</label>
+                <NcSelect
+                    v-model="form.status_check_timeout"
+                    :options="timeoutOptions"
+                    :reduce="opt => opt.id"
+                    label="label"
+                    :clearable="false" />
+            </div>
+            <NcCheckboxRadioSwitch
+                :checked="form.status_checks_parallel === 'true'"
+                type="switch"
+                @update:checked="form.status_checks_parallel = $event ? 'true' : 'false'">
+                {{ t('linkboard', 'Run status checks in parallel') }}
+            </NcCheckboxRadioSwitch>
+            <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Offline alert after consecutive failed checks') }}</label>
+                <NcSelect
+                    v-model="form.notify_failures_threshold"
+                    :options="thresholdOptions"
+                    :clearable="false" />
+            </div>
+            <NcCheckboxRadioSwitch
+                :checked="form.notify_recovery === 'true'"
+                type="switch"
+                @update:checked="form.notify_recovery = $event ? 'true' : 'false'">
+                {{ t('linkboard', 'Notify when service comes back online') }}
+            </NcCheckboxRadioSwitch>
+            <NotificationChannelList />
         </div>
 
         <div class="settings-page__section">
@@ -172,11 +237,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script>
 import { t } from '@nextcloud/l10n'
-import { NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch, NcNoteCard } from '@nextcloud/vue'
+import { NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch, NcNoteCard, NcColorPicker } from '@nextcloud/vue'
 import { mapState, mapActions } from 'pinia'
 import { useDashboardStore } from '../../store/dashboard.js'
 import { iconApi, importExportApi } from '../../services/api.js'
 import { SPACER_STYLES, SPACER_LABELS, SPACER_CHARS, isUnicodeStyle } from '../../utils/spacerStyles.js'
+import NotificationChannelList from './NotificationChannelList.vue'
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
 import UploadIcon from 'vue-material-design-icons/Upload.vue'
 import DownloadIcon from 'vue-material-design-icons/Download.vue'
@@ -185,14 +251,14 @@ import DeleteIcon from 'vue-material-design-icons/Delete.vue'
 export default {
     name: 'SettingsPage',
     components: {
-        NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch, NcNoteCard,
-        ArrowLeftIcon, UploadIcon, DownloadIcon, DeleteIcon,
+        NcButton, NcTextField, NcSelect, NcCheckboxRadioSwitch, NcNoteCard, NcColorPicker,
+        NotificationChannelList, ArrowLeftIcon, UploadIcon, DownloadIcon, DeleteIcon,
     },
     data() {
         return {
             form: {},
             icons: [],
-            themeOptions: ['auto', 'dark', 'light'],
+            themeOptions: ['auto', 'dark', 'light', 'manual'],
             columnOptions: ['2', '3', '4', '5', '6'],
             cardStyleOptions: ['default', 'compact', 'minimal'],
             statusStyleOptions: ['dot', 'basic'],
@@ -202,6 +268,16 @@ export default {
                 { id: 'flat', label: t('linkboard', 'Flat') },
                 { id: 'transparent', label: t('linkboard', 'Transparent') },
             ],
+            timeoutOptions: [
+                { id: '100', label: '100 ms' },
+                { id: '200', label: '200 ms' },
+                { id: '500', label: '500 ms' },
+                { id: '1000', label: '1 s' },
+                { id: '2000', label: '2 s' },
+                { id: '5000', label: '5 s' },
+                { id: '10000', label: '10 s' },
+            ],
+            thresholdOptions: ['1', '2', '3', '5', '10'],
             blurOptions: ['none', 'sm', 'md', 'lg', 'xl'],
             spacerStyleOptions: SPACER_STYLES.map(function(s) {
                 return { id: s.id, label: t('linkboard', SPACER_LABELS[s.id]) }
@@ -579,6 +655,14 @@ export default {
         padding: 20px 0;
         border-top: 1px solid var(--color-border);
     }
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
 }
 
 .spacer-option {

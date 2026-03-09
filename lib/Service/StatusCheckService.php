@@ -14,6 +14,9 @@ class StatusCheckService {
         private StatusCacheMapper $statusCacheMapper,
         private ServiceMapper $serviceMapper,
         private LoggerInterface $logger,
+        private NotificationService $notificationService,
+        private NotificationDispatcherService $notificationDispatcher,
+        private SettingsService $settingsService,
     ) {
     }
 
@@ -28,28 +31,60 @@ class StatusCheckService {
             return $this->saveStatus($serviceId, 'unknown', null, ['error' => 'No URL configured']);
         }
 
-        return $this->performCheck($serviceId, $pingUrl);
+        $settings = $this->settingsService->getAll($userId);
+        $timeoutMs = (int)($settings['status_check_timeout'] ?? 5000);
+
+        return $this->performCheck($serviceId, $pingUrl, $timeoutMs);
     }
 
     /**
      * Check all services that have ping enabled
      */
     public function checkAllEnabled(): int {
-        // Find all services with ping_enabled = true
         $qb = $this->serviceMapper->getDb()->getQueryBuilder();
-        $qb->select('id', 'ping_url', 'href')
+        $qb->select('id', 'ping_url', 'href', 'user_id', 'name')
             ->from('linkboard_services')
             ->where($qb->expr()->eq('ping_enabled', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
 
         $result = $qb->executeQuery();
         $checked = 0;
+        $userSettings = [];
 
         while ($row = $result->fetch()) {
             $pingUrl = $row['ping_url'] ?: $row['href'];
             if (!empty($pingUrl)) {
                 try {
-                    $this->performCheck((int)$row['id'], $pingUrl);
+                    $serviceId = (int)$row['id'];
+                    $userId = $row['user_id'];
+                    $serviceName = $row['name'];
+
+                    // Get existing cache before check to know previous state
+                    $previousCache = $this->statusCacheMapper->findByServiceId($serviceId);
+                    $wasNotified = $previousCache ? $previousCache->getNotified() : false;
+
+                    // Load user settings (cached per user)
+                    $userSettings[$userId] ??= $this->settingsService->getAll($userId);
+                    $timeoutMs = (int)($userSettings[$userId]['status_check_timeout'] ?? 5000);
+
+                    $cache = $this->performCheck($serviceId, $pingUrl, $timeoutMs);
                     $checked++;
+                    $threshold = (int)($userSettings[$userId]['notify_failures_threshold'] ?? 3);
+                    $notifyRecovery = ($userSettings[$userId]['notify_recovery'] ?? 'true') === 'true';
+
+                    if ($cache->getStatus() === 'offline') {
+                        if ($cache->getConsecutiveFailures() >= $threshold && !$cache->getNotified()) {
+                            $this->notificationDispatcher->dispatchOffline(
+                                $userId, $serviceId, $serviceName, $cache->getConsecutiveFailures()
+                            );
+                            $cache->setNotified(true);
+                            $this->statusCacheMapper->update($cache);
+                        }
+                    } elseif ($cache->getStatus() === 'online' && $wasNotified) {
+                        if ($notifyRecovery) {
+                            $this->notificationDispatcher->dispatchRecovery($userId, $serviceId, $serviceName);
+                        }
+                        $this->notificationService->clearOfflineNotifications($userId, $serviceId);
+                    }
                 } catch (\Throwable $e) {
                     $this->logger->warning('LinkBoard: Status check failed for service ' . $row['id'], [
                         'exception' => $e,
@@ -78,13 +113,13 @@ class StatusCheckService {
     /**
      * Perform HTTP check
      */
-    private function performCheck(int $serviceId, string $url): StatusCache {
+    private function performCheck(int $serviceId, string $url, int $timeoutMs = 5000): StatusCache {
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 10,
-            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_TIMEOUT_MS => $timeoutMs,
+            CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
             CURLOPT_NOBODY => true,        // HEAD request
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 3,
@@ -128,6 +163,14 @@ class StatusCheckService {
             $existing->setResponseMs($responseMs);
             $existing->setLastCheck($now);
             $existing->setDetails($details ? json_encode($details) : null);
+
+            if ($status === 'offline') {
+                $existing->setConsecutiveFailures($existing->getConsecutiveFailures() + 1);
+            } else {
+                $existing->setConsecutiveFailures(0);
+                $existing->setNotified(false);
+            }
+
             return $this->statusCacheMapper->update($existing);
         }
 
@@ -137,6 +180,8 @@ class StatusCheckService {
         $cache->setResponseMs($responseMs);
         $cache->setLastCheck($now);
         $cache->setDetails($details ? json_encode($details) : null);
+        $cache->setConsecutiveFailures($status === 'offline' ? 1 : 0);
+        $cache->setNotified(false);
         return $this->statusCacheMapper->insert($cache);
     }
 }

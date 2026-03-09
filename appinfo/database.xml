@@ -208,6 +208,11 @@
                 <notnull>false</notnull>
             </field>
             <field>
+                <name>notification_overrides</name>
+                <type>clob</type>
+                <notnull>false</notnull>
+            </field>
+            <field>
                 <name>created_at</name>
                 <type>timestamp</type>
                 <notnull>true</notnull>
@@ -330,6 +335,19 @@
                 <type>clob</type>
                 <notnull>false</notnull>
             </field>
+            <field>
+                <name>consecutive_failures</name>
+                <type>integer</type>
+                <length>4</length>
+                <notnull>true</notnull>
+                <default>0</default>
+            </field>
+            <field>
+                <name>notified</name>
+                <type>boolean</type>
+                <notnull>true</notnull>
+                <default>false</default>
+            </field>
         </declaration>
         <declaration>
             <index>
@@ -337,6 +355,57 @@
                 <unique>true</unique>
                 <field>
                     <name>service_id</name>
+                </field>
+            </index>
+        </declaration>
+    </table>
+
+    <table>
+        <name>*dbprefix*linkboard_notification_channels</name>
+        <declaration>
+            <field>
+                <name>id</name>
+                <type>integer</type>
+                <length>8</length>
+                <unsigned>true</unsigned>
+                <notnull>true</notnull>
+                <autoincrement>1</autoincrement>
+            </field>
+            <field>
+                <name>user_id</name>
+                <type>text</type>
+                <length>64</length>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>name</name>
+                <type>text</type>
+                <length>255</length>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>provider_type</name>
+                <type>text</type>
+                <length>64</length>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>config</name>
+                <type>clob</type>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>enabled</name>
+                <type>boolean</type>
+                <notnull>true</notnull>
+                <default>true</default>
+            </field>
+        </declaration>
+        <declaration>
+            <index>
+                <name>lb_nc_user_idx</name>
+                <field>
+                    <name>user_id</name>
                 </field>
             </index>
         </declaration>

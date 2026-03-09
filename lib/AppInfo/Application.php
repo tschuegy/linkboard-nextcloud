@@ -20,6 +20,7 @@ class Application extends App implements IBootstrap {
 
     public function register(IRegistrationContext $context): void {
         $context->registerEventListener(AddContentSecurityPolicyEvent::class, CSPListener::class);
+        $context->registerNotifierService(\OCA\LinkBoard\Notification\Notifier::class);
     }
 
     public function boot(IBootContext $context): void {
