@@ -80,8 +80,6 @@
                 <type>timestamp</type>
                 <notnull>true</notnull>
             </field>
-        </declaration>
-        <declaration>
             <index>
                 <name>lb_cat_user_idx</name>
                 <field>
@@ -222,8 +220,6 @@
                 <type>timestamp</type>
                 <notnull>true</notnull>
             </field>
-        </declaration>
-        <declaration>
             <index>
                 <name>lb_svc_user_idx</name>
                 <field>
@@ -279,8 +275,6 @@
                 <type>clob</type>
                 <notnull>false</notnull>
             </field>
-        </declaration>
-        <declaration>
             <index>
                 <name>lb_set_user_key_uniq</name>
                 <unique>true</unique>
@@ -348,8 +342,6 @@
                 <notnull>true</notnull>
                 <default>false</default>
             </field>
-        </declaration>
-        <declaration>
             <index>
                 <name>lb_sc_svc_uniq</name>
                 <unique>true</unique>
@@ -400,8 +392,6 @@
                 <notnull>true</notnull>
                 <default>true</default>
             </field>
-        </declaration>
-        <declaration>
             <index>
                 <name>lb_nc_user_idx</name>
                 <field>
