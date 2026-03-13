@@ -39,6 +39,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     {{ editMode ? t('linkboard', 'Done') : t('linkboard', 'Edit') }}
                 </NcButton>
                 <NcButton
+                    v-if="pingEnabledCount > 0"
+                    type="tertiary"
+                    :aria-label="t('linkboard', 'Status overview')"
+                    @click="$router.push('/status')">
+                    <template #icon>
+                        <ChartLineIcon :size="20" />
+                    </template>
+                </NcButton>
+                <NcButton
                     type="tertiary"
                     :aria-label="t('linkboard', 'Settings')"
                     @click="$router.push('/settings')">
@@ -90,13 +99,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :status-style="settings.status_style"
                     :show-count="settings.show_category_count !== 'false'"
                     :spacer-style="settings.spacer_style || 'solid'"
+                    :show-status-bars="settings.show_status_bars !== 'false'"
+                    :status-bars-opacity="settings.status_bars_opacity || '0.8'"
                     :manual-colors="manualColors"
                     @edit-category="selectCategoryForEdit"
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
                     @add-service="showNewServiceDialog"
                     @reorder-services="handleReorderServices"
-                    @service-moved="handleServiceMoved" />
+                    @service-moved="handleServiceMoved"
+                    @status-click="openStatusHistory" />
                 <CategoryGroup
                     v-for="child in (cat.children || [])" :key="child.id"
                     :data-category-id="String(child.id)"
@@ -108,13 +120,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     :status-style="settings.status_style"
                     :show-count="settings.show_category_count !== 'false'"
                     :spacer-style="settings.spacer_style || 'solid'"
+                    :show-status-bars="settings.show_status_bars !== 'false'"
+                    :status-bars-opacity="settings.status_bars_opacity || '0.8'"
                     :manual-colors="manualColors"
                     @edit-category="selectCategoryForEdit"
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
                     @add-service="showNewServiceDialog"
                     @reorder-services="handleReorderServices"
-                    @service-moved="handleServiceMoved" />
+                    @service-moved="handleServiceMoved"
+                    @status-click="openStatusHistory" />
             </div>
 
             <div v-if="editMode" class="linkboard__add-category" @click="showNewCategoryDialog">
@@ -173,6 +188,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcButton type="primary" @click="handleCreateService">{{ t('linkboard', 'Create') }}</NcButton>
             </template>
         </NcDialog>
+        <!-- Status History Modal -->
+        <StatusHistoryModal
+            :open="showStatusHistory"
+            :service-id="statusHistoryServiceId"
+            :service-name="statusHistoryServiceName"
+            @update:open="showStatusHistory = $event" />
+
         <div v-if="appVersion" class="linkboard__version-footer">
             <a :href="latestVersionUrl || 'https://github.com/tschuegy/linkboard-nextcloud'"
                target="_blank" rel="noopener noreferrer"
@@ -198,20 +220,22 @@ import CategoryGroup from './CategoryGroup.vue'
 import ServiceEditor from '../Editor/ServiceEditor.vue'
 import CategoryEditor from '../Editor/CategoryEditor.vue'
 import SearchBar from './SearchBar.vue'
+import StatusHistoryModal from './StatusHistoryModal.vue'
 import EmptyState from '../Shared/EmptyState.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 import CogIcon from 'vue-material-design-icons/Cog.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import RefreshIcon from 'vue-material-design-icons/Refresh.vue'
 import DragVerticalIcon from 'vue-material-design-icons/DragVertical.vue'
+import ChartLineIcon from 'vue-material-design-icons/ChartLine.vue'
 
 export default {
     name: 'DashboardView',
 
     components: {
         NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField, NcCheckboxRadioSwitch, NcSelect,
-        CategoryGroup, ServiceEditor, CategoryEditor, SearchBar, EmptyState,
-        PencilIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon,
+        CategoryGroup, ServiceEditor, CategoryEditor, SearchBar, EmptyState, StatusHistoryModal,
+        PencilIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon, ChartLineIcon,
     },
 
     data() {
@@ -232,6 +256,9 @@ export default {
             categorySortable: null,
             rowSortables: [],
             resourceRefreshInterval: null,
+            showStatusHistory: false,
+            statusHistoryServiceId: null,
+            statusHistoryServiceName: '',
         }
     },
 
@@ -578,6 +605,11 @@ export default {
             var catId = typeof id === 'number' ? id : id
             if (confirm(t('linkboard', 'Really delete category and all services?'))) { await this.deleteCategory(catId) }
         },
+        openStatusHistory(service) {
+            this.statusHistoryServiceId = service.id
+            this.statusHistoryServiceName = service.name
+            this.showStatusHistory = true
+        },
         async handleDeleteService(id) {
             if (confirm(t('linkboard', 'Really delete service?'))) { await this.deleteService(id); this.clearSelection() }
         },
@@ -588,7 +620,7 @@ export default {
 <style lang="scss" scoped>
 .linkboard {
     position: relative;
-    padding: 20px 32px;
+    padding: 4px 32px;
     max-width: 1800px;
     margin: 0 auto;
     outline: none;

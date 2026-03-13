@@ -9,6 +9,7 @@ import VueRouter from 'vue-router'
 import { generateUrl } from '@nextcloud/router'
 import DashboardView from './components/Dashboard/DashboardView.vue'
 import SettingsPage from './components/Settings/SettingsPage.vue'
+import StatusOverviewPage from './components/Dashboard/StatusOverviewPage.vue'
 
 Vue.use(VueRouter)
 
@@ -22,6 +23,11 @@ const routes = [
         path: '/settings',
         name: 'settings',
         component: SettingsPage,
+    },
+    {
+        path: '/status',
+        name: 'status-overview',
+        component: StatusOverviewPage,
     },
 ]
 

@@ -47,6 +47,8 @@ export const useDashboardStore = defineStore('dashboard', {
         widgetCatalog: [],
         widgetLoading: false,
         resourceData: {},
+        statusHistory: {},
+        statusHistoryLoading: false,
         appVersion: null,
         latestVersion: null,
         latestVersionUrl: null,
@@ -351,6 +353,21 @@ export const useDashboardStore = defineStore('dashboard', {
                 throw err
             } finally {
                 this.statusChecking = false
+            }
+        },
+
+        // ── Status History Actions ───────────────────────
+        async fetchStatusHistory(serviceId, period) {
+            this.statusHistoryLoading = true
+            try {
+                const { data } = await statusApi.getHistory(serviceId, period)
+                this.statusHistory = { ...this.statusHistory, [serviceId]: data }
+                return data
+            } catch (err) {
+                console.error('LinkBoard: Failed to load status history', err)
+                throw err
+            } finally {
+                this.statusHistoryLoading = false
             }
         },
 

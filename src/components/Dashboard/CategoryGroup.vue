@@ -117,9 +117,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                             :card-background="cardBackground"
                             :status-style="statusStyle"
                             :widget-data="getWidgetData(service.id)"
+                            :show-status-bars="showStatusBars"
+                            :status-bars-opacity="statusBarsOpacity"
                             :manual-colors="manualColors"
                             @click="handleServiceClick(service)"
-                            @edit="$emit('edit-service', service.id)" />
+                            @edit="$emit('edit-service', service.id)"
+                            @status-click="$emit('status-click', $event)" />
                     </div>
 
                 </div>
@@ -162,6 +165,8 @@ export default {
         statusStyle: { type: String, default: 'dot' },
         showCount: { type: Boolean, default: true },
         spacerStyle: { type: String, default: 'solid' },
+        showStatusBars: { type: Boolean, default: true },
+        statusBarsOpacity: { type: String, default: '0.8' },
         manualColors: { type: Object, default: function() { return {} } },
     },
 

@@ -80,6 +80,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <label>{{ t('linkboard', 'Status display') }}</label>
                 <NcSelect v-model="form.status_style" :options="statusStyleOptions" :clearable="false" />
             </div>
+            <NcCheckboxRadioSwitch
+                :checked="form.show_status_bars === 'true'"
+                type="switch"
+                @update:checked="form.show_status_bars = $event ? 'true' : 'false'">
+                {{ t('linkboard', 'Show status history bars on cards') }}
+            </NcCheckboxRadioSwitch>
+            <div v-if="form.show_status_bars === 'true'" class="settings-page__field">
+                <label>{{ t('linkboard', 'Status bar opacity') }}</label>
+                <div class="settings-page__range-row">
+                    <input type="range" min="20" max="100" step="1"
+                        :value="opacityPercent"
+                        @input="form.status_bars_opacity = ($event.target.value / 100).toFixed(2)" />
+                    <span>{{ opacityPercent }}%</span>
+                </div>
+            </div>
             <div class="settings-page__field">
                 <label>{{ t('linkboard', 'Spacer style') }}</label>
                 <NcSelect
@@ -289,6 +304,9 @@ export default {
     },
     computed: {
         ...mapState(useDashboardStore, ['settings']),
+        opacityPercent() {
+            return Math.round(parseFloat(this.form.status_bars_opacity || '0.8') * 100)
+        },
     },
     watch: {
         settings: {
@@ -641,6 +659,14 @@ export default {
     }
 
     &__icon-preview { width: 28px; height: 28px; object-fit: contain; border-radius: 4px; }
+
+    &__range-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        input[type="range"] { flex: 1; }
+        span { min-width: 36px; text-align: right; }
+    }
 
     &__ie-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 

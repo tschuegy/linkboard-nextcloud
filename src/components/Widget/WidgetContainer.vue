@@ -17,6 +17,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 :label="fieldLabels[key] || key"
                 :value="value" />
         </template>
+        <div v-if="warning" class="widget-container__warning" :title="warning">
+            {{ warning }}
+        </div>
     </div>
 </template>
 
@@ -30,6 +33,7 @@ export default {
         data: { type: Object, default: () => ({}) },
         fieldLabels: { type: Object, default: () => ({}) },
         error: { type: String, default: null },
+        warning: { type: String, default: null },
     },
 }
 </script>
@@ -49,6 +53,16 @@ export default {
         font-size: 11px;
         color: var(--color-error);
         padding: 2px 0;
+    }
+
+    &__warning {
+        font-size: 10px;
+        color: var(--color-warning-text, #e67700);
+        padding: 2px 4px;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 </style>

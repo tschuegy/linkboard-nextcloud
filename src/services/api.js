@@ -62,6 +62,8 @@ export const statusApi = {
     getAll: () => axios.get(url('/status')),
     check: (serviceId) => axios.post(url(`/status/${serviceId}/check`)),
     checkAll: () => axios.post(url('/status/check-all')),
+    getHistory: (serviceId, period) => axios.get(url(`/status/${serviceId}/history`), { params: { period } }),
+    getAllHistory: (period) => axios.get(url('/status/history'), { params: { period } }),
 }
 
 // ── Widgets ──────────────────────────────────────────

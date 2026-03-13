@@ -33,10 +33,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- Status indicator dot -->
         <span
-            v-if="service.status && service.pingEnabled && statusStyle === 'dot'"
+            v-if="service.status && service.pingEnabled"
             class="service-card__status"
             :class="'service-card__status--' + service.status.status"
-            :title="statusTooltip" />
+            :title="statusTooltip"
+            @click.stop="$emit('status-click', service)" />
 
         <div v-if="service.name || service.icon" class="service-card__content">
             <ServiceIcon
@@ -58,9 +59,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             :config="resourceConfig" />
         <WidgetContainer
             v-else-if="service.widgetType && widgetData"
-            :data="widgetData.data || {}"
+            :data="filteredWidgetFields"
             :field-labels="widgetData.fieldLabels || {}"
-            :error="widgetData.error || null" />
+            :error="widgetData.error || null"
+            :warning="widgetWarning" />
+
+        <!-- Mini status history bars -->
+        <div v-if="showStatusBars && hasHistoryBars" class="service-card__history-bars" :style="{ opacity: statusBarsOpacity }">
+            <span v-for="(entry, idx) in service.recentHistory"
+                :key="idx"
+                class="service-card__history-bar"
+                :class="'service-card__history-bar--' + entry.status" />
+        </div>
     </div>
 </template>
 
@@ -82,12 +92,27 @@ export default {
         cardBackground: { type: String, default: 'glass' },
         statusStyle: { type: String, default: 'dot' },
         widgetData: { type: Object, default: null },
+        showStatusBars: { type: Boolean, default: true },
+        statusBarsOpacity: { type: String, default: '0.8' },
         manualColors: { type: Object, default: function() { return {} } },
     },
     methods: {
         t,
     },
     computed: {
+        filteredWidgetFields: function() {
+            var data = this.widgetData && this.widgetData.data ? this.widgetData.data : {}
+            var result = {}
+            for (var key in data) {
+                if (key.charAt(0) !== '_') {
+                    result[key] = data[key]
+                }
+            }
+            return result
+        },
+        widgetWarning: function() {
+            return this.widgetData && this.widgetData.data ? (this.widgetData.data._warning || null) : null
+        },
         resourceConfig: function() {
             return { showCpu: true, showMemory: true, showUptime: true }
         },
@@ -95,6 +120,9 @@ export default {
             if (this.cardStyle === 'compact') return 28
             if (this.cardStyle === 'minimal') return 24
             return 40
+        },
+        hasHistoryBars: function() {
+            return this.service.pingEnabled && this.service.recentHistory && this.service.recentHistory.length > 0
         },
         statusClass: function() {
             if (this.statusStyle !== 'basic' || !this.service.status || !this.service.pingEnabled) return ''
@@ -172,6 +200,7 @@ export default {
         top: 8px; left: 8px;
         width: 8px; height: 8px;
         border-radius: 50%;
+        cursor: pointer;
         &--online { background: #22c55e; box-shadow: 0 0 4px rgba(34, 197, 94, 0.6); }
         &--offline { background: #ef4444; box-shadow: 0 0 4px rgba(239, 68, 68, 0.6); }
         &--unknown { background: #a3a3a3; }
@@ -280,6 +309,28 @@ export default {
     &__description {
         font-size: 12px; color: var(--color-text-maxcontrast);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;
+    }
+
+    &__history-bars {
+        position: absolute;
+        bottom: 6px;
+        left: 8px;
+        right: 8px;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        overflow: hidden;
+        gap: 2px;
+    }
+    &--edit &__history-bars { left: 34px; }
+    &__history-bar {
+        flex-shrink: 0;
+        width: 2px;
+        height: 7px;
+        border-radius: 1px;
+        &--online { background: #22c55e; }
+        &--offline { background: #ef4444; }
+        &--unknown { background: #a3a3a3; }
     }
 }
 </style>
