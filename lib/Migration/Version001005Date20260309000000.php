@@ -29,7 +29,7 @@ class Version001005Date20260309000000 extends SimpleMigrationStep {
 
         if (!$table->hasColumn('notified')) {
             $table->addColumn('notified', Types::BOOLEAN, [
-                'notnull' => true,
+                'notnull' => false,
                 'default' => false,
             ]);
             $changed = true;

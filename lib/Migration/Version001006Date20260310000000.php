@@ -40,7 +40,7 @@ class Version001006Date20260310000000 extends SimpleMigrationStep {
                 'notnull' => true,
             ]);
             $table->addColumn('enabled', Types::BOOLEAN, [
-                'notnull' => true,
+                'notnull' => false,
                 'default' => true,
             ]);
 

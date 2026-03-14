@@ -23,7 +23,7 @@ class Version001000Date20260301000000 extends SimpleMigrationStep {
             $table->addColumn('slug', Types::STRING, ['notnull' => true, 'length' => 255, 'default' => '']);
             $table->addColumn('icon', Types::STRING, ['notnull' => false, 'length' => 512]);
             $table->addColumn('sort_order', Types::INTEGER, ['notnull' => true, 'default' => 0]);
-            $table->addColumn('collapsed', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
+            $table->addColumn('collapsed', Types::BOOLEAN, ['notnull' => false, 'default' => false]);
             $table->addColumn('tab', Types::STRING, ['notnull' => false, 'length' => 128]);
             $table->addColumn('columns', Types::INTEGER, ['notnull' => false, 'default' => null]);
             $table->addColumn('parent_id', Types::BIGINT, ['notnull' => false, 'unsigned' => true, 'default' => null]);
@@ -51,7 +51,7 @@ class Version001000Date20260301000000 extends SimpleMigrationStep {
             $table->addColumn('target', Types::STRING, ['notnull' => true, 'length' => 16, 'default' => '_blank']);
             $table->addColumn('sort_order', Types::INTEGER, ['notnull' => true, 'default' => 0]);
             $table->addColumn('ping_url', Types::STRING, ['notnull' => false, 'length' => 1024]);
-            $table->addColumn('ping_enabled', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
+            $table->addColumn('ping_enabled', Types::BOOLEAN, ['notnull' => false, 'default' => false]);
             $table->addColumn('widget_type', Types::STRING, ['notnull' => false, 'length' => 64]);
             $table->addColumn('widget_config', Types::TEXT, ['notnull' => false]);
             $table->addColumn('created_at', Types::DATETIME, ['notnull' => true]);
