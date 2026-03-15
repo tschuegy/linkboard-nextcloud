@@ -78,7 +78,7 @@ class WidgetProxyController extends ApiController {
                     'exception' => $e,
                 ]);
                 $result[$service->getId()] = [
-                    'error' => $this->l10n->t('Widget data fetch failed'),
+                    'error' => $this->l10n->t('Widget data fetch failed: %s', [$e->getMessage()]),
                 ];
             }
         }
@@ -306,6 +306,7 @@ class WidgetProxyController extends ApiController {
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_USERAGENT => 'LinkBoard/1.0 WidgetProxy',
             CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_UNRESTRICTED_AUTH => true,
         ]);
 
         if ($cookieJar) {

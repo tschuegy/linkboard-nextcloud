@@ -18,14 +18,16 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 
 ## Screenshots
 
-| Dashboard | Settings |
-|-----------|----------|
-| ![Dashboard](img/screenshots/screenshot_GUI.png) | ![Settings](img/screenshots/screenshot_Settings.png) |
+| | | |
+|---|---|---|
+| ![Dashboard](img/screenshots/screenshot_GUI.png) | ![Status Single](img/screenshots/screenshot_StatusSingle.png) | ![Status Overview](img/screenshots/screenshot_StatusOverview.png) |
+| ![Settings](img/screenshots/screenshot_Settings.png) | ![Settings](img/screenshots/screenshot_Settings2.png) | |
 
 ## Features
 
 - **Service Dashboard** – Organize services in categories with drag & drop sorting
 - **Status Checks** – Live health checks with dot or border indicators
+- **Status History** – Response time charts, uptime tracking, and a dedicated status overview page
 - **Offline Notifications** – Nextcloud notifications when services go down, with configurable threshold and recovery alerts
 - **External Notification Channels** – 19 providers: Discord, Slack, Telegram, Matrix, Teams, Ntfy, Gotify, Pushover, E-Mail (SMTP), and more, with per-service overrides
 - **135 Built-in Widgets** – Real-time data from Proxmox, Patchman, Immich, Uptime Kuma, and 130+ more ([full list](WIDGETS.md))
@@ -145,6 +147,8 @@ All endpoints under `/apps/linkboard/api/v1/`:
 | `/icons/{filename}` | GET, DELETE | Serve / delete icon |
 | `/widgets/catalog` | GET | Available widget types |
 | `/widgets/data` | POST | Fetch widget data |
+| `/status/{id}/history` | GET | Status history for a service |
+| `/status/history` | GET | Status history for all services |
 | `/resources/{categoryId}` | GET | System resources (CPU, memory, disk) |
 
 ## License

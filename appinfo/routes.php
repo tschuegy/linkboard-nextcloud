@@ -36,6 +36,10 @@ return [
         ['name' => 'settings_api#updateAll',   'url' => '/api/v1/settings',        'verb' => 'PUT'],
         ['name' => 'settings_api#updateSingle','url' => '/api/v1/settings/{key}',  'verb' => 'PUT'],
 
+        // ── Admin Settings API ───────────────────────────────
+        ['name' => 'settings_api#getAdminSettings',    'url' => '/api/v1/admin/settings', 'verb' => 'GET'],
+        ['name' => 'settings_api#updateAdminSettings', 'url' => '/api/v1/admin/settings', 'verb' => 'PUT'],
+
         // ── Icons API ─────────────────────────────────────────
         ['name' => 'icon_api#index',    'url' => '/api/v1/icons',            'verb' => 'GET'],
         ['name' => 'icon_api#upload',   'url' => '/api/v1/icons/upload',     'verb' => 'POST'],
@@ -43,9 +47,11 @@ return [
         ['name' => 'icon_api#serve',    'url' => '/api/v1/icons/{filename}', 'verb' => 'GET'],
 
         // ── Status API (Phase 2) ─────────────────────────────
-        ['name' => 'status_api#index',    'url' => '/api/v1/status',            'verb' => 'GET'],
-        ['name' => 'status_api#check',    'url' => '/api/v1/status/{id}/check', 'verb' => 'POST'],
-        ['name' => 'status_api#checkAll', 'url' => '/api/v1/status/check-all',  'verb' => 'POST'],
+        ['name' => 'status_api#index',      'url' => '/api/v1/status',               'verb' => 'GET'],
+        ['name' => 'status_api#check',      'url' => '/api/v1/status/{id}/check',  'verb' => 'POST',  'requirements' => ['id' => '\d+']],
+        ['name' => 'status_api#historyAll', 'url' => '/api/v1/status/history',     'verb' => 'GET'],
+        ['name' => 'status_api#history',    'url' => '/api/v1/status/{id}/history', 'verb' => 'GET',  'requirements' => ['id' => '\d+']],
+        ['name' => 'status_api#checkAll',   'url' => '/api/v1/status/check-all',   'verb' => 'POST'],
 
         // ── Widget API ──────────────────────────────────────
         ['name' => 'widget_proxy#catalog',    'url' => '/api/v1/widgets/catalog',          'verb' => 'GET'],

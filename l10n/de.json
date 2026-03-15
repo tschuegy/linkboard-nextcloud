@@ -189,7 +189,25 @@
         "Card background color": "Karten-Hintergrund",
         "Choose color": "Farbe wählen",
         "Status check timeout (per check)": "Status-Check Timeout (pro Check)",
-        "Run status checks in parallel": "Status-Checks parallel ausführen"
+        "Run status checks in parallel": "Status-Checks parallel ausführen",
+        "Status History": "Statusverlauf",
+        "Last 24 hours": "Letzte 24 Stunden",
+        "Last 7 days": "Letzte 7 Tage",
+        "Total failures": "Gesamtausfälle",
+        "Response time": "Antwortzeit",
+        "No history available": "Kein Verlauf verfügbar",
+        "Last hour": "Letzte Stunde",
+        "Last 3 hours": "Letzte 3 Stunden",
+        "Failed to load status history": "Statusverlauf konnte nicht geladen werden",
+        "Show status history bars on cards": "Statusverlauf-Balken auf Karten anzeigen",
+        "Status bar opacity": "Statusbalken-Transparenz",
+        "Status overview": "Statusübersicht",
+        "Administration": "Administration",
+        "Status check interval": "Status-Check-Intervall",
+        "{n} minutes": "{n} Minuten",
+        "These settings apply to all users.": "Diese Einstellungen gelten für alle Benutzer.",
+        "Save admin settings": "Admin-Einstellungen speichern",
+        "Admin settings saved": "Admin-Einstellungen gespeichert"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }

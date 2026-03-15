@@ -35,6 +35,8 @@ class SettingMapper extends QBMapper {
         'manual_color_service' => '',
         'manual_color_description' => '',
         'manual_color_card_bg' => '',
+        'show_status_bars' => 'true',
+        'status_bars_opacity' => '0.8',
     ];
 
     public function __construct(IDBConnection $db) {

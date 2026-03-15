@@ -12,35 +12,23 @@ use OCP\AppFramework\Db\Entity;
  * @method void setStatus(string $status)
  * @method int|null getResponseMs()
  * @method void setResponseMs(?int $responseMs)
- * @method string|null getLastCheck()
- * @method void setLastCheck(?string $lastCheck)
+ * @method string getCheckedAt()
+ * @method void setCheckedAt(string $checkedAt)
  * @method string|null getDetails()
  * @method void setDetails(?string $details)
- * @method int getConsecutiveFailures()
- * @method void setConsecutiveFailures(int $consecutiveFailures)
- * @method bool getNotified()
- * @method void setNotified(bool $notified)
- * @method int getTotalFailures()
- * @method void setTotalFailures(int $totalFailures)
  */
-class StatusCache extends Entity implements JsonSerializable {
+class StatusHistory extends Entity implements JsonSerializable {
 
     protected int $serviceId = 0;
     protected string $status = 'unknown';
     protected $responseMs = null;
-    protected $lastCheck = null;
+    protected string $checkedAt = '';
     protected $details = null;
-    protected int $consecutiveFailures = 0;
-    protected bool $notified = false;
-    protected int $totalFailures = 0;
 
     public function __construct() {
         $this->addType('id', 'integer');
         $this->addType('serviceId', 'integer');
         $this->addType('responseMs', 'integer');
-        $this->addType('consecutiveFailures', 'integer');
-        $this->addType('notified', 'boolean');
-        $this->addType('totalFailures', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -49,11 +37,8 @@ class StatusCache extends Entity implements JsonSerializable {
             'serviceId' => $this->getServiceId(),
             'status' => $this->getStatus(),
             'responseMs' => $this->getResponseMs(),
-            'lastCheck' => $this->getLastCheck(),
+            'checkedAt' => $this->getCheckedAt(),
             'details' => $this->getDetails() ? json_decode($this->getDetails(), true) : null,
-            'consecutiveFailures' => $this->getConsecutiveFailures(),
-            'notified' => $this->getNotified(),
-            'totalFailures' => $this->getTotalFailures(),
         ];
     }
 }

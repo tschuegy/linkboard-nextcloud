@@ -176,6 +176,25 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <NotificationChannelList />
         </div>
 
+        <div v-if="isAdmin" class="settings-page__section">
+            <h3>{{ t('linkboard', 'Administration') }}</h3>
+            <p class="settings-page__hint">
+                {{ t('linkboard', 'These settings apply to all users.') }}
+            </p>
+            <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Status check interval') }}</label>
+                <div class="settings-page__range-row">
+                    <input type="range" min="1" max="30" step="1"
+                        :value="adminForm.status_check_interval_min"
+                        @input="adminForm.status_check_interval_min = parseInt($event.target.value)" />
+                    <span>{{ t('linkboard', '{n} minutes', { n: adminForm.status_check_interval_min }) }}</span>
+                </div>
+            </div>
+            <NcButton type="primary" @click="saveAdminSettings">
+                {{ t('linkboard', 'Save admin settings') }}
+            </NcButton>
+        </div>
+
         <div class="settings-page__section">
             <h3>{{ t('linkboard', 'Icons') }}</h3>
             <p class="settings-page__hint">
@@ -297,13 +316,16 @@ export default {
             spacerStyleOptions: SPACER_STYLES.map(function(s) {
                 return { id: s.id, label: t('linkboard', SPACER_LABELS[s.id]) }
             }),
+            adminForm: {
+                status_check_interval_min: 5,
+            },
             importMode: 'replace',
             importResult: null,
             importError: null,
         }
     },
     computed: {
-        ...mapState(useDashboardStore, ['settings']),
+        ...mapState(useDashboardStore, ['settings', 'isAdmin', 'adminSettings']),
         opacityPercent() {
             return Math.round(parseFloat(this.form.status_bars_opacity || '0.8') * 100)
         },
@@ -311,6 +333,13 @@ export default {
     watch: {
         settings: {
             handler(newVal) { this.form = { ...newVal } },
+            immediate: true,
+            deep: true,
+        },
+        adminSettings: {
+            handler(newVal) {
+                this.adminForm.status_check_interval_min = Math.round((newVal.status_check_interval || 300) / 60)
+            },
             immediate: true,
             deep: true,
         },
@@ -323,9 +352,16 @@ export default {
     },
     methods: {
         t,
-        ...mapActions(useDashboardStore, ['updateSettings', 'importData']),
+        ...mapActions(useDashboardStore, ['updateSettings', 'updateAdminSettings', 'importData']),
 
         async saveSettings() { await this.updateSettings(this.form) },
+
+        async saveAdminSettings() {
+            await this.updateAdminSettings({
+                statusCheckInterval: this.adminForm.status_check_interval_min * 60,
+            })
+            OC.Notification.showTemporary(t('linkboard', 'Admin settings saved'))
+        },
 
         async loadIcons() {
             try { const { data } = await iconApi.getAll(); this.icons = data }

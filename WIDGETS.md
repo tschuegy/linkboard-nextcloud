@@ -26,7 +26,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Cloudflared | `cloudflared` | `api_key` (required), `account_id` (required), `tunnel_id` (required) | [ ] |
 | CoinMarketCap | `coinmarketcap` | `api_key` (required), `symbol` (required) | [ ] |
 | CrowdSec | `crowdsec` | `api_key` (required) | [ ] |
-| Custom API | `customapi` | `url` (optional), `method` (optional), `auth_header` (optional), `mappings` (required) | [ ] |
+| Custom API | `customapi` | `url` (optional), `method` (optional), `auth_header` (optional), `mappings` (required) | [x] |
 | Deluge | `deluge` | `password` (required) | [ ] |
 | DiskStation (Synology) | `diskstation` | `username` (required), `password` (required) | [ ] |
 | Download Station | `downloadstation` | `username` (required), `password` (required) | [ ] |
@@ -54,7 +54,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Home Assistant | `homeassistant` | `token` (required) | [ ] |
 | HomeBox | `homebox` | `username` (required), `password` (required) | [ ] |
 | Homebridge | `homebridge` | `username` (required), `password` (required) | [ ] |
-| Immich | `immich` | `api_key` (required) | [ ] |
+| Immich | `immich` | `api_key` (required) | [x] |
 | JDownloader | `jdownloader` | `username` (required), `password` (required), `device` (optional) | [ ] |
 | Jellyfin | `jellyfin` | `api_key` (required) | [ ] |
 | Jellyseerr | `jellyseerr` | `api_key` (required) | [ ] |
@@ -91,7 +91,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | OpenWRT | `openwrt` | `username` (required), `password` (required) | [ ] |
 | OPNsense | `opnsense` | `username` (required), `password` (required) | [ ] |
 | Overseerr | `overseerr` | `api_key` (required) | [ ] |
-| Paperless-ngx | `paperlessngx` | `api_key` (optional), `username` (optional), `password` (optional) | [ ] |
+| Paperless-ngx | `paperlessngx` | `api_key` (optional), `username` (optional), `password` (optional) | [x] |
 | Peanut (NUT UPS) | `peanut` | — | [ ] |
 | pfSense | `pfsense` | `username` (required), `password` (required) | [ ] |
 | PhotoPrism | `photoprism` | `username` (optional), `password` (required) | [ ] |
@@ -101,8 +101,8 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Portainer | `portainer` | `api_key` (required), `env` (optional) | [ ] |
 | Prometheus | `prometheus` | `api_key` (optional) | [ ] |
 | Prowlarr | `prowlarr` | `api_key` (required) | [ ] |
-| Proxmox Backup Server | `proxmoxbackupserver` | `api_token` (required) | [ ] |
-| Proxmox VE | `proxmox` | `api_token` (required) | [ ] |
+| Proxmox Backup Server | `proxmoxbackupserver` | `api_token` (required) — Format: `user@realm!tokenid:secret`. Token needs `Audit` role on path `/` with Propagate. Service URL must use `https://`. | [x] |
+| Proxmox VE | `proxmox` | `api_token` (required) — Format: `user@realm!tokenid=UUID`. Token needs `PVEAuditor` role on path `/`. Service URL must use `https://`. | [x] |
 | Pterodactyl | `pterodactyl` | `api_key` (required) | [ ] |
 | pyLoad | `pyload` | `username` (required), `password` (required) | [ ] |
 | qBittorrent | `qbittorrent` | `username` (required), `password` (required) | [ ] |
@@ -126,13 +126,13 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Technitium DNS | `technitiumdns` | `api_key` (required) | [ ] |
 | Traefik | `traefik` | `username` (optional), `password` (optional) | [ ] |
 | Transmission | `transmission` | `username` (optional), `password` (optional) | [ ] |
-| Trilium | `trilium` | `api_key` (required) | [ ] |
+| Trilium | `trilium` | `api_key` (required) — shows version, DB version, note count | [x] |
 | TrueNAS | `truenas` | `api_key` (required) | [ ] |
 | TubeArchivist | `tubearchivist` | `api_key` (required) | [ ] |
 | UniFi Controller | `unifi` | `username` (required), `password` (required), `site` (optional) | [ ] |
 | Unmanic | `unmanic` | — | [ ] |
 | Unraid | `unraid` | `api_key` (required) | [ ] |
-| Uptime Kuma | `uptimekuma` | `slug` (required) | [ ] |
+| Uptime Kuma | `uptimekuma` | `slug` (required) | [x] |
 | UptimeRobot | `uptimerobot` | `api_key` (required) | [ ] |
 | Vikunja | `vikunja` | `api_key` (required) | [ ] |
 | Wallos | `wallos` | — | [ ] |

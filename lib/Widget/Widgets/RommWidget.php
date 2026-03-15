@@ -33,8 +33,10 @@ class RommWidget extends AbstractWidget {
     }
 
     public function mapResponse(array $responses, array $config): array {
-        $platforms = is_array($responses[0] ?? null) ? count($responses[0]) : 0;
-        $roms = $responses[1]['total'] ?? (is_array($responses[1]) ? count($responses[1]) : 0);
+        $r0 = $responses[0] ?? [];
+        $r1 = $responses[1] ?? [];
+        $platforms = is_array($r0) ? count($r0) : 0;
+        $roms = $r1['total'] ?? (is_array($r1) ? count($r1) : 0);
         return [
             'platforms' => (string)$platforms,
             'roms' => (string)$roms,

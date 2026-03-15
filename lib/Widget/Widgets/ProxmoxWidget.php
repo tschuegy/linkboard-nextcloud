@@ -34,6 +34,8 @@ class ProxmoxWidget extends AbstractWidget {
         $lxc = 0; $lxcRunning = 0;
         $cpuSum = 0; $cpuCount = 0;
         $memUsed = 0; $memTotal = 0;
+        $hasNodes = false;
+        $nodesHaveMetrics = false;
 
         foreach ($data as $item) {
             $type = $item['type'] ?? '';
@@ -45,18 +47,29 @@ class ProxmoxWidget extends AbstractWidget {
                 $lxc++;
                 if ($status === 'running') $lxcRunning++;
             } elseif ($type === 'node') {
-                $cpuSum += ($item['cpu'] ?? 0);
-                $cpuCount++;
-                $memUsed += ($item['mem'] ?? 0);
-                $memTotal += ($item['maxmem'] ?? 0);
+                $hasNodes = true;
+                if (isset($item['cpu']) || isset($item['mem'])) {
+                    $nodesHaveMetrics = true;
+                    $cpuSum += ($item['cpu'] ?? 0);
+                    $cpuCount++;
+                    $memUsed += ($item['mem'] ?? 0);
+                    $memTotal += ($item['maxmem'] ?? 0);
+                }
             }
         }
 
-        return [
+        $result = [
             'vms' => $vmsRunning . '/' . $vms,
             'lxc' => $lxcRunning . '/' . $lxc,
             'cpu' => $cpuCount > 0 ? round($cpuSum / $cpuCount * 100) . '%' : '0%',
             'mem' => $memTotal > 0 ? round($memUsed / $memTotal * 100) . '%' : '0%',
         ];
+
+        // Detect insufficient API token permissions
+        if ($hasNodes && !$nodesHaveMetrics && $vms === 0 && $lxc === 0) {
+            $result['_warning'] = 'API token lacks permissions. Grant PVEAuditor role on / to the token.';
+        }
+
+        return $result;
     }
 }

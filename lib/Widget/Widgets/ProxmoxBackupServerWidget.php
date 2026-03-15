@@ -11,7 +11,7 @@ class ProxmoxBackupServerWidget extends AbstractWidget {
 
     public function getConfigFields(): array {
         return [
-            ['key' => 'api_token', 'label' => 'API Token (user@realm!tokenid=secret)', 'type' => 'password', 'required' => true, 'placeholder' => ''],
+            ['key' => 'api_token', 'label' => 'API Token (user@realm!tokenid:secret)', 'type' => 'password', 'required' => true, 'placeholder' => ''],
         ];
     }
 

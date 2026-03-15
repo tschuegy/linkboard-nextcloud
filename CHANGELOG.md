@@ -5,10 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.4.4 – 2026-03-14
+## 1.5.0 – 2026-03-15
+
+### Added
+- Status history tracking – background job records status checks with response times in new `linkboard_status_history` table
+- Status History Modal – click any service's status indicator to view response time charts
+- Status Overview Page (`/status`) – dedicated page showing all monitored services with uptime%, failure counts, and charts
+- Mini status history bars on service cards showing last ~10 status checks (configurable opacity in settings)
+- Period-based history views (1h, 3h, 24h, 7d)
+- Total failure counter per service in status cache
+- New settings: "Show status history bars" toggle and "Status bar opacity" slider
+- Widget warning display in widget containers
 
 ### Fixed
-- Fix boolean NotNull columns breaking installation on Nextcloud 32 (Oracle constraint check rejects `notnull => true` on boolean columns)
+- Boolean NotNull columns breaking installation on Nextcloud 32 (Oracle constraint compatibility)
 
 ## 1.4.2 – 2026-03-10
 

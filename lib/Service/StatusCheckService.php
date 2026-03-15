@@ -5,6 +5,8 @@ namespace OCA\LinkBoard\Service;
 use DateTime;
 use OCA\LinkBoard\Db\StatusCache;
 use OCA\LinkBoard\Db\StatusCacheMapper;
+use OCA\LinkBoard\Db\StatusHistory;
+use OCA\LinkBoard\Db\StatusHistoryMapper;
 use OCA\LinkBoard\Db\ServiceMapper;
 use Psr\Log\LoggerInterface;
 
@@ -12,6 +14,7 @@ class StatusCheckService {
 
     public function __construct(
         private StatusCacheMapper $statusCacheMapper,
+        private StatusHistoryMapper $statusHistoryMapper,
         private ServiceMapper $serviceMapper,
         private LoggerInterface $logger,
         private NotificationService $notificationService,
@@ -152,6 +155,21 @@ class StatusCheckService {
     }
 
     /**
+     * Get status history for a service
+     * @return StatusHistory[]
+     */
+    public function getHistory(int $serviceId, string $period = '24h'): array {
+        return $this->statusHistoryMapper->findByServiceId($serviceId, $period);
+    }
+
+    /**
+     * Purge history entries older than 7 days
+     */
+    public function purgeOldHistory(): int {
+        return $this->statusHistoryMapper->deleteOlderThan(7);
+    }
+
+    /**
      * Save or update status cache entry
      */
     private function saveStatus(int $serviceId, string $status, ?int $responseMs, ?array $details): StatusCache {
@@ -166,22 +184,35 @@ class StatusCheckService {
 
             if ($status === 'offline') {
                 $existing->setConsecutiveFailures($existing->getConsecutiveFailures() + 1);
+                $existing->setTotalFailures($existing->getTotalFailures() + 1);
             } else {
                 $existing->setConsecutiveFailures(0);
                 $existing->setNotified(false);
             }
 
-            return $this->statusCacheMapper->update($existing);
+            $cache = $this->statusCacheMapper->update($existing);
+        } else {
+            $cache = new StatusCache();
+            $cache->setServiceId($serviceId);
+            $cache->setStatus($status);
+            $cache->setResponseMs($responseMs);
+            $cache->setLastCheck($now);
+            $cache->setDetails($details ? json_encode($details) : null);
+            $cache->setConsecutiveFailures($status === 'offline' ? 1 : 0);
+            $cache->setTotalFailures($status === 'offline' ? 1 : 0);
+            $cache->setNotified(false);
+            $cache = $this->statusCacheMapper->insert($cache);
         }
 
-        $cache = new StatusCache();
-        $cache->setServiceId($serviceId);
-        $cache->setStatus($status);
-        $cache->setResponseMs($responseMs);
-        $cache->setLastCheck($now);
-        $cache->setDetails($details ? json_encode($details) : null);
-        $cache->setConsecutiveFailures($status === 'offline' ? 1 : 0);
-        $cache->setNotified(false);
-        return $this->statusCacheMapper->insert($cache);
+        // Write history entry
+        $history = new StatusHistory();
+        $history->setServiceId($serviceId);
+        $history->setStatus($status);
+        $history->setResponseMs($responseMs);
+        $history->setCheckedAt($now);
+        $history->setDetails($details ? json_encode($details) : null);
+        $this->statusHistoryMapper->insert($history);
+
+        return $cache;
     }
 }

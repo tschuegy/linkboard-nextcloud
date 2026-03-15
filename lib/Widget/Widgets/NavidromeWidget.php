@@ -34,10 +34,13 @@ class NavidromeWidget extends AbstractWidget {
     }
 
     public function mapResponse(array $responses, array $config): array {
+        $r0 = $responses[0] ?? [];
+        $r1 = $responses[1] ?? [];
+        $r2 = $responses[2] ?? [];
         return [
-            'songs' => (string)($responses[0]['x-total-count'] ?? (is_array($responses[0]) ? count($responses[0]) : 0)),
-            'albums' => (string)($responses[1]['x-total-count'] ?? (is_array($responses[1]) ? count($responses[1]) : 0)),
-            'artists' => (string)($responses[2]['x-total-count'] ?? (is_array($responses[2]) ? count($responses[2]) : 0)),
+            'songs' => (string)($r0['x-total-count'] ?? (is_array($r0) ? count($r0) : 0)),
+            'albums' => (string)($r1['x-total-count'] ?? (is_array($r1) ? count($r1) : 0)),
+            'artists' => (string)($r2['x-total-count'] ?? (is_array($r2) ? count($r2) : 0)),
         ];
     }
 }

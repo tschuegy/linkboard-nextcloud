@@ -45,6 +45,8 @@ export const settingsApi = {
     getAll: () => axios.get(url('/settings')),
     updateAll: (settings) => axios.put(url('/settings'), { settings }),
     update: (key, value) => axios.put(url(`/settings/${key}`), { value }),
+    getAdmin: () => axios.get(url('/admin/settings')),
+    updateAdmin: (settings) => axios.put(url('/admin/settings'), settings),
 }
 
 // ── Icons ─────────────────────────────────────────────

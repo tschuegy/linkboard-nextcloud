@@ -8,6 +8,7 @@ use OCA\LinkBoard\Db\Service;
 use OCA\LinkBoard\Db\ServiceMapper;
 use OCA\LinkBoard\Db\CategoryMapper;
 use OCA\LinkBoard\Db\StatusCacheMapper;
+use OCA\LinkBoard\Db\StatusHistoryMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\IL10N;
@@ -18,6 +19,7 @@ class ServiceService {
         private ServiceMapper $serviceMapper,
         private CategoryMapper $categoryMapper,
         private StatusCacheMapper $statusCacheMapper,
+        private StatusHistoryMapper $statusHistoryMapper,
         private IL10N $l10n,
         private NotificationService $notificationService,
     ) {
@@ -138,6 +140,7 @@ class ServiceService {
             $service->setPingEnabled($pingEnabled);
             if ($pingEnabled === false) {
                 $this->statusCacheMapper->deleteByServiceId($id);
+                $this->statusHistoryMapper->deleteByServiceId($id);
             }
         }
         if ($widgetType !== null) {
@@ -161,6 +164,7 @@ class ServiceService {
     public function delete(int $id, string $userId): Service {
         $service = $this->find($id, $userId);
         $this->notificationService->clearOfflineNotifications($userId, $id);
+        $this->statusHistoryMapper->deleteByServiceId($id);
         return $this->serviceMapper->delete($service);
     }
 

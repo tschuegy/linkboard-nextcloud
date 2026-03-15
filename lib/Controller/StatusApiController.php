@@ -5,6 +5,7 @@ namespace OCA\LinkBoard\Controller;
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\StatusCheckService;
 use OCA\LinkBoard\Service\ServiceService;
+use OCA\LinkBoard\Db\StatusCacheMapper;
 use OCA\LinkBoard\Service\NotFoundException;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
@@ -18,6 +19,7 @@ class StatusApiController extends ApiController {
         IRequest $request,
         private StatusCheckService $statusCheckService,
         private ServiceService $serviceService,
+        private StatusCacheMapper $statusCacheMapper,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
@@ -48,6 +50,92 @@ class StatusApiController extends ApiController {
         } catch (\Throwable $e) {
             return new DataResponse(['error' => 'Status check failed: ' . $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Get status history for a service
+     */
+    #[NoAdminRequired]
+    public function history(int $id, string $period = '24h'): DataResponse {
+        // Validate period
+        if (!in_array($period, ['1h', '3h', '24h', '7d'], true)) {
+            $period = '24h';
+        }
+
+        try {
+            // Verify ownership
+            $this->serviceService->find($id, $this->userId);
+
+            $history = $this->statusCheckService->getHistory($id, $period);
+            $cache = $this->statusCacheMapper->findByServiceId($id);
+
+            $totalFailures = $cache ? $cache->getTotalFailures() : 0;
+            $currentStatus = $cache ? $cache->getStatus() : 'unknown';
+
+            // Calculate uptime percentage
+            $total = count($history);
+            $online = 0;
+            foreach ($history as $entry) {
+                if ($entry->getStatus() === 'online') {
+                    $online++;
+                }
+            }
+            $uptimePercent = $total > 0 ? round(($online / $total) * 100, 2) : null;
+
+            return new DataResponse([
+                'history' => array_map(fn($h) => $h->jsonSerialize(), $history),
+                'totalFailures' => $totalFailures,
+                'currentStatus' => $currentStatus,
+                'uptimePercent' => $uptimePercent,
+                'period' => $period,
+            ]);
+        } catch (NotFoundException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Get status history for all ping-enabled services
+     */
+    #[NoAdminRequired]
+    public function historyAll(string $period = '24h'): DataResponse {
+        if (!in_array($period, ['1h', '3h', '24h', '7d'], true)) {
+            $period = '24h';
+        }
+
+        $services = $this->serviceService->findAll($this->userId);
+        $result = [];
+
+        foreach ($services as $service) {
+            if (!$service->getPingEnabled()) {
+                continue;
+            }
+            $id = $service->getId();
+            $history = $this->statusCheckService->getHistory($id, $period);
+            $cache = $this->statusCacheMapper->findByServiceId($id);
+
+            $totalFailures = $cache ? $cache->getTotalFailures() : 0;
+            $currentStatus = $cache ? $cache->getStatus() : 'unknown';
+
+            $total = count($history);
+            $online = 0;
+            foreach ($history as $entry) {
+                if ($entry->getStatus() === 'online') {
+                    $online++;
+                }
+            }
+            $uptimePercent = $total > 0 ? round(($online / $total) * 100, 2) : null;
+
+            $result[$id] = [
+                'history' => array_map(fn($h) => $h->jsonSerialize(), $history),
+                'totalFailures' => $totalFailures,
+                'currentStatus' => $currentStatus,
+                'uptimePercent' => $uptimePercent,
+                'period' => $period,
+            ];
+        }
+
+        return new DataResponse($result);
     }
 
     /**

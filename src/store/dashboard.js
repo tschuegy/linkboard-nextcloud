@@ -52,6 +52,8 @@ export const useDashboardStore = defineStore('dashboard', {
         appVersion: null,
         latestVersion: null,
         latestVersionUrl: null,
+        isAdmin: false,
+        adminSettings: {},
     }),
 
     getters: {
@@ -134,6 +136,8 @@ export const useDashboardStore = defineStore('dashboard', {
                 this.appVersion = data.version || null
                 this.latestVersion = data.latestVersion || null
                 this.latestVersionUrl = data.latestVersionUrl || null
+                this.isAdmin = data.isAdmin || false
+                this.adminSettings = data.adminSettings || {}
                 // Fetch widget catalog, widget data, and resource data in parallel
                 this.fetchWidgetCatalog()
                 this.fetchAllWidgetData()
@@ -319,6 +323,14 @@ export const useDashboardStore = defineStore('dashboard', {
             try {
                 const { data } = await settingsApi.updateAll(settingsData)
                 this.settings = data
+            } catch (err) { this.error = t('linkboard', 'Failed to update settings'); throw err }
+        },
+
+        // ── Admin Settings Actions ───────────────────────
+        async updateAdminSettings(data) {
+            try {
+                const { data: result } = await settingsApi.updateAdmin(data)
+                this.adminSettings = result
             } catch (err) { this.error = t('linkboard', 'Failed to update settings'); throw err }
         },
 

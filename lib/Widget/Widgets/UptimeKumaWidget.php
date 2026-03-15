@@ -24,7 +24,7 @@ class UptimeKumaWidget extends AbstractWidget {
     public function buildRequests(string $baseUrl, array $config): array {
         $slug = $config['slug'] ?? 'default';
         return [[
-            'url' => rtrim($baseUrl, '/') . '/api/status-page/' . $slug,
+            'url' => rtrim($baseUrl, '/') . '/api/status-page/heartbeat/' . $slug,
         ]];
     }
 
