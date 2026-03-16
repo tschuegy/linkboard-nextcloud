@@ -16,8 +16,8 @@ class Version001006Date20260310000000 extends SimpleMigrationStep {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
-        if (!$schema->hasTable('linkboard_notification_channels')) {
-            $table = $schema->createTable('linkboard_notification_channels');
+        if (!$schema->hasTable('linkboard_notif_channels')) {
+            $table = $schema->createTable('linkboard_notif_channels');
 
             $table->addColumn('id', Types::BIGINT, [
                 'autoincrement' => true,

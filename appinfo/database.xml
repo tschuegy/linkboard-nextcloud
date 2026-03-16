@@ -353,7 +353,7 @@
     </table>
 
     <table>
-        <name>*dbprefix*linkboard_notification_channels</name>
+        <name>*dbprefix*linkboard_notif_channels</name>
         <declaration>
             <field>
                 <name>id</name>

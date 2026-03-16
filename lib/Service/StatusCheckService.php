@@ -147,6 +147,39 @@ class StatusCheckService {
             ]);
         }
 
+        // HEAD returned 5xx — retry with GET (some servers don't support HEAD)
+        if ($httpCode >= 500) {
+            $this->logger->debug('LinkBoard: HEAD returned ' . $httpCode . ' for ' . $url . ', retrying with GET');
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT_MS => $timeoutMs,
+                CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 3,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
+            ]);
+
+            $startTime = microtime(true);
+            curl_exec($ch);
+            $responseMs = (int)round((microtime(true) - $startTime) * 1000);
+
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            $errno = curl_errno($ch);
+            curl_close($ch);
+
+            if ($errno !== 0) {
+                return $this->saveStatus($serviceId, 'offline', $responseMs, [
+                    'error' => $error,
+                    'errno' => $errno,
+                ]);
+            }
+        }
+
         $status = ($httpCode >= 200 && $httpCode < 500) ? 'online' : 'offline';
 
         return $this->saveStatus($serviceId, $status, $responseMs, [

@@ -6,7 +6,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 
 | Widget | ID | Configuration | Tested |
 |---|---|---|---|
-| AdGuard Home | `adguard` | `username` (required), `password` (required) | [ ] |
+| AdGuard Home | `adguard` | `username` (required), `password` (required) | [x] |
 | APC UPS | `apcups` | — | [ ] |
 | Arcane | `arcane` | `api_key` (required) | [ ] |
 | ArgoCD | `argocd` | `api_key` (required) | [ ] |
@@ -70,7 +70,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Mailcow | `mailcow` | `api_key` (required) | [ ] |
 | Mastodon | `mastodon` | `api_key` (required) | [ ] |
 | Mealie | `mealie` | `api_key` (required) | [ ] |
-| Mikrotik | `mikrotik` | `username` (required), `password` (required) | [ ] |
+| Mikrotik | `mikrotik` | `username` (required), `password` (required) | [x] |
 | Minecraft | `minecraft` | — | [ ] |
 | Miniflux | `miniflux` | `api_key` (required) | [ ] |
 | Moonraker | `moonraker` | `api_key` (optional) | [ ] |
