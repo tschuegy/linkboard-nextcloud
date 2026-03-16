@@ -64,7 +64,7 @@ Download the latest release tarball and extract it into your Nextcloud `apps/` d
 
 ```bash
 cd /path/to/nextcloud/apps
-tar xzf linkboard-v1.2.0.tar.gz
+tar xzf linkboard.tar.gz
 ```
 
 Then enable the app:

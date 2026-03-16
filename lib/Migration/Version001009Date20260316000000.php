@@ -48,8 +48,8 @@ class Version001009Date20260316000000 extends SimpleMigrationStep {
             return null;
         }
 
-        if (!$schema->hasTable('linkboard_notif_channels')) {
-            $table = $schema->createTable('linkboard_notif_channels');
+        if (!$schema->hasTable('linkboard_channels')) {
+            $table = $schema->createTable('linkboard_channels');
 
             $table->addColumn('id', Types::BIGINT, [
                 'autoincrement' => true,
@@ -77,7 +77,7 @@ class Version001009Date20260316000000 extends SimpleMigrationStep {
             ]);
 
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['user_id'], 'lb_nc2_user_idx');
+            $table->addIndex(['user_id'], 'lb_ch_user_idx');
         }
 
         $schema->dropTable('linkboard_notification_channels');
@@ -93,7 +93,7 @@ class Version001009Date20260316000000 extends SimpleMigrationStep {
         // Re-insert saved rows into new table
         foreach ($this->rows as $row) {
             $qb = $this->db->getQueryBuilder();
-            $qb->insert('linkboard_notif_channels')
+            $qb->insert('linkboard_channels')
                 ->values([
                     'id' => $qb->createNamedParameter($row['id']),
                     'user_id' => $qb->createNamedParameter($row['user_id']),

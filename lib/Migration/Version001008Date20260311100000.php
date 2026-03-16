@@ -18,8 +18,8 @@ class Version001008Date20260311100000 extends SimpleMigrationStep {
         $changed = false;
 
         // A) New table: linkboard_status_history
-        if (!$schema->hasTable('linkboard_status_history')) {
-            $table = $schema->createTable('linkboard_status_history');
+        if (!$schema->hasTable('linkboard_history')) {
+            $table = $schema->createTable('linkboard_history');
             $table->addColumn('id', Types::BIGINT, [
                 'autoincrement' => true,
                 'notnull' => true,

@@ -12,7 +12,7 @@ use OCP\IDBConnection;
 class NotificationChannelMapper extends QBMapper {
 
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'linkboard_notif_channels', NotificationChannel::class);
+        parent::__construct($db, 'linkboard_channels', NotificationChannel::class);
     }
 
     /**

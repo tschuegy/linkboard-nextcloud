@@ -11,7 +11,7 @@ use OCP\IDBConnection;
 class StatusHistoryMapper extends QBMapper {
 
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'linkboard_status_history', StatusHistory::class);
+        parent::__construct($db, 'linkboard_history', StatusHistory::class);
     }
 
     /**

@@ -353,7 +353,7 @@
     </table>
 
     <table>
-        <name>*dbprefix*linkboard_notif_channels</name>
+        <name>*dbprefix*linkboard_channels</name>
         <declaration>
             <field>
                 <name>id</name>
@@ -396,6 +396,59 @@
                 <name>lb_nc_user_idx</name>
                 <field>
                     <name>user_id</name>
+                </field>
+            </index>
+        </declaration>
+    </table>
+
+    <table>
+        <name>*dbprefix*linkboard_history</name>
+        <declaration>
+            <field>
+                <name>id</name>
+                <type>integer</type>
+                <length>8</length>
+                <unsigned>true</unsigned>
+                <notnull>true</notnull>
+                <autoincrement>1</autoincrement>
+            </field>
+            <field>
+                <name>service_id</name>
+                <type>integer</type>
+                <length>8</length>
+                <unsigned>true</unsigned>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>status</name>
+                <type>text</type>
+                <length>16</length>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>response_ms</name>
+                <type>integer</type>
+                <length>4</length>
+                <notnull>false</notnull>
+            </field>
+            <field>
+                <name>checked_at</name>
+                <type>text</type>
+                <length>32</length>
+                <notnull>true</notnull>
+            </field>
+            <field>
+                <name>details</name>
+                <type>clob</type>
+                <notnull>false</notnull>
+            </field>
+            <index>
+                <name>lb_sh_svc_checked_idx</name>
+                <field>
+                    <name>service_id</name>
+                </field>
+                <field>
+                    <name>checked_at</name>
                 </field>
             </index>
         </declaration>
