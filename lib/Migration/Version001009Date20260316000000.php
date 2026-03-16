@@ -37,7 +37,7 @@ class Version001009Date20260316000000 extends SimpleMigrationStep {
             ->from('linkboard_notification_channels');
         $result = $qb->executeQuery();
         $this->rows = $result->fetchAll();
-        $result->free();
+        $result->closeCursor();
     }
 
     public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
