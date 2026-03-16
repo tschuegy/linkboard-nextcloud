@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] – 2026-03-16
+
+### Fixed
+- Migration `Version001010Date20260317000000` calling `$result->free()` which does not exist on Nextcloud 33's `ResultAdapter`, causing `occ upgrade` to fail and leaving Nextcloud stuck in maintenance mode (replaced with `closeCursor()`)
+
 ## [1.5.2] – 2026-03-17
 
 ### Fixed

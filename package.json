@@ -1,6 +1,6 @@
 {
     "name": "linkboard",
-    "version": "1.5.2",
+    "version": "1.5.3",
     "description": "Personal service dashboard for Nextcloud",
     "private": true,
     "scripts": {

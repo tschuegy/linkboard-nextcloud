@@ -34,7 +34,7 @@ class Version001010Date20260317000000 extends SimpleMigrationStep {
                 ->from('linkboard_notif_channels');
             $result = $qb->executeQuery();
             $this->channelRows = $result->fetchAll();
-            $result->free();
+            $result->closeCursor();
         }
 
         if ($schema->hasTable('linkboard_status_history')) {
@@ -44,7 +44,7 @@ class Version001010Date20260317000000 extends SimpleMigrationStep {
                 ->from('linkboard_status_history');
             $result = $qb->executeQuery();
             $this->historyRows = $result->fetchAll();
-            $result->free();
+            $result->closeCursor();
         }
     }
 
