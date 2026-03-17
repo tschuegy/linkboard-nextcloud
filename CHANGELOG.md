@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.5] – 2026-03-17
+
+### Changed
+- UniFi widget: added Controller Type selector (UniFi OS vs Legacy Controller) with correct API paths and cookie-based session auth
+- Dropped support for Nextcloud 30/31 and PHP 8.1 (now requires Nextcloud 32+ and PHP 8.2+)
+
+### Fixed
+- Missing translations for Status History modal and Status Overview page (12 new strings in all 57 languages, German fully translated)
+- Status label in StatusHistoryModal not using i18n (`Status` hardcoded instead of `t('linkboard', 'Status')`)
+- Status badge in StatusOverviewPage showing raw status key instead of translated label (Online/Offline/Unknown)
+- Period selector buttons missing focus-visible outline for keyboard accessibility
+
 ## [1.5.4] – 2026-03-16
 
 ### Fixed

@@ -55,8 +55,8 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 
 ## Requirements
 
-- Nextcloud 30, 31, 32, or 33
-- PHP 8.1 – 8.4
+- Nextcloud 32 or 33
+- PHP 8.2 – 8.4
 
 ## Installation
 
@@ -70,6 +70,7 @@ tar xzf linkboard.tar.gz
 Then enable the app:
 
 ```bash
+cd /path/to/nextcloud/
 php occ app:enable linkboard
 ```
 
@@ -79,7 +80,7 @@ php occ app:enable linkboard
 
 - Node.js 20+
 - npm
-- PHP 8.1+
+- PHP 8.2+
 - Composer
 - A Nextcloud development instance
 

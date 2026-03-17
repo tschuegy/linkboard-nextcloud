@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     <span class="status-overview__card-name">{{ svc.name }}</span>
                     <template v-if="allHistoryData[svc.id]">
                         <span class="status-overview__badge" :class="'status-overview__badge--' + allHistoryData[svc.id].currentStatus">
-                            {{ allHistoryData[svc.id].currentStatus }}
+                            {{ statusLabel(allHistoryData[svc.id].currentStatus) }}
                         </span>
                     </template>
                 </div>
@@ -143,6 +143,11 @@ export default {
                 self.loading = false
             })
         },
+        statusLabel: function(s) {
+            if (s === 'online') return t('linkboard', 'Online')
+            if (s === 'offline') return t('linkboard', 'Offline')
+            return t('linkboard', 'Unknown')
+        },
         uptimeClass: function(pct) {
             if (pct === null) return ''
             if (pct >= 99) return 'status-overview__uptime--good'
@@ -191,6 +196,13 @@ export default {
                 background: var(--color-primary);
                 color: var(--color-primary-text);
                 border-color: var(--color-primary);
+            }
+
+            outline: none;
+
+            &:focus-visible {
+                outline: 2px solid var(--color-primary);
+                outline-offset: 1px;
             }
 
             &:hover:not(.active) {

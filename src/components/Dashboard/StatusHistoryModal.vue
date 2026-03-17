@@ -54,7 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         </span>
                     </div>
                     <div class="status-history__stat">
-                        <span class="status-history__stat-label">Status</span>
+                        <span class="status-history__stat-label">{{ t('linkboard', 'Status') }}</span>
                         <span class="status-history__stat-value" :class="'status-history__stat-value--' + historyData.currentStatus">
                             {{ statusLabel }}
                         </span>
@@ -174,6 +174,13 @@ export default {
                 background: var(--color-primary);
                 color: var(--color-primary-text);
                 border-color: var(--color-primary);
+            }
+
+            outline: none;
+
+            &:focus-visible {
+                outline: 2px solid var(--color-primary);
+                outline-offset: 1px;
             }
 
             &:hover:not(.active) {

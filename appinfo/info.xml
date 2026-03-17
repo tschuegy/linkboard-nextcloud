@@ -24,7 +24,7 @@ and access everything from within Nextcloud.
 
 Each user gets their own personal dashboard – up to 500 services.
     ]]></description>
-    <version>1.5.4</version>
+    <version>1.5.5</version>
     <licence>AGPL-3.0-or-later</licence>
     <author>Andreas Busslinger</author>
     <namespace>LinkBoard</namespace>
@@ -44,8 +44,8 @@ Each user gets their own personal dashboard – up to 500 services.
     <screenshot>https://raw.githubusercontent.com/tschuegy/linkboard-nextcloud/main/img/screenshots/screenshot_StatusOverview.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/tschuegy/linkboard-nextcloud/main/img/screenshots/screenshot_StatusSingle.png</screenshot>
     <dependencies>
-        <nextcloud min-version="30" max-version="33"/>
-        <php min-version="8.1" max-version="8.4"/>
+        <nextcloud min-version="32" max-version="33"/>
+        <php min-version="8.2" max-version="8.4"/>
     </dependencies>
     <navigations>
         <navigation>

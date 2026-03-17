@@ -11,6 +11,7 @@ class UnifiWidget extends AbstractWidget {
 
     public function getConfigFields(): array {
         return [
+            ['key' => 'controllerType', 'label' => 'Controller Type', 'type' => 'select', 'required' => false, 'options' => ['UniFi OS (UDM, Cloud Key Gen2+)', 'Legacy Controller']],
             ['key' => 'username', 'label' => 'Username', 'type' => 'text', 'required' => true, 'placeholder' => ''],
             ['key' => 'password', 'label' => 'Password', 'type' => 'password', 'required' => true, 'placeholder' => ''],
             ['key' => 'site', 'label' => 'Site', 'type' => 'text', 'required' => false, 'placeholder' => 'default'],
@@ -26,15 +27,22 @@ class UnifiWidget extends AbstractWidget {
     public function buildRequests(string $baseUrl, array $config): array {
         $base = rtrim($baseUrl, '/');
         $site = $config['site'] ?? 'default';
+        $isLegacy = ($config['controllerType'] ?? '') === 'Legacy Controller';
+
+        $loginPath = $isLegacy ? '/api/login' : '/api/auth/login';
+        $healthPath = $isLegacy
+            ? '/api/s/' . $site . '/stat/health'
+            : '/proxy/network/api/s/' . $site . '/stat/health';
+
         return [
             [
-                'url' => $base . '/api/login',
+                'url' => $base . $loginPath,
                 'method' => 'POST',
                 'headers' => ['Content-Type: application/json'],
                 'body' => json_encode(['username' => $config['username'] ?? '', 'password' => $config['password'] ?? '']),
-                '_unifi_login' => true,
+                '_session_login' => true,
             ],
-            ['url' => $base . '/api/s/' . $site . '/stat/health', 'headers' => [], '_unifi_needs_token' => true],
+            ['url' => $base . $healthPath, 'headers' => [], '_session_needs_cookie' => true],
         ];
     }
 
