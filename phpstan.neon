@@ -1,0 +1,12 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - lib
+    phpVersion: 80200
+    bootstrapFiles:
+        - vendor/autoload.php
+    scanDirectories:
+        - vendor/nextcloud/ocp/OCP

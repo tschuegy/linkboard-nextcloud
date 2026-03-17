@@ -9,9 +9,14 @@
         }
     },
     "require": {
-        "php": ">=8.1"
+        "php": ">=8.2"
     },
     "require-dev": {
-        "nextcloud/ocp": "^30.0"
+        "nextcloud/ocp": "^32.0",
+        "nextcloud/coding-standard": "^1.1",
+        "phpstan/phpstan": "^2.1"
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse --memory-limit=256M"
     }
 }

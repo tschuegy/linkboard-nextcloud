@@ -1,0 +1,469 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, OCA\\LinkBoard\\Db\\Category given\.$#'
+			identifier: argument.type
+			count: 4
+			path: lib/Controller/CategoryApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<OCA\\LinkBoard\\Db\\Category\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/CategoryApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 8
+			path: lib/Controller/CategoryApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/CategoryApiController.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<non\-empty\-array\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: lib/Controller/DashboardApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\|bool\|string\|null\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/DashboardApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/IconApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/IconApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 6
+			path: lib/Controller/IconApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, list\<array\<string, float\|int\|string\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/IconApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/IconApiController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between array and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/Controller/IconApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\|true\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/ImportExportController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 5
+			path: lib/Controller/ImportExportController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
+			identifier: argument.type
+			count: 3
+			path: lib/Controller/NotificationChannelApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<array\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/NotificationChannelApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, bool\|string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/NotificationChannelApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 5
+			path: lib/Controller/NotificationChannelApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/ResourceApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: lib/Controller/ResourceApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, OCA\\LinkBoard\\Db\\Service given\.$#'
+			identifier: argument.type
+			count: 4
+			path: lib/Controller/ServiceApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<OCA\\LinkBoard\\Db\\Service\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: lib/Controller/ServiceApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 7
+			path: lib/Controller/ServiceApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/ServiceApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
+			identifier: argument.type
+			count: 2
+			path: lib/Controller/SettingsApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, int\<60, 1800\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/SettingsApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, int\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/SettingsApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/SettingsApiController.php
+
+		-
+			message: '#^Property OCA\\LinkBoard\\Controller\\SettingsApiController\:\:\$groupManager is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: lib/Controller/SettingsApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, OCA\\LinkBoard\\Db\\StatusCache given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\<string, array\<array\>\|float\|int\|string\|null\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\<array\>\|float\|int\|string\|null\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\<int, array\>\|int\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 3
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Left side of && is always false\.$#'
+			identifier: booleanAnd.leftAlwaysFalse
+			count: 2
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Offset ''_session_login'' on array\{url\: string, headers\?\: array, method\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Offset ''_session_needs…'' on array\{url\: string, headers\?\: array, method\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Offset ''_transmission_rpc'' on array\{url\: string, headers\?\: array, method\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<array\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\<string, array\|string\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 5
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Result of \|\| is always false\.$#'
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between null and null will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Ternary operator condition is always false\.$#'
+			identifier: ternary.alwaysFalse
+			count: 1
+			path: lib/Controller/WidgetProxyController.php
+
+		-
+			message: '#^Instanceof between OCP\\Security\\CSP\\AddContentSecurityPolicyEvent and OCP\\Security\\CSP\\AddContentSecurityPolicyEvent will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: lib/Listener/CSPListener.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 40
+			path: lib/Migration/Version001000Date20260301000000.php
+
+		-
+			message: '#^Call to method addIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 6
+			path: lib/Migration/Version001000Date20260301000000.php
+
+		-
+			message: '#^Call to method addUniqueIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 3
+			path: lib/Migration/Version001000Date20260301000000.php
+
+		-
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 4
+			path: lib/Migration/Version001000Date20260301000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 3
+			path: lib/Migration/Version001004Date20260307000000.php
+
+		-
+			message: '#^Call to method addIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001004Date20260307000000.php
+
+		-
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 3
+			path: lib/Migration/Version001004Date20260307000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 2
+			path: lib/Migration/Version001005Date20260309000000.php
+
+		-
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 2
+			path: lib/Migration/Version001005Date20260309000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 6
+			path: lib/Migration/Version001006Date20260310000000.php
+
+		-
+			message: '#^Call to method addIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001006Date20260310000000.php
+
+		-
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001006Date20260310000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001007Date20260311000000.php
+
+		-
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001007Date20260311000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 7
+			path: lib/Migration/Version001008Date20260311100000.php
+
+		-
+			message: '#^Call to method addIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001008Date20260311100000.php
+
+		-
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001008Date20260311100000.php
+
+		-
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001008Date20260311100000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 6
+			path: lib/Migration/Version001009Date20260316000000.php
+
+		-
+			message: '#^Call to method addIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001009Date20260316000000.php
+
+		-
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001009Date20260316000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 12
+			path: lib/Migration/Version001010Date20260317000000.php
+
+		-
+			message: '#^Call to method addIndex\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 2
+			path: lib/Migration/Version001010Date20260317000000.php
+
+		-
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 2
+			path: lib/Migration/Version001010Date20260317000000.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<mixed, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/Service/ImportExportService.php
+
+		-
+			message: '#^Property OCA\\LinkBoard\\Service\\ImportExportService\:\:\$settingMapper is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: lib/Service/ImportExportService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between float and 0 will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/Service/ResourceService.php
+
+		-
+			message: '#^Dead catch \- OCP\\AppFramework\\Db\\MultipleObjectsReturnedException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 1
+			path: lib/Service/ServiceService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between '''' and ''ONLINE'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/Widget/Widgets/EsphomeWidget.php
+
+		-
+			message: '#^Method OCA\\LinkBoard\\Widget\\Widgets\\ResourcesWidget\:\:resolveFieldPath\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: lib/Widget/Widgets/ResourcesWidget.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: lib/Widget/Widgets/SyncthingRelayWidget.php
