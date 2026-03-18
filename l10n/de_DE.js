@@ -61,6 +61,17 @@ OC.L10N.register("linkboard", {
     "General": "Allgemein",
     "LinkBoard title": "LinkBoard-Titel",
     "Theme": "Theme",
+    "Font colors": "Schriftfarben",
+    "Automatic (detect from background)": "Automatisch (aus Hintergrund erkennen)",
+    "Title font color": "Titel-Schriftfarbe",
+    "Category font color": "Kategorie-Schriftfarbe",
+    "Service font color": "Service-Schriftfarbe",
+    "Description font color": "Beschreibung-Schriftfarbe",
+    "Widget value font color": "Widget-Wert Schriftfarbe",
+    "Widget label font color": "Widget-Label Schriftfarbe",
+    "Card background color": "Karten-Hintergrundfarbe",
+    "Header button font color": "Kopfzeilen-Schaltflächen Schriftfarbe",
+    "Choose color": "Farbe wählen",
     "Background image URL (optional)": "Hintergrundbild URL (optional)",
     "Background blur": "Hintergrund-Unschärfe",
     "Layout": "Layout",
@@ -124,5 +135,6 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "Ungültiges JSON: %s",
     "Invalid JSON": "Ungültiges JSON",
     "Import failed: %s": "Import fehlgeschlagen: %s",
-    "Maximum number of services reached (%s)": "Maximale Anzahl an Services erreicht (%s)"
+    "Maximum number of services reached (%s)": "Maximale Anzahl an Services erreicht (%s)",
+    "Check for updates": "Auf Updates prüfen"
 }, "nplurals=2; plural=(n != 1);");

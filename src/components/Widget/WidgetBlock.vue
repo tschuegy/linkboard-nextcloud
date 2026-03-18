@@ -7,8 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <template>
     <div class="widget-block">
-        <span class="widget-block__value" :title="String(value)">{{ value }}</span>
-        <span class="widget-block__label">{{ label }}</span>
+        <span class="widget-block__value" :title="String(value)" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ value }}</span>
+        <span class="widget-block__label" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ label }}</span>
     </div>
 </template>
 
@@ -18,6 +18,7 @@ export default {
     props: {
         label: { type: String, required: true },
         value: { type: [String, Number], required: true },
+        manualColors: { type: Object, default: function() { return {} } },
     },
 }
 </script>

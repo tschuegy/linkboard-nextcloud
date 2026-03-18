@@ -10,9 +10,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <!-- CPU -->
         <div v-if="config.showCpu && data && data.cpu" class="resource-display__item">
             <div class="resource-display__row">
-                <ChipIcon :size="18" class="resource-display__icon" />
-                <span class="resource-display__label">{{ t('linkboard', 'CPU') }}</span>
-                <span class="resource-display__value">{{ data.cpu.percent }}%</span>
+                <ChipIcon :size="18" class="resource-display__icon" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}" />
+                <span class="resource-display__label" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ t('linkboard', 'CPU') }}</span>
+                <span class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ data.cpu.percent }}%</span>
             </div>
             <div class="resource-display__bar">
                 <div class="resource-display__bar-fill" :style="barStyle(data.cpu.percent)"></div>
@@ -22,9 +22,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <!-- Memory -->
         <div v-if="config.showMemory && data && data.memory" class="resource-display__item">
             <div class="resource-display__row">
-                <MemoryIcon :size="18" class="resource-display__icon" />
-                <span class="resource-display__label">{{ t('linkboard', 'Memory') }}</span>
-                <span class="resource-display__value">{{ formatBytes(data.memory.used) }} {{ t('linkboard', 'of {total}', { total: formatBytes(data.memory.total) }) }}</span>
+                <MemoryIcon :size="18" class="resource-display__icon" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}" />
+                <span class="resource-display__label" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ t('linkboard', 'Memory') }}</span>
+                <span class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ formatBytes(data.memory.used) }} {{ t('linkboard', 'of {total}', { total: formatBytes(data.memory.total) }) }}</span>
             </div>
             <div class="resource-display__bar">
                 <div class="resource-display__bar-fill" :style="barStyle(data.memory.percent)"></div>
@@ -34,9 +34,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <!-- Disks -->
         <div v-for="(disk, idx) in (data && data.disks || [])" :key="'disk-' + idx" class="resource-display__item">
             <div class="resource-display__row">
-                <HarddiskIcon :size="18" class="resource-display__icon" />
-                <span class="resource-display__label">{{ disk.path }}</span>
-                <span class="resource-display__value">{{ formatBytes(disk.used) }} {{ t('linkboard', 'of {total}', { total: formatBytes(disk.total) }) }}</span>
+                <HarddiskIcon :size="18" class="resource-display__icon" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}" />
+                <span class="resource-display__label" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ disk.path }}</span>
+                <span class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ formatBytes(disk.used) }} {{ t('linkboard', 'of {total}', { total: formatBytes(disk.total) }) }}</span>
             </div>
             <div class="resource-display__bar">
                 <div class="resource-display__bar-fill" :style="barStyle(disk.percent)"></div>
@@ -46,18 +46,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <!-- CPU Temperature -->
         <div v-if="config.showCpuTemp && data && data.cpuTemp" class="resource-display__item">
             <div class="resource-display__row">
-                <ThermometerIcon :size="18" class="resource-display__icon" />
-                <span class="resource-display__label">{{ t('linkboard', 'CPU') }} Temp</span>
-                <span class="resource-display__value">{{ data.cpuTemp.value }}&deg;{{ data.cpuTemp.unit }}</span>
+                <ThermometerIcon :size="18" class="resource-display__icon" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}" />
+                <span class="resource-display__label" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ t('linkboard', 'CPU') }} Temp</span>
+                <span class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ data.cpuTemp.value }}&deg;{{ data.cpuTemp.unit }}</span>
             </div>
         </div>
 
         <!-- Uptime -->
         <div v-if="config.showUptime && data && data.uptime" class="resource-display__item">
             <div class="resource-display__row">
-                <ClockOutlineIcon :size="18" class="resource-display__icon" />
-                <span class="resource-display__label">{{ t('linkboard', 'Uptime') }}</span>
-                <span class="resource-display__value">{{ data.uptime }}</span>
+                <ClockOutlineIcon :size="18" class="resource-display__icon" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}" />
+                <span class="resource-display__label" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ t('linkboard', 'Uptime') }}</span>
+                <span class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ data.uptime }}</span>
             </div>
         </div>
 
@@ -88,6 +88,7 @@ export default {
     props: {
         data: { type: Object, default: null },
         config: { type: Object, default: function() { return {} } },
+        manualColors: { type: Object, default: function() { return {} } },
     },
 
     methods: {

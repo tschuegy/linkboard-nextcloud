@@ -62,6 +62,17 @@
     "General": "General",
     "LinkBoard title": "LinkBoard title",
     "Theme": "Theme",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "Background image URL (optional)",
     "Background blur": "Background blur",
     "Layout": "Layout",
@@ -125,7 +136,8 @@
     "Invalid JSON in payload: %s": "Invalid JSON in payload: %s",
     "Invalid JSON": "Invalid JSON",
     "Import failed: %s": "Import failed: %s",
-    "Maximum number of services reached (%s)": "Maximum number of services reached (%s)"
+    "Maximum number of services reached (%s)": "Maximum number of services reached (%s)",
+    "Check for updates": "Check for updates"
   },
   "pluralForm": "nplurals=1; plural=0;"
 }

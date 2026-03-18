@@ -61,6 +61,17 @@ OC.L10N.register("linkboard", {
     "General": "Genel",
     "LinkBoard title": "LinkBoard başlığı",
     "Theme": "Tema",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "Arka plan resmi URL (isteğe bağlı)",
     "Background blur": "Arka plan bulanıklığı",
     "Layout": "Düzen",
@@ -124,5 +135,6 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "Geçersiz JSON: %s",
     "Invalid JSON": "Geçersiz JSON",
     "Import failed: %s": "İçe aktarma başarısız: %s",
-    "Maximum number of services reached (%s)": "Maksimum hizmet sayısına ulaşıldı (%s)"
+    "Maximum number of services reached (%s)": "Maksimum hizmet sayısına ulaşıldı (%s)",
+    "Check for updates": "Check for updates"
 }, "nplurals=2; plural=(n > 1);");

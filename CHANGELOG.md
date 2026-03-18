@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.6] – 2026-03-18
+
+### Added
+- Font color customization: auto-detection from background luminance + manual color picker for title, category, service, description, widget values/labels, header buttons, and card background
+- TrueNAS widget: WebSocket JSON-RPC support for TrueNAS v25.04+
+
+### Changed
+- Font color settings moved from theme-only to dedicated "Font colors" section with auto/manual toggle
+- TrueNAS widget uses WebSocket JSON-RPC (`/api/current`) instead of REST API
+- Widget and resource display components accept `manualColors` prop for font color overrides
+
+### Fixed
+- Header button font color not applying (CSS custom property approach instead of inherited `color`)
+- TrueNAS uptime calculation handling numeric and `$date` boottime formats
+
 ## [1.5.5] – 2026-03-17
 
 ### Changed

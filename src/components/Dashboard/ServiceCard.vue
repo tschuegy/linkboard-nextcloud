@@ -56,13 +56,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <ResourceDisplay
             v-if="service.widgetType === 'resources' && widgetData"
             :data="widgetData.data || null"
-            :config="resourceConfig" />
+            :config="resourceConfig"
+            :manual-colors="manualColors" />
         <WidgetContainer
             v-else-if="service.widgetType && widgetData"
             :data="filteredWidgetFields"
             :field-labels="widgetData.fieldLabels || {}"
             :error="widgetData.error || null"
-            :warning="widgetWarning" />
+            :warning="widgetWarning"
+            :manual-colors="manualColors" />
 
         <!-- Mini status history bars -->
         <div v-if="showStatusBars && hasHistoryBars" class="service-card__history-bars" :style="{ opacity: statusBarsOpacity }">

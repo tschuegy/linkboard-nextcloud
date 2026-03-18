@@ -22,10 +22,19 @@ class TrueNasWidget extends AbstractWidget {
     }
 
     public function buildRequests(string $baseUrl, array $config): array {
-        $headers = ['Authorization: Bearer ' . ($config['api_key'] ?? '')];
         return [
-            ['url' => rtrim($baseUrl, '/') . '/api/v2.0/system/info', 'headers' => $headers],
-            ['url' => rtrim($baseUrl, '/') . '/api/v2.0/alert/list', 'headers' => $headers],
+            [
+                '_websocket_jsonrpc' => true,
+                'url' => rtrim($baseUrl, '/') . '/api/current',
+                'auth' => [
+                    'method' => 'auth.login_with_api_key',
+                    'params' => [$config['api_key'] ?? ''],
+                ],
+                'calls' => [
+                    ['method' => 'system.info', 'params' => []],
+                    ['method' => 'alert.list', 'params' => []],
+                ],
+            ],
         ];
     }
 
@@ -39,7 +48,15 @@ class TrueNasWidget extends AbstractWidget {
 
         $boottime = $info['boottime'] ?? null;
         $uptime = 'N/A';
-        if ($boottime) {
+        if (is_numeric($boottime)) {
+            $diff = time() - (int)$boottime;
+            $days = (int)floor($diff / 86400);
+            $uptime = $days . 'd';
+        } elseif (is_array($boottime) && isset($boottime['$date'])) {
+            $diff = time() - (int)($boottime['$date'] / 1000);
+            $days = (int)floor($diff / 86400);
+            $uptime = $days . 'd';
+        } elseif (is_string($boottime)) {
             $diff = time() - (int)strtotime($boottime);
             $days = (int)floor($diff / 86400);
             $uptime = $days . 'd';

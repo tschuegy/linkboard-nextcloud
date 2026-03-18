@@ -6,6 +6,7 @@ use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\ResourceService;
 use OCA\LinkBoard\Service\NotFoundException;
+use OCA\LinkBoard\Widget\WebSocketJsonRpcClient;
 use OCA\LinkBoard\Widget\WidgetRegistry;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
@@ -155,6 +156,20 @@ class WidgetProxyController extends ApiController {
         $cookieJar = null;
 
         foreach ($requestSpecs as $spec) {
+            // Handle WebSocket JSON-RPC requests
+            if (!empty($spec['_websocket_jsonrpc'])) {
+                $wsClient = new WebSocketJsonRpcClient();
+                $results = $wsClient->execute(
+                    $spec['url'],
+                    $spec['auth'] ?? null,
+                    $spec['calls'] ?? [],
+                );
+                foreach ($results as $r) {
+                    $responses[] = $r;
+                }
+                continue;
+            }
+
             // Inject auth token for any *_needs_token flag
             if ($authToken) {
                 foreach ($spec as $key => $val) {

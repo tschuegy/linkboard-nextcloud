@@ -61,6 +61,17 @@ OC.L10N.register("linkboard", {
     "General": "一般",
     "LinkBoard title": "LinkBoardタイトル",
     "Theme": "テーマ",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "背景画像URL（任意）",
     "Background blur": "背景ぼかし",
     "Layout": "レイアウト",
@@ -124,5 +135,6 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "無効なJSON: %s",
     "Invalid JSON": "無効なJSON",
     "Import failed: %s": "インポート失敗: %s",
-    "Maximum number of services reached (%s)": "サービスの最大数に達しました（%s）"
+    "Maximum number of services reached (%s)": "サービスの最大数に達しました（%s）",
+    "Check for updates": "Check for updates"
 }, "nplurals=1; plural=0;");

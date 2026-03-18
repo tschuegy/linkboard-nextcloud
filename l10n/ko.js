@@ -61,6 +61,17 @@ OC.L10N.register("linkboard", {
     "General": "일반",
     "LinkBoard title": "LinkBoard 제목",
     "Theme": "테마",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "배경 이미지 URL (선택사항)",
     "Background blur": "배경 흐림",
     "Layout": "레이아웃",
@@ -124,5 +135,6 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "잘못된 JSON: %s",
     "Invalid JSON": "잘못된 JSON",
     "Import failed: %s": "가져오기 실패: %s",
-    "Maximum number of services reached (%s)": "최대 서비스 수에 도달했습니다 (%s)"
+    "Maximum number of services reached (%s)": "최대 서비스 수에 도달했습니다 (%s)",
+    "Check for updates": "Check for updates"
 }, "nplurals=1; plural=0;");

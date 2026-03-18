@@ -6,15 +6,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 <template>
-    <div class="linkboard" tabindex="-1" ref="dashboard">
+    <div class="linkboard" :class="{ 'linkboard--light-text': isLightTextMode }" tabindex="-1" ref="dashboard">
         <div v-if="effectiveBackgroundUrl" class="linkboard__bg" :style="bgStyle"></div>
         <div class="linkboard__content">
         <!-- Top Bar -->
         <div class="linkboard__header">
-            <h2 class="linkboard__title">
+            <h2 class="linkboard__title" :style="manualColors.title ? { color: manualColors.title } : {}">
                 {{ settings.title || 'LinkBoard' }}
             </h2>
-            <div class="linkboard__header-actions">
+            <div class="linkboard__header-actions"
+                 :class="{ 'has-custom-color': manualColors.headerButton }"
+                 :style="manualColors.headerButton ? { '--header-btn-color': manualColors.headerButton } : {}">
                 <SearchBar
                     v-if="settings.show_search !== 'false'"
                     ref="searchBar"
@@ -195,7 +197,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             :service-name="statusHistoryServiceName"
             @update:open="showStatusHistory = $event" />
 
-        <div v-if="appVersion" class="linkboard__version-footer">
+        <div v-if="appVersion" class="linkboard__version-footer" :style="manualColors.versionFooter ? { color: manualColors.versionFooter } : {}">
             <a :href="latestVersionUrl || 'https://github.com/tschuegy/linkboard-nextcloud'"
                target="_blank" rel="noopener noreferrer"
                class="linkboard__version-link">
@@ -228,6 +230,7 @@ import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import RefreshIcon from 'vue-material-design-icons/Refresh.vue'
 import DragVerticalIcon from 'vue-material-design-icons/DragVertical.vue'
 import ChartLineIcon from 'vue-material-design-icons/ChartLine.vue'
+import { detectBackgroundLuminance } from '../../utils/contrastDetect.js'
 
 export default {
     name: 'DashboardView',
@@ -259,6 +262,7 @@ export default {
             showStatusHistory: false,
             statusHistoryServiceId: null,
             statusHistoryServiceName: '',
+            detectedTextMode: null,
         }
     },
 
@@ -318,14 +322,41 @@ export default {
             }
             return false
         },
+        effectiveFontColorMode() {
+            if (this.settings.font_color_mode) return this.settings.font_color_mode
+            if (this.settings.theme === 'manual') return 'manual'
+            return 'auto'
+        },
         manualColors() {
-            if (this.settings.theme !== 'manual') return {}
-            return {
-                category: this.settings.manual_color_category || null,
-                service: this.settings.manual_color_service || null,
-                description: this.settings.manual_color_description || null,
-                cardBg: this.settings.manual_color_card_bg || null,
+            if (this.effectiveFontColorMode === 'manual') {
+                return {
+                    title: this.settings.manual_color_title || null,
+                    category: this.settings.manual_color_category || null,
+                    service: this.settings.manual_color_service || null,
+                    description: this.settings.manual_color_description || null,
+                    widgetValue: this.settings.manual_color_widget_value || null,
+                    widgetLabel: this.settings.manual_color_widget_label || null,
+                    cardBg: this.settings.manual_color_card_bg || null,
+                    headerButton: this.settings.manual_color_header_button || null,
+                }
             }
+            if (this.effectiveFontColorMode === 'auto' && this.detectedTextMode === 'light') {
+                return {
+                    title: '#ffffff',
+                    category: '#ffffff',
+                    service: '#ffffff',
+                    description: 'rgba(255,255,255,0.7)',
+                    widgetValue: '#ffffff',
+                    widgetLabel: 'rgba(255,255,255,0.7)',
+                    versionFooter: 'rgba(255,255,255,0.7)',
+                    cardBg: null,
+                    headerButton: '#ffffff',
+                }
+            }
+            return {}
+        },
+        isLightTextMode() {
+            return this.effectiveFontColorMode === 'auto' && this.detectedTextMode === 'light'
         },
     },
 
@@ -354,6 +385,11 @@ export default {
                 this.$nextTick(() => this.initRowSortables())
             }
         },
+        effectiveBackgroundUrl: {
+            handler() { this.runLuminanceDetection() },
+            immediate: true,
+        },
+        effectiveFontColorMode() { this.runLuminanceDetection() },
     },
 
     mounted() {
@@ -379,6 +415,17 @@ export default {
             'reorderCategories', 'reorderServices', 'moveService',
             'moveCategoryToParent', 'fetchAllWidgetData', 'fetchAllResourceData',
         ]),
+
+        runLuminanceDetection() {
+            var self = this
+            if (this.effectiveFontColorMode !== 'auto') {
+                this.detectedTextMode = null
+                return
+            }
+            detectBackgroundLuminance(this.effectiveBackgroundUrl).then(function(mode) {
+                self.detectedTextMode = mode
+            })
+        },
 
         handleRefreshAll() {
             if (this.pingEnabledCount > 0) this.checkAllStatuses()
@@ -726,6 +773,9 @@ export default {
     &__version-update {
         font-weight: bold;
     }
+
+    &__header-actions.has-custom-color :deep(.button-vue) { color: var(--header-btn-color); }
+    &--light-text &__shortcut-hint { color: rgba(255, 255, 255, 0.7); }
 }
 
 .category-group--ghost { opacity: 0.3; background: var(--color-primary-element-light); border-radius: 12px; }

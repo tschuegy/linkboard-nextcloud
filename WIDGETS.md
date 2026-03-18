@@ -127,9 +127,9 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Traefik | `traefik` | `username` (optional), `password` (optional) | [ ] |
 | Transmission | `transmission` | `username` (optional), `password` (optional) | [ ] |
 | Trilium | `trilium` | `api_key` (required) — shows version, DB version, note count | [x] |
-| TrueNAS | `truenas` | `api_key` (required) | [ ] |
+| TrueNAS | `truenas` | `api_key` (required) — Uses WebSocket JSON-RPC (`/api/current`) for TrueNAS v25.04+ compatibility | [x] |
 | TubeArchivist | `tubearchivist` | `api_key` (required) | [ ] |
-| UniFi Controller | `unifi` | `controllerType` (select: `UniFi OS (UDM, Cloud Key Gen2+)` / `Legacy Controller`, default UniFi OS), `username` (required), `password` (required), `site` (optional). **Note:** `unifi.ui.com` is not supported — use your local controller IP. | [ ] |
+| UniFi Controller | `unifi` | `controllerType` (select: `UniFi OS (UDM, Cloud Key Gen2+)` / `Legacy Controller`, default UniFi OS), `username` (required), `password` (required), `site` (optional). **Note:** `unifi.ui.com` is not supported — use your local controller IP. | [x] |
 | Unmanic | `unmanic` | — | [ ] |
 | Unraid | `unraid` | `api_key` (required) | [ ] |
 | Uptime Kuma | `uptimekuma` | `slug` (required) | [x] |

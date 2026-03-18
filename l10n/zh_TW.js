@@ -61,6 +61,17 @@ OC.L10N.register("linkboard", {
     "General": "常规",
     "LinkBoard title": "LinkBoard 标题",
     "Theme": "主题",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "背景图片 URL（可選）",
     "Background blur": "背景模糊",
     "Layout": "布局",
@@ -124,5 +135,6 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "無效的 JSON：%s",
     "Invalid JSON": "無效的 JSON",
     "Import failed: %s": "匯入失败：%s",
-    "Maximum number of services reached (%s)": "已達到服务最大數量（%s）"
+    "Maximum number of services reached (%s)": "已達到服务最大數量（%s）",
+    "Check for updates": "Check for updates"
 }, "nplurals=1; plural=0;");

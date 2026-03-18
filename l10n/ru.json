@@ -62,6 +62,17 @@
     "General": "Общие",
     "LinkBoard title": "Заголовок LinkBoard",
     "Theme": "Тема",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "URL фонового изображения (необязательно)",
     "Background blur": "Размытие фона",
     "Layout": "Макет",
@@ -125,7 +136,8 @@
     "Invalid JSON in payload: %s": "Недопустимый JSON: %s",
     "Invalid JSON": "Недопустимый JSON",
     "Import failed: %s": "Ошибка импорта: %s",
-    "Maximum number of services reached (%s)": "Достигнуто максимальное количество сервисов (%s)"
+    "Maximum number of services reached (%s)": "Достигнуто максимальное количество сервисов (%s)",
+    "Check for updates": "Check for updates"
   },
   "pluralForm": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);"
 }

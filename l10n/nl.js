@@ -61,6 +61,17 @@ OC.L10N.register("linkboard", {
     "General": "Algemeen",
     "LinkBoard title": "LinkBoard-titel",
     "Theme": "Thema",
+    "Font colors": "Font colors",
+    "Automatic (detect from background)": "Automatic (detect from background)",
+    "Title font color": "Title font color",
+    "Category font color": "Category font color",
+    "Service font color": "Service font color",
+    "Description font color": "Description font color",
+    "Widget value font color": "Widget value font color",
+    "Widget label font color": "Widget label font color",
+    "Card background color": "Card background color",
+    "Header button font color": "Header button font color",
+    "Choose color": "Choose color",
     "Background image URL (optional)": "Achtergrondafbeelding URL (optioneel)",
     "Background blur": "Achtergrondvervaging",
     "Layout": "Indeling",
@@ -124,5 +135,6 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "Ongeldige JSON: %s",
     "Invalid JSON": "Ongeldige JSON",
     "Import failed: %s": "Import mislukt: %s",
-    "Maximum number of services reached (%s)": "Maximaal aantal services bereikt (%s)"
+    "Maximum number of services reached (%s)": "Maximaal aantal services bereikt (%s)",
+    "Check for updates": "Check for updates"
 }, "nplurals=2; plural=(n != 1);");

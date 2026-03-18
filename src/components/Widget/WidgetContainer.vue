@@ -15,9 +15,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 v-for="(value, key) in data"
                 :key="key"
                 :label="fieldLabels[key] || key"
-                :value="value" />
+                :value="value"
+                :manual-colors="manualColors" />
         </template>
-        <div v-if="warning" class="widget-container__warning" :title="warning">
+        <div v-if="warning" class="widget-container__warning" :title="warning" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">
             {{ warning }}
         </div>
     </div>
@@ -34,6 +35,7 @@ export default {
         fieldLabels: { type: Object, default: () => ({}) },
         error: { type: String, default: null },
         warning: { type: String, default: null },
+        manualColors: { type: Object, default: function() { return {} } },
     },
 }
 </script>

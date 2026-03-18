@@ -20,11 +20,22 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="settings-page__section">
             <h3>{{ t('linkboard', 'General') }}</h3>
             <NcTextField v-model="form.title" :label="t('linkboard', 'LinkBoard title')" />
-            <div class="settings-page__field">
-                <label>{{ t('linkboard', 'Theme') }}</label>
-                <NcSelect v-model="form.theme" :options="themeOptions" :clearable="false" />
-            </div>
-            <template v-if="form.theme === 'manual'">
+
+        <div class="settings-page__section">
+            <h3>{{ t('linkboard', 'Font colors') }}</h3>
+            <NcCheckboxRadioSwitch
+                :checked="effectiveFontColorMode === 'auto'"
+                type="switch"
+                @update:checked="form.font_color_mode = $event ? 'auto' : 'manual'">
+                {{ t('linkboard', 'Automatic (detect from background)') }}
+            </NcCheckboxRadioSwitch>
+            <div :style="effectiveFontColorMode === 'auto' ? { opacity: 0.4, pointerEvents: 'none' } : {}">
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Title font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_title">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_title || '#000' }" /></template> {{ form.manual_color_title || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
                 <div class="settings-page__field">
                     <label>{{ t('linkboard', 'Category font color') }}</label>
                     <NcColorPicker v-model="form.manual_color_category">
@@ -44,12 +55,31 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </NcColorPicker>
                 </div>
                 <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Widget value font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_widget_value">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_widget_value || '#000' }" /></template> {{ form.manual_color_widget_value || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Widget label font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_widget_label">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_widget_label || '#000' }" /></template> {{ form.manual_color_widget_label || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+                <div class="settings-page__field">
                     <label>{{ t('linkboard', 'Card background color') }}</label>
                     <NcColorPicker v-model="form.manual_color_card_bg">
                         <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_card_bg || '#000' }" /></template> {{ form.manual_color_card_bg || t('linkboard', 'Choose color') }} </NcButton>
                     </NcColorPicker>
                 </div>
-            </template>
+                <div class="settings-page__field">
+                    <label>{{ t('linkboard', 'Header button font color') }}</label>
+                    <NcColorPicker v-model="form.manual_color_header_button">
+                        <NcButton> <template #icon><span class="color-swatch" :style="{ background: form.manual_color_header_button || '#000' }" /></template> {{ form.manual_color_header_button || t('linkboard', 'Choose color') }} </NcButton>
+                    </NcColorPicker>
+                </div>
+            </div>
+        </div>
             <NcTextField v-model="form.background_url" :label="t('linkboard', 'Background image URL (optional)')" placeholder="https://..." />
             <div class="settings-page__field">
                 <label>{{ t('linkboard', 'Background blur') }}</label>
@@ -292,7 +322,6 @@ export default {
         return {
             form: {},
             icons: [],
-            themeOptions: ['auto', 'dark', 'light', 'manual'],
             columnOptions: ['2', '3', '4', '5', '6'],
             cardStyleOptions: ['default', 'compact', 'minimal'],
             statusStyleOptions: ['dot', 'basic'],
@@ -326,6 +355,11 @@ export default {
     },
     computed: {
         ...mapState(useDashboardStore, ['settings', 'isAdmin', 'adminSettings']),
+        effectiveFontColorMode() {
+            if (this.form.font_color_mode) return this.form.font_color_mode
+            if (this.form.theme === 'manual') return 'manual'
+            return 'auto'
+        },
         opacityPercent() {
             return Math.round(parseFloat(this.form.status_bars_opacity || '0.8') * 100)
         },
