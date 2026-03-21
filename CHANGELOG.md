@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Grafana-style grid layout: free drag, resize, and placement of Service Cards within categories
+- Configurable grid settings per category (column count, row height, auto-arrange, min-height)
+- Lock/unlock edit mode toggle replaces pencil icon
+
+### Changed
+- Service Cards now use vue-grid-layout instead of CSS Grid with fixed column spans
+- Category columns setting replaced by grid settings (colCount: 6/12/24)
+
+### Removed
+- Cross-category drag-and-drop (use category dropdown in Service Editor instead)
+- Fixed column-span resize handle on Service Cards (replaced by vue-grid-layout handles)
+
 ## [1.5.6] – 2026-03-18
 
 ### Added

@@ -26,6 +26,9 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 ## Features
 
 - **Service Dashboard** – Organize services in categories with drag & drop sorting
+- **Grid Layout** – Grafana-style grid layout with free drag, resize, and placement of cards within categories
+- **Configurable Grid** – Set grid granularity per category (6, 12, or 24 columns) with auto-arrange and row-height options
+- **Edit Mode** – Lock/unlock edit mode toggle to prevent accidental changes
 - **Status Checks** – Live health checks with dot or border indicators
 - **Status History** – Response time charts, uptime tracking, and a dedicated status overview page
 - **Offline Notifications** – Nextcloud notifications when services go down, with configurable threshold and recovery alerts
