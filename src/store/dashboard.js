@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { t } from '@nextcloud/l10n'
 import { dashboardApi, categoryApi, serviceApi, settingsApi, statusApi, widgetApi, resourceApi, importExportApi } from '../services/api.js'
+import { migrateCategory, migrateServices, assignDefaultLayout } from '../utils/gridMigration.js'
 
 function findCategoryInTree(categories, id) {
     for (var i = 0; i < categories.length; i++) {
@@ -132,6 +133,8 @@ export const useDashboardStore = defineStore('dashboard', {
             try {
                 const { data } = await dashboardApi.getAll()
                 this.categories = data.categories || []
+				// Migrate legacy grid data to vue-grid-layout format
+				this.migrateGridLayouts()
                 this.settings = data.settings || {}
                 this.appVersion = data.version || null
                 this.latestVersion = data.latestVersion || null
@@ -453,6 +456,104 @@ export const useDashboardStore = defineStore('dashboard', {
                 this.editingCategoryId = null
             }
         },
+
+		/**
+		 * Migrate legacy _colSpan / columns data to _layout / _gridSettings.
+		 * Runs once on load, persists changes via API.
+		 */
+		async migrateGridLayouts() {
+			var self = this
+			var categoryUpdates = []
+			var serviceUpdates = []
+
+			forEachCategory(this.categories, function(cat) {
+				// Migrate category grid settings
+				var newConfig = migrateCategory(cat)
+				if (newConfig) {
+					categoryUpdates.push({ id: cat.id, config: newConfig })
+					cat.config = newConfig
+				}
+
+				// Migrate service layouts
+				var config = cat.config || {}
+				if (typeof config === 'string') {
+					try { config = JSON.parse(config) } catch (e) { config = {} }
+				}
+				var gridSettings = (config._gridSettings) || { colCount: 12 }
+				var effectiveOldColumns = cat.columns || 4
+				var updates = migrateServices(cat.services || [], gridSettings.colCount, effectiveOldColumns)
+
+				for (var i = 0; i < updates.length; i++) {
+					serviceUpdates.push(updates[i])
+					// Update in-memory immediately
+					var svc = (cat.services || []).find(function(s) { return s.id === updates[i].serviceId })
+					if (svc) {
+						svc.widgetConfig = updates[i].widgetConfig
+					}
+				}
+			})
+
+			// Persist category config changes
+			for (var i = 0; i < categoryUpdates.length; i++) {
+				try {
+					await categoryApi.update(categoryUpdates[i].id, {
+						config: JSON.stringify(categoryUpdates[i].config),
+					})
+				} catch (err) {
+					console.error('LinkBoard: Failed to migrate category grid settings', categoryUpdates[i].id, err)
+				}
+			}
+
+			// Persist service layout changes
+			for (var j = 0; j < serviceUpdates.length; j++) {
+				try {
+					await serviceApi.update(serviceUpdates[j].serviceId, {
+						widgetConfig: serviceUpdates[j].widgetConfig,
+					})
+				} catch (err) {
+					console.error('LinkBoard: Failed to migrate service layout', serviceUpdates[j].serviceId, err)
+				}
+			}
+		},
+
+		/**
+		 * Batch update layouts for all services in a category.
+		 * Called by CategoryGroup on @layout-updated event.
+		 */
+		async batchUpdateLayouts(categoryId, layoutMap) {
+			// layoutMap: { serviceId: { x, y, w, h }, ... }
+			var self = this
+			var cat = null
+			forEachCategory(this.categories, function(c) {
+				if (c.id === categoryId) cat = c
+			})
+			if (!cat) return
+
+			var promises = []
+			var serviceIds = Object.keys(layoutMap)
+			for (var i = 0; i < serviceIds.length; i++) {
+				var serviceId = parseInt(serviceIds[i])
+				var newLayout = layoutMap[serviceId]
+				var svc = (cat.services || []).find(function(s) { return s.id === serviceId })
+				if (!svc) continue
+
+				var cfg = Object.assign({}, svc.widgetConfig || {})
+				cfg._layout = newLayout
+				svc.widgetConfig = cfg
+
+				promises.push(serviceApi.update(serviceId, {
+					widgetType: svc.widgetType || '',
+					widgetConfig: cfg,
+				}))
+			}
+
+			try {
+				await Promise.all(promises)
+			} catch (err) {
+				console.error('LinkBoard: Failed to batch update layouts', err)
+				self.error = t('linkboard', 'Failed to update layout')
+			}
+		},
 
         selectServiceForEdit(serviceId) {
             this.editingServiceId = serviceId
