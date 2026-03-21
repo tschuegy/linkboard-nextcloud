@@ -17,11 +17,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         :style="manualColors.cardBg ? { backgroundColor: manualColors.cardBg } : {}"
         @click="$emit('click')">
 
-        <!-- Drag handle (edit mode only) -->
-        <span v-if="editMode" class="service-card__drag-handle" @click.stop>
-            <DragIcon :size="16" />
-        </span>
-
         <!-- Edit button -->
         <button
             v-if="editMode"
@@ -64,6 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             :field-labels="widgetData.fieldLabels || {}"
             :error="widgetData.error || null"
             :warning="widgetWarning"
+            :items-per-row="widgetItemsPerRow"
             :manual-colors="manualColors" />
 
         <!-- Mini status history bars -->
@@ -82,11 +78,9 @@ import ServiceIcon from '../Shared/ServiceIcon.vue'
 import WidgetContainer from '../Widget/WidgetContainer.vue'
 import ResourceDisplay from './ResourceDisplay.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
-import DragIcon from 'vue-material-design-icons/DragVertical.vue'
-
 export default {
     name: 'ServiceCard',
-    components: { ServiceIcon, WidgetContainer, ResourceDisplay, PencilIcon, DragIcon },
+    components: { ServiceIcon, WidgetContainer, ResourceDisplay, PencilIcon },
     props: {
         service: { type: Object, required: true },
         editMode: { type: Boolean, default: false },
@@ -130,6 +124,10 @@ export default {
             if (this.statusStyle !== 'basic' || !this.service.status || !this.service.pingEnabled) return ''
             return 'service-card--status-' + this.service.status.status
         },
+        widgetItemsPerRow: function() {
+            var cfg = this.service.widgetConfig
+            return cfg && cfg._itemsPerRow ? parseInt(cfg._itemsPerRow) : 0
+        },
         statusTooltip: function() {
             var s = this.service.status
             if (!s) return ''
@@ -151,6 +149,8 @@ export default {
     cursor: pointer;
     transition: all 0.15s ease;
     min-height: 64px;
+    height: 100%;
+    overflow-y: auto;
 
     &:hover {
         transform: translateY(-1px);
@@ -167,21 +167,6 @@ export default {
         opacity: 0.4;
         background: var(--color-primary-element-light) !important;
         border: 2px dashed var(--color-primary) !important;
-    }
-
-    &__drag-handle {
-        position: absolute;
-        left: 8px;
-        top: 12px;
-        z-index: 1;
-        cursor: grab;
-        color: var(--color-text-maxcontrast);
-        opacity: 0.4;
-        transition: opacity 0.15s;
-        display: flex;
-        align-items: center;
-        &:hover { opacity: 1; color: var(--color-primary); }
-        &:active { cursor: grabbing; }
     }
 
     &__edit-btn {
