@@ -209,6 +209,12 @@ class WidgetProxyController extends ApiController {
             $responses[] = $response;
         }
 
+        // Execute follow-up requests (two-stage widgets)
+        $followUpSpecs = $widget->buildFollowUpRequests($responses, $baseUrl, $config);
+        foreach ($followUpSpecs as $spec) {
+            $responses[] = $this->executeRequest($spec, null);
+        }
+
         // Clean up cookie jar
         if ($cookieJar && file_exists($cookieJar)) {
             @unlink($cookieJar);

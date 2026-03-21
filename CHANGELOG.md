@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] – 2026-03-21
+
+### Fixed
+- PHPStan CI errors: expand `buildRequests()` return type to include all optional request spec keys (`auth`, `calls`, `_websocket_jsonrpc`, etc.)
+- Widget container overflow: allow widget blocks to wrap instead of being hidden
+
+### Added
+- Two-stage widget support: `buildFollowUpRequests()` method for widgets that need sequential API calls
+- Arcane widget: reworked with environment auto-detection, shows containers/projects/images/volumes/networks
+- Widget container `itemsPerRow` prop for CSS grid layout control
+
 ## [1.6.0] – 2026-03-21
 
 ### Added

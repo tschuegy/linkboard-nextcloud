@@ -50,7 +50,7 @@ abstract class AbstractWidget {
      *
      * @param  string $baseUrl   The service's base URL (from Service.href)
      * @param  array  $config    Decoded widgetConfig from the database
-     * @return array<array{url: string, headers?: array, method?: string}>
+     * @return array<array{url: string, headers?: array, method?: string, body?: string, auth?: array, calls?: array, _websocket_jsonrpc?: bool, _session_login?: bool, _session_needs_cookie?: bool, _transmission_rpc?: bool}>
      */
     abstract public function buildRequests(string $baseUrl, array $config): array;
 
@@ -74,6 +74,21 @@ abstract class AbstractWidget {
      * @return array<string, string|int|float>
      */
     abstract public function mapResponse(array $responses, array $config): array;
+
+    /**
+     * Build follow-up requests based on initial responses.
+     *
+     * Override this when a widget needs two-stage requests
+     * (e.g. discover an ID first, then fetch data based on it).
+     *
+     * @param  array  $responses  Responses from buildRequests()
+     * @param  string $baseUrl    The service's base URL
+     * @param  array  $config     Decoded widgetConfig
+     * @return array<array{url: string, headers?: array, method?: string, body?: string}>
+     */
+    public function buildFollowUpRequests(array $responses, string $baseUrl, array $config): array {
+        return [];
+    }
 
     /**
      * Whether this widget reads local system data instead of making HTTP requests.

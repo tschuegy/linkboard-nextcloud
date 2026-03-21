@@ -31,7 +31,7 @@ export default {
     gap: 2px;
     padding: 6px 8px;
     min-width: 0;
-    flex: 1 1 0;
+    flex: 1 1 60px;
 
     &__label {
         font-size: 10px;

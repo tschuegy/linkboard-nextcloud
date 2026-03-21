@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 <template>
-    <div class="widget-container">
+    <div class="widget-container" :style="containerStyle">
         <div v-if="error" class="widget-container__error">
             {{ error }}
         </div>
@@ -36,6 +36,20 @@ export default {
         error: { type: String, default: null },
         warning: { type: String, default: null },
         manualColors: { type: Object, default: function() { return {} } },
+        itemsPerRow: { type: [Number, String], default: 0 },
+    },
+    computed: {
+        containerStyle: function() {
+            var n = parseInt(this.itemsPerRow)
+            if (n > 0) {
+                return {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(' + n + ', 1fr)',
+                    justifyItems: 'start',
+                }
+            }
+            return {}
+        },
     },
 }
 </script>
@@ -48,8 +62,7 @@ export default {
     padding-top: 6px;
     border-top: 1px solid var(--color-border);
     margin-top: 8px;
-    flex-wrap: nowrap;
-    overflow: hidden;
+    flex-wrap: wrap;
 
     &__error {
         font-size: 11px;

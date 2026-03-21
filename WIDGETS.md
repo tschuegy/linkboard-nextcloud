@@ -8,7 +8,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 |---|---|---|---|
 | AdGuard Home | `adguard` | `username` (required), `password` (required) | [x] |
 | APC UPS | `apcups` | — | [ ] |
-| Arcane | `arcane` | `api_key` (required) | [ ] |
+| Arcane | `arcane` | `api_key` (required), `environment_id` (optional) | [x] |
 | ArgoCD | `argocd` | `api_key` (required) | [ ] |
 | Audiobookshelf | `audiobookshelf` | `api_key` (required) | [ ] |
 | Authentik | `authentik` | `api_key` (required) | [ ] |
