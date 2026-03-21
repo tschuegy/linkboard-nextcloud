@@ -113,6 +113,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </div>
                 </template>
             </template>
+            <template v-if="form.widgetType && form.widgetType !== 'resources'">
+                <div class="service-editor__field">
+                    <NcTextField
+                        :value="widgetConfigValue('_itemsPerRow')"
+                        :label="t('linkboard', 'Items per row')"
+                        type="number"
+                        placeholder="Auto"
+                        @update:value="setWidgetConfigValue('_itemsPerRow', $event)" />
+                </div>
+            </template>
         </div>
 
         <div class="service-editor__actions">
@@ -203,6 +213,9 @@ export default {
         },
         'form.widgetType'(newVal, oldVal) {
             if (newVal !== oldVal) {
+                var oldCfg = this.form.widgetConfig || {}
+                var savedLayout = oldCfg._layout
+                var savedItemsPerRow = oldCfg._itemsPerRow
                 var cfg = {}
                 var def = this.widgetCatalog.find(function(w) { return w.id === newVal })
                 if (def) {
@@ -212,6 +225,8 @@ export default {
                         }
                     }
                 }
+                if (savedLayout) cfg._layout = savedLayout
+                if (savedItemsPerRow) cfg._itemsPerRow = savedItemsPerRow
                 this.form.widgetConfig = cfg
             }
         },
