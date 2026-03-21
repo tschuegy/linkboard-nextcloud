@@ -142,5 +142,9 @@ OC.L10N.register("linkboard", {
     "Card columns": "Card columns",
     "Items per row": "Items per row",
     "Lock layout": "Lock layout",
-    "Unlock layout": "Unlock layout"
+    "Unlock layout": "Unlock layout",
+    "Grid columns": "Grid columns",
+    "Row height (px)": "Row height (px)",
+    "Auto-arrange cards": "Auto-arrange cards",
+    "Minimum height (rows)": "Minimum height (rows)"
 }, "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);");

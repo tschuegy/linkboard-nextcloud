@@ -142,5 +142,9 @@ OC.L10N.register("linkboard", {
     "Card columns": "Kartenspalten",
     "Items per row": "Elemente pro Zeile",
     "Lock layout": "Layout sperren",
-    "Unlock layout": "Layout entsperren"
+    "Unlock layout": "Layout entsperren",
+    "Grid columns": "Rasterspalten",
+    "Row height (px)": "Zeilenhöhe (px)",
+    "Auto-arrange cards": "Karten automatisch anordnen",
+    "Minimum height (rows)": "Mindesthöhe (Zeilen)"
 }, "nplurals=2; plural=(n != 1);");

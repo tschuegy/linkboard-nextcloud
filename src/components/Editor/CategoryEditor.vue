@@ -29,11 +29,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcTextField v-model="form.tab" :label="t('linkboard', 'Tab (optional)')" :placeholder="t('linkboard', 'Tab name for grouping')" />
 
                 <div class="category-editor__field">
-                    <label>{{ t('linkboard', 'Columns') }}</label>
-                    <NcSelect v-model="form.columns" :options="columnOptions" :clearable="true" :placeholder="t('linkboard', 'Automatic')" />
-                </div>
-
-                <div class="category-editor__field">
                     <label>{{ t('linkboard', 'Parent category') }}</label>
                     <NcSelect v-model="selectedParent" :options="parentOptions" :clearable="true" :placeholder="t('linkboard', 'None (top-level)')" label="label" />
                 </div>
@@ -42,6 +37,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     {{ t('linkboard', 'Initially collapsed') }}
                 </NcCheckboxRadioSwitch>
             </template>
+
+            <div class="category-editor__field">
+                <label>{{ t('linkboard', 'Grid columns') }}</label>
+                <NcSelect v-model="gridConfig.colCount" :options="colCountOptions" :clearable="false" />
+            </div>
+            <div class="category-editor__field">
+                <label>{{ t('linkboard', 'Row height (px)') }}</label>
+                <NcTextField :value="String(gridConfig.rowHeight)" type="number" @update:value="gridConfig.rowHeight = parseInt($event) || 80" />
+            </div>
+            <div class="category-editor__field">
+                <NcCheckboxRadioSwitch :checked.sync="gridConfig.autoCompress">
+                    {{ t('linkboard', 'Auto-arrange cards') }}
+                </NcCheckboxRadioSwitch>
+            </div>
+            <div class="category-editor__field">
+                <label>{{ t('linkboard', 'Minimum height (rows)') }}</label>
+                <NcTextField :value="String(gridConfig.minHeight)" type="number" @update:value="gridConfig.minHeight = parseInt($event) || 0" />
+            </div>
 
             <template v-if="form.type === 'resources'">
                 <NcCheckboxRadioSwitch :checked.sync="resourceConfig.showCpu" type="switch">
@@ -94,9 +107,18 @@ export default {
     },
     data() {
         var cfg = this.category.config || {}
+        if (typeof cfg === 'string') {
+            try { cfg = JSON.parse(cfg) } catch (e) { cfg = {} }
+        }
         return {
             form: { ...this.category },
-            columnOptions: [1, 2, 3, 4, 5, 6],
+            colCountOptions: [6, 12, 24],
+            gridConfig: {
+                colCount: (cfg._gridSettings || {}).colCount || 12,
+                rowHeight: (cfg._gridSettings || {}).rowHeight || 80,
+                autoCompress: (cfg._gridSettings || {}).autoCompress !== undefined ? (cfg._gridSettings || {}).autoCompress : true,
+                minHeight: (cfg._gridSettings || {}).minHeight || 0,
+            },
             typeOptions: [
                 { id: 'default', label: t('linkboard', 'Default') },
                 { id: 'spacer', label: t('linkboard', 'Spacer') },
@@ -136,6 +158,9 @@ export default {
             handler(newVal) {
                 this.form = { ...newVal }
                 var cfg = newVal.config || {}
+                if (typeof cfg === 'string') {
+                    try { cfg = JSON.parse(cfg) } catch (e) { cfg = {} }
+                }
                 this.resourceConfig = {
                     showCpu: cfg.showCpu !== undefined ? cfg.showCpu : true,
                     showMemory: cfg.showMemory !== undefined ? cfg.showMemory : true,
@@ -143,6 +168,13 @@ export default {
                     showCpuTemp: cfg.showCpuTemp !== undefined ? cfg.showCpuTemp : false,
                     tempUnit: cfg.tempUnit || 'C',
                     diskPathsText: (cfg.diskPaths || ['/']).join('\n'),
+                }
+                var gs = cfg._gridSettings || {}
+                this.gridConfig = {
+                    colCount: gs.colCount || 12,
+                    rowHeight: gs.rowHeight || 80,
+                    autoCompress: gs.autoCompress !== undefined ? gs.autoCompress : true,
+                    minHeight: gs.minHeight || 0,
                 }
             },
             deep: true,
@@ -157,7 +189,7 @@ export default {
                 name: this.form.name,
                 icon: isDefault ? this.form.icon : null,
                 tab: isDefault ? this.form.tab : null,
-                columns: isDefault ? this.form.columns : null,
+                columns: null,
                 collapsed: isDefault ? this.form.collapsed : false,
                 parentId: isDefault ? this.form.parentId : null,
                 type: this.form.type || 'default',
@@ -177,6 +209,26 @@ export default {
                     diskPaths: paths,
                 })
             }
+            // Merge grid settings into config for all category types
+            var existingConfig = {}
+            if (payload.config) {
+                // Resources type already set payload.config above
+                existingConfig = JSON.parse(payload.config)
+            } else {
+                var rawConfig = this.category.config || {}
+                if (typeof rawConfig === 'string') {
+                    try { existingConfig = JSON.parse(rawConfig) } catch (e) { existingConfig = {} }
+                } else {
+                    existingConfig = Object.assign({}, rawConfig)
+                }
+            }
+            existingConfig._gridSettings = {
+                colCount: this.gridConfig.colCount,
+                rowHeight: this.gridConfig.rowHeight,
+                autoCompress: this.gridConfig.autoCompress,
+                minHeight: this.gridConfig.minHeight,
+            }
+            payload.config = JSON.stringify(existingConfig)
             this.$emit('save', payload)
         },
     },
