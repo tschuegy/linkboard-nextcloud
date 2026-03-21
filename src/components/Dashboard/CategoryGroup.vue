@@ -1,6 +1,6 @@
 <!--
 LinkBoard - CategoryGroup.vue
-Category with SortableJS drag & drop for services
+Category with vue-grid-layout drag & resize for services
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
@@ -102,28 +102,47 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
             <transition name="collapse">
                 <div v-show="!isCollapsed">
-                    <div
+                    <grid-layout
                         ref="serviceGrid"
+                        :key="gridLayoutKey"
                         class="category-group__grid"
-                        :style="gridStyle">
-                        <ServiceCard
-                            v-for="service in category.services"
-                            :key="service.id"
-                            :class="{ 'service-card--wide': service.widgetType === 'resources' }"
-                            :data-service-id="String(service.id)"
-                            :service="service"
-                            :edit-mode="editMode"
-                            :card-style="cardStyle"
-                            :card-background="cardBackground"
-                            :status-style="statusStyle"
-                            :widget-data="getWidgetData(service.id)"
-                            :show-status-bars="showStatusBars"
-                            :status-bars-opacity="statusBarsOpacity"
-                            :manual-colors="manualColors"
-                            @click="handleServiceClick(service)"
-                            @edit="$emit('edit-service', service.id)"
-                            @status-click="$emit('status-click', $event)" />
-                    </div>
+                        :style="gridMinHeight"
+                        :layout.sync="gridLayout"
+                        :col-num="gridSettings.colCount"
+                        :row-height="gridSettings.rowHeight"
+                        :is-draggable="editMode"
+                        :is-resizable="editMode"
+                        :vertical-compact="gridSettings.autoCompress"
+                        :use-css-transforms="true"
+                        :responsive="true"
+                        :cols="responsiveCols"
+                        :margin="[12, 12]"
+                        @layout-updated="onLayoutUpdated">
+                        <grid-item
+                            v-for="item in gridLayout"
+                            :key="item.i"
+                            :i="item.i"
+                            :x="item.x"
+                            :y="item.y"
+                            :w="item.w"
+                            :h="item.h"
+                            class="category-group__grid-item"
+                            :class="{ 'category-group__grid-item--editing': editMode }">
+                            <ServiceCard
+                                :service="getServiceById(item.i)"
+                                :edit-mode="editMode"
+                                :card-style="cardStyle"
+                                :card-background="cardBackground"
+                                :status-style="statusStyle"
+                                :widget-data="getWidgetData(parseInt(item.i))"
+                                :show-status-bars="showStatusBars"
+                                :status-bars-opacity="statusBarsOpacity"
+                                :manual-colors="manualColors"
+                                @click="handleServiceClick(getServiceById(item.i))"
+                                @edit="$emit('edit-service', parseInt(item.i))"
+                                @status-click="$emit('status-click', $event)" />
+                        </grid-item>
+                    </grid-layout>
 
                 </div>
             </transition>
@@ -133,7 +152,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script>
 import { t } from '@nextcloud/l10n'
-import Sortable from 'sortablejs'
+import { GridLayout, GridItem } from 'vue-grid-layout'
 import { NcButton } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
 import { isUnicodeStyle, getSpacerChar, SPACER_CHARS } from '../../utils/spacerStyles.js'
@@ -153,6 +172,7 @@ export default {
 
     components: {
         NcButton, ServiceCard, ServiceIcon, ResourceDisplay,
+        GridLayout, GridItem,
         PlusIcon, PencilIcon, DeleteIcon, ChevronDownIcon, DragIcon,
     },
 
@@ -173,7 +193,8 @@ export default {
     data: function() {
         return {
             isCollapsed: this.loadCollapsed(),
-            sortableInstance: null,
+            gridLayout: [],
+            gridLayoutKey: 0,
         }
     },
 
@@ -207,56 +228,62 @@ export default {
             for (var j = 0; j < 80; j++) { result += (j > 0 ? sep : '') + ch }
             return result
         },
-        gridStyle: function() {
-            var cols = this.category.columns
-            if (cols) {
-                return { gridTemplateColumns: 'repeat(' + cols + ', 1fr)' }
+        gridSettings: function() {
+            var config = this.category.config || {}
+            if (typeof config === 'string') {
+                try { config = JSON.parse(config) } catch (e) { config = {} }
             }
-            var max = parseInt(this.maxColumns)
-            if (max > 0) {
-                return {
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(max(200px, calc((100% - ' + (max - 1) * 12 + 'px) / ' + max + ')), 1fr))',
-                }
+            var gs = config._gridSettings || {}
+            return {
+                colCount: gs.colCount || 12,
+                rowHeight: gs.rowHeight || 80,
+                autoCompress: gs.autoCompress !== undefined ? gs.autoCompress : true,
+                minHeight: gs.minHeight || 0,
+            }
+        },
+        gridMinHeight: function() {
+            var mh = this.gridSettings.minHeight
+            if (mh > 0) {
+                return { minHeight: (mh * this.gridSettings.rowHeight) + 'px' }
             }
             return {}
+        },
+        responsiveCols: function() {
+            var col = this.gridSettings.colCount
+            return {
+                lg: col,
+                md: Math.max(1, Math.round(col * 0.67)),
+                sm: Math.max(1, Math.round(col * 0.5)),
+                xs: 1,
+            }
         },
     },
 
     watch: {
-        editMode: function(isEdit) {
-            var self = this
-            this.$nextTick(function() {
-                if (isEdit && !self.isCollapsed) {
-                    self.initSortable()
-                } else {
-                    self.destroySortable()
+        'category.services': {
+            handler: function(services) {
+                var layout = []
+                var svcs = services || []
+                for (var i = 0; i < svcs.length; i++) {
+                    var svc = svcs[i]
+                    var cfg = svc.widgetConfig || {}
+                    var l = cfg._layout || { x: 0, y: i, w: 3, h: 2 }
+                    layout.push({
+                        i: String(svc.id),
+                        x: l.x,
+                        y: l.y,
+                        w: l.w,
+                        h: l.h,
+                    })
                 }
-            })
+                this.gridLayout = layout
+            },
+            immediate: true,
+            deep: true,
         },
         isCollapsed: function(val) {
-            var self = this
             this.saveCollapsed(val)
-            if (!val && this.editMode) {
-                this.$nextTick(function() {
-                    self.initSortable()
-                })
-            } else {
-                this.destroySortable()
-            }
         },
-    },
-
-    mounted: function() {
-        if (this.editMode && !this.isCollapsed) {
-            var self = this
-            this.$nextTick(function() {
-                self.initSortable()
-            })
-        }
-    },
-
-    beforeDestroy: function() {
-        this.destroySortable()
     },
 
     methods: {
@@ -268,6 +295,13 @@ export default {
 
         toggleCollapse: function() {
             this.isCollapsed = !this.isCollapsed
+            if (!this.isCollapsed) {
+                // After category expand, force vue-grid-layout to re-render
+                var self = this
+                this.$nextTick(function() {
+                    self.gridLayoutKey = (self.gridLayoutKey || 0) + 1
+                })
+            }
         },
 
         handleServiceClick: function(service) {
@@ -278,46 +312,30 @@ export default {
             }
         },
 
-        initSortable: function() {
-            this.destroySortable()
-            var el = this.$refs.serviceGrid
-            if (!el) return
-            var self = this
-
-            this.sortableInstance = Sortable.create(el, {
-                group: 'services',
-                animation: 200,
-                handle: '.service-card__drag-handle',
-                ghostClass: 'service-card--ghost',
-                onEnd: function(evt) {
-                    var serviceId = parseInt(evt.item.dataset.serviceId)
-                    var fromCatEl = evt.from.closest('[data-category-id]')
-                    var toCatEl = evt.to.closest('[data-category-id]')
-                    var fromCatId = fromCatEl ? parseInt(fromCatEl.dataset.categoryId) : null
-                    var toCatId = toCatEl ? parseInt(toCatEl.dataset.categoryId) : null
-
-                    if (fromCatId !== toCatId && toCatId) {
-                        self.$emit('service-moved', { serviceId: serviceId, toCategoryId: toCatId })
-                    } else if (evt.oldIndex !== evt.newIndex) {
-                        var services = self.category.services.slice()
-                        var moved = services.splice(evt.oldIndex, 1)[0]
-                        services.splice(evt.newIndex, 0, moved)
-                        self.$emit('reorder-services', {
-                            categoryId: self.category.id,
-                            services: services,
-                        })
-                    }
-                },
-            })
-        },
-
-        destroySortable: function() {
-            if (this.sortableInstance) {
-                this.sortableInstance.destroy()
-                this.sortableInstance = null
+        getServiceById: function(itemI) {
+            var id = parseInt(itemI)
+            var services = this.category.services || []
+            for (var i = 0; i < services.length; i++) {
+                if (services[i].id === id) return services[i]
             }
+            return null
         },
 
+        onLayoutUpdated: function(newLayout) {
+            if (!this.editMode) return
+            var layoutMap = {}
+            for (var i = 0; i < newLayout.length; i++) {
+                var item = newLayout[i]
+                layoutMap[parseInt(item.i)] = {
+                    x: item.x,
+                    y: item.y,
+                    w: item.w,
+                    h: item.h,
+                }
+            }
+            var store = useDashboardStore()
+            store.batchUpdateLayouts(this.category.id, layoutMap)
+        },
 
         loadCollapsed: function() {
             try {
@@ -367,11 +385,13 @@ export default {
     }
     &__actions { display: flex; gap: 2px; }
     &__grid {
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 12px; min-height: 40px;
-
-        .service-card--wide {
-            grid-column: span 2;
+        min-height: 40px;
+    }
+    &__grid-item {
+        &--editing {
+            border: 1px dashed var(--color-border-dark);
+            border-radius: var(--border-radius-large);
+            cursor: grab;
         }
     }
     &__spacer {
@@ -399,6 +419,26 @@ export default {
     }
     &__name--spacer {
         color: var(--color-text-maxcontrast);
+    }
+}
+
+// vue-grid-layout placeholder styling
+.vue-grid-item.vue-grid-placeholder {
+    background: var(--color-primary) !important;
+    opacity: 0.2;
+    border-radius: var(--border-radius-large);
+}
+
+// vue-grid-layout resize handle styling
+.vue-grid-item > .vue-resizable-handle {
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.category-group__grid-item--editing > .vue-resizable-handle {
+    opacity: 0.3;
+    &:hover {
+        opacity: 1;
     }
 }
 
