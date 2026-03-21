@@ -136,5 +136,11 @@ OC.L10N.register("linkboard", {
     "Invalid JSON": "Invalid JSON",
     "Import failed: %s": "Import failed: %s",
     "Maximum number of services reached (%s)": "Maximum number of services reached (%s)",
-    "Check for updates": "Check for updates"
+    "Check for updates": "Check for updates",
+    "Environment ID": "Environment ID",
+    "Leave empty to auto-detect": "Leave empty to auto-detect",
+    "Card columns": "Card columns",
+    "Items per row": "Items per row",
+    "Lock layout": "Lock layout",
+    "Unlock layout": "Unlock layout"
 }, "nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : 4);");

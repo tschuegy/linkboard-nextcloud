@@ -137,7 +137,13 @@
     "Invalid JSON": "Nieprawidłowy JSON",
     "Import failed: %s": "Import nie powiódł się: %s",
     "Maximum number of services reached (%s)": "Osiągnięto maksymalną liczbę usług (%s)",
-    "Check for updates": "Check for updates"
+    "Check for updates": "Check for updates",
+    "Environment ID": "Environment ID",
+    "Leave empty to auto-detect": "Leave empty to auto-detect",
+    "Card columns": "Card columns",
+    "Items per row": "Items per row",
+    "Lock layout": "Lock layout",
+    "Unlock layout": "Unlock layout"
   },
   "pluralForm": "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);"
 }

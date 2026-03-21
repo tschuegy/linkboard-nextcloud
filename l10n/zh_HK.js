@@ -136,5 +136,11 @@ OC.L10N.register("linkboard", {
     "Invalid JSON": "无效的 JSON",
     "Import failed: %s": "导入失败：%s",
     "Maximum number of services reached (%s)": "已达到服务最大数量（%s）",
-    "Check for updates": "Check for updates"
+    "Check for updates": "Check for updates",
+    "Environment ID": "Environment ID",
+    "Leave empty to auto-detect": "Leave empty to auto-detect",
+    "Card columns": "Card columns",
+    "Items per row": "Items per row",
+    "Lock layout": "Lock layout",
+    "Unlock layout": "Unlock layout"
 }, "nplurals=1; plural=0;");

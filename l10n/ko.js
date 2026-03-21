@@ -136,5 +136,11 @@ OC.L10N.register("linkboard", {
     "Invalid JSON": "잘못된 JSON",
     "Import failed: %s": "가져오기 실패: %s",
     "Maximum number of services reached (%s)": "최대 서비스 수에 도달했습니다 (%s)",
-    "Check for updates": "Check for updates"
+    "Check for updates": "Check for updates",
+    "Environment ID": "Environment ID",
+    "Leave empty to auto-detect": "Leave empty to auto-detect",
+    "Card columns": "Card columns",
+    "Items per row": "Items per row",
+    "Lock layout": "Lock layout",
+    "Unlock layout": "Unlock layout"
 }, "nplurals=1; plural=0;");

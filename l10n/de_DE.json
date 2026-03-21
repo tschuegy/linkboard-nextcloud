@@ -137,7 +137,13 @@
     "Invalid JSON": "Ungültiges JSON",
     "Import failed: %s": "Import fehlgeschlagen: %s",
     "Maximum number of services reached (%s)": "Maximale Anzahl an Services erreicht (%s)",
-    "Check for updates": "Auf Updates prüfen"
+    "Check for updates": "Auf Updates prüfen",
+    "Environment ID": "Umgebungs-ID",
+    "Leave empty to auto-detect": "Leer lassen für automatische Erkennung",
+    "Card columns": "Kartenspalten",
+    "Items per row": "Elemente pro Zeile",
+    "Lock layout": "Layout sperren",
+    "Unlock layout": "Layout entsperren"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

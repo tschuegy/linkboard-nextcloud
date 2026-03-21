@@ -33,10 +33,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </NcButton>
                 <NcButton
                     :type="editMode ? 'primary' : 'tertiary'"
-                    :aria-label="editMode ? t('linkboard', 'Stop editing') : t('linkboard', 'Edit dashboard')"
+                    :aria-label="editMode ? t('linkboard', 'Lock layout') : t('linkboard', 'Unlock layout')"
                     @click="toggleEditMode">
                     <template #icon>
-                        <PencilIcon :size="20" />
+                        <LockOpenVariantIcon v-if="editMode" :size="20" />
+                        <LockIcon v-else :size="20" />
                     </template>
                     {{ editMode ? t('linkboard', 'Done') : t('linkboard', 'Edit') }}
                 </NcButton>
@@ -108,8 +109,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
                     @add-service="showNewServiceDialog"
-                    @reorder-services="handleReorderServices"
-                    @service-moved="handleServiceMoved"
                     @status-click="openStatusHistory" />
                 <CategoryGroup
                     v-for="child in (cat.children || [])" :key="child.id"
@@ -129,8 +128,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     @edit-service="selectServiceForEdit"
                     @delete-category="handleDeleteCategory"
                     @add-service="showNewServiceDialog"
-                    @reorder-services="handleReorderServices"
-                    @service-moved="handleServiceMoved"
                     @status-click="openStatusHistory" />
             </div>
 
@@ -224,7 +221,8 @@ import CategoryEditor from '../Editor/CategoryEditor.vue'
 import SearchBar from './SearchBar.vue'
 import StatusHistoryModal from './StatusHistoryModal.vue'
 import EmptyState from '../Shared/EmptyState.vue'
-import PencilIcon from 'vue-material-design-icons/Pencil.vue'
+import LockIcon from 'vue-material-design-icons/Lock.vue'
+import LockOpenVariantIcon from 'vue-material-design-icons/LockOpenVariant.vue'
 import CogIcon from 'vue-material-design-icons/Cog.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import RefreshIcon from 'vue-material-design-icons/Refresh.vue'
@@ -238,7 +236,7 @@ export default {
     components: {
         NcButton, NcLoadingIcon, NcNoteCard, NcDialog, NcTextField, NcCheckboxRadioSwitch, NcSelect,
         CategoryGroup, ServiceEditor, CategoryEditor, SearchBar, EmptyState, StatusHistoryModal,
-        PencilIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon, ChartLineIcon,
+        LockIcon, LockOpenVariantIcon, CogIcon, PlusIcon, RefreshIcon, DragVerticalIcon, ChartLineIcon,
     },
 
     data() {
@@ -577,31 +575,6 @@ export default {
                 : null
             if (input) input.focus()
         },
-
-        // Drag & Drop: Services
-        async handleReorderServices({ categoryId, services }) {
-            const store = useDashboardStore()
-            var found = null
-            for (var c of store.categories) {
-                if (c.id === categoryId) { found = c; break }
-                for (var ch of (c.children || [])) {
-                    if (ch.id === categoryId) { found = ch; break }
-                }
-                if (found) break
-            }
-            if (found) {
-                found.services = services
-                const order = Object.fromEntries(services.map((svc, idx) => [svc.id, idx]))
-                try { await this.reorderServices(order) }
-                catch (err) { await this.fetchDashboard() }
-            }
-        },
-
-        async handleServiceMoved({ serviceId, toCategoryId }) {
-            try { await this.moveService(serviceId, toCategoryId) }
-            catch (err) { await this.fetchDashboard() }
-        },
-
 
         // CRUD
         showNewCategoryDialog() {

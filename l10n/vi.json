@@ -137,7 +137,13 @@
     "Invalid JSON": "Invalid JSON",
     "Import failed: %s": "Import failed: %s",
     "Maximum number of services reached (%s)": "Maximum number of services reached (%s)",
-    "Check for updates": "Check for updates"
+    "Check for updates": "Check for updates",
+    "Environment ID": "Environment ID",
+    "Leave empty to auto-detect": "Leave empty to auto-detect",
+    "Card columns": "Card columns",
+    "Items per row": "Items per row",
+    "Lock layout": "Lock layout",
+    "Unlock layout": "Unlock layout"
   },
   "pluralForm": "nplurals=1; plural=0;"
 }
