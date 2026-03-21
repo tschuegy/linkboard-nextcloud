@@ -252,11 +252,12 @@ export default {
         },
         responsiveCols: function() {
             var col = this.gridSettings.colCount
+            var min = Math.max(1, Math.round(col * 0.25))
             return {
                 lg: col,
-                md: Math.max(1, Math.round(col * 0.67)),
-                sm: Math.max(1, Math.round(col * 0.5)),
-                xs: 1,
+                md: Math.max(min, Math.round(col * 0.67)),
+                sm: Math.max(min, Math.round(col * 0.5)),
+                xs: min,
             }
         },
     },
