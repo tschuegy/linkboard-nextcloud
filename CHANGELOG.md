@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.6.0] – 2026-03-21
 
 ### Added
 - Grafana-style grid layout: free drag, resize, and placement of Service Cards within categories
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Service Cards now use vue-grid-layout instead of CSS Grid with fixed column spans
 - Category columns setting replaced by grid settings (colCount: 6/12/24)
+- **Migration note:** Existing Service Cards are automatically converted to the new grid layout, but card sizes may not match the previous layout exactly. A one-time manual adjustment of card sizes and positions may be required after upgrading.
 
 ### Removed
 - Cross-category drag-and-drop (use category dropdown in Service Editor instead)
