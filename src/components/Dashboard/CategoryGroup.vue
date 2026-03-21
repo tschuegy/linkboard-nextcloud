@@ -117,7 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         :responsive="true"
                         :cols="responsiveCols"
                         :margin="[12, 12]"
-                        @layout-updated="onLayoutUpdated">
+                        >
                         <grid-item
                             v-for="item in gridLayout"
                             :key="item.i"
@@ -127,7 +127,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                             :w="item.w"
                             :h="item.h"
                             class="category-group__grid-item"
-                            :class="{ 'category-group__grid-item--editing': editMode }">
+                            :class="{ 'category-group__grid-item--editing': editMode }"
+                            @moved="onItemMoved"
+                            @resized="onItemResized">
                             <ServiceCard
                                 :service="getServiceById(item.i)"
                                 :edit-mode="editMode"
@@ -276,7 +278,10 @@ export default {
                         h: l.h,
                     })
                 }
-                this.gridLayout = layout
+                // Only update if layout actually changed (avoid feedback loops)
+                if (JSON.stringify(layout) !== JSON.stringify(this.gridLayout)) {
+                    this.gridLayout = layout
+                }
             },
             immediate: true,
             deep: true,
@@ -321,20 +326,32 @@ export default {
             return null
         },
 
-        onLayoutUpdated: function(newLayout) {
+        onItemMoved: function(i, newX, newY) {
+            this.scheduleLayoutPersist()
+        },
+
+        onItemResized: function(i, newH, newW) {
+            this.scheduleLayoutPersist()
+        },
+
+        scheduleLayoutPersist: function() {
             if (!this.editMode) return
-            var layoutMap = {}
-            for (var i = 0; i < newLayout.length; i++) {
-                var item = newLayout[i]
-                layoutMap[parseInt(item.i)] = {
-                    x: item.x,
-                    y: item.y,
-                    w: item.w,
-                    h: item.h,
+            var self = this
+            clearTimeout(this.layoutUpdateTimer)
+            this.layoutUpdateTimer = setTimeout(function() {
+                var layoutMap = {}
+                for (var i = 0; i < self.gridLayout.length; i++) {
+                    var item = self.gridLayout[i]
+                    layoutMap[parseInt(item.i)] = {
+                        x: item.x,
+                        y: item.y,
+                        w: item.w,
+                        h: item.h,
+                    }
                 }
-            }
-            var store = useDashboardStore()
-            store.batchUpdateLayouts(this.category.id, layoutMap)
+                var store = useDashboardStore()
+                store.batchUpdateLayouts(self.category.id, layoutMap)
+            }, 300)
         },
 
         loadCollapsed: function() {

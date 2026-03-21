@@ -249,6 +249,30 @@ export const useDashboardStore = defineStore('dashboard', {
                 if (catFound) {
                     if (!catFound.category.services) catFound.category.services = []
                     catFound.category.services.push(data)
+
+                    // Assign default layout to the newly created service
+                    var catConfig = catFound.category.config || {}
+                    if (typeof catConfig === 'string') {
+                        try { catConfig = JSON.parse(catConfig) } catch (e) { catConfig = {} }
+                    }
+                    var colCount = (catConfig._gridSettings || {}).colCount || 12
+                    var defaultLayout = assignDefaultLayout(
+                        catFound.category.services || [],
+                        !!data.widgetType,
+                        colCount
+                    )
+                    var newSvc = (catFound.category.services || []).find(function(s) { return s.id === data.id })
+                    if (newSvc) {
+                        var cfg = Object.assign({}, newSvc.widgetConfig || {})
+                        cfg._layout = defaultLayout
+                        newSvc.widgetConfig = cfg
+                        serviceApi.update(data.id, {
+                            widgetType: data.widgetType || '',
+                            widgetConfig: cfg,
+                        }).catch(function(err) {
+                            console.error('LinkBoard: Failed to assign default layout', err)
+                        })
+                    }
                 }
                 return data
             } catch (err) {

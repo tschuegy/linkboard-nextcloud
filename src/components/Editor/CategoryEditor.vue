@@ -38,23 +38,25 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </NcCheckboxRadioSwitch>
             </template>
 
-            <div class="category-editor__field">
-                <label>{{ t('linkboard', 'Grid columns') }}</label>
-                <NcSelect v-model="gridConfig.colCount" :options="colCountOptions" :clearable="false" />
-            </div>
-            <div class="category-editor__field">
-                <label>{{ t('linkboard', 'Row height (px)') }}</label>
-                <NcTextField :value="String(gridConfig.rowHeight)" type="number" @update:value="gridConfig.rowHeight = parseInt($event) || 80" />
-            </div>
-            <div class="category-editor__field">
-                <NcCheckboxRadioSwitch :checked.sync="gridConfig.autoCompress">
-                    {{ t('linkboard', 'Auto-arrange cards') }}
-                </NcCheckboxRadioSwitch>
-            </div>
-            <div class="category-editor__field">
-                <label>{{ t('linkboard', 'Minimum height (rows)') }}</label>
-                <NcTextField :value="String(gridConfig.minHeight)" type="number" @update:value="gridConfig.minHeight = parseInt($event) || 0" />
-            </div>
+            <template v-if="form.type === 'default'">
+                <div class="category-editor__field">
+                    <label>{{ t('linkboard', 'Grid columns') }}</label>
+                    <NcSelect v-model="gridConfig.colCount" :options="colCountOptions" :clearable="false" />
+                </div>
+                <div class="category-editor__field">
+                    <label>{{ t('linkboard', 'Row height (px)') }}</label>
+                    <NcTextField :value="String(gridConfig.rowHeight)" type="number" @update:value="gridConfig.rowHeight = parseInt($event) || 80" />
+                </div>
+                <div class="category-editor__field">
+                    <NcCheckboxRadioSwitch :checked.sync="gridConfig.autoCompress">
+                        {{ t('linkboard', 'Auto-arrange cards') }}
+                    </NcCheckboxRadioSwitch>
+                </div>
+                <div class="category-editor__field">
+                    <label>{{ t('linkboard', 'Minimum height (rows)') }}</label>
+                    <NcTextField :value="String(gridConfig.minHeight)" type="number" @update:value="gridConfig.minHeight = parseInt($event) || 0" />
+                </div>
+            </template>
 
             <template v-if="form.type === 'resources'">
                 <NcCheckboxRadioSwitch :checked.sync="resourceConfig.showCpu" type="switch">
