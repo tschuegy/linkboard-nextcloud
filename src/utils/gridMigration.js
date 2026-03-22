@@ -28,6 +28,7 @@ function getDefaultGridSettings() {
 		rowHeight: DEFAULT_ROW_HEIGHT,
 		autoCompress: true,
 		minHeight: 0,
+		responsiveLayout: false,
 	}
 }
 
