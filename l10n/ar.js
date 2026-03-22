@@ -146,5 +146,6 @@ OC.L10N.register("linkboard", {
     "Grid columns": "Grid columns",
     "Row height (px)": "Row height (px)",
     "Auto-arrange cards": "Auto-arrange cards",
+    "Responsive column adjustment": "Responsive column adjustment",
     "Minimum height (rows)": "Minimum height (rows)"
 }, "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

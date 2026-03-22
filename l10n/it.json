@@ -147,6 +147,7 @@
     "Grid columns": "Grid columns",
     "Row height (px)": "Row height (px)",
     "Auto-arrange cards": "Auto-arrange cards",
+    "Responsive column adjustment": "Responsive column adjustment",
     "Minimum height (rows)": "Minimum height (rows)"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"

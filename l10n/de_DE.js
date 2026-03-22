@@ -146,5 +146,6 @@ OC.L10N.register("linkboard", {
     "Grid columns": "Rasterspalten",
     "Row height (px)": "Zeilenhöhe (px)",
     "Auto-arrange cards": "Karten automatisch anordnen",
+    "Responsive column adjustment": "Responsive Spaltenanpassung",
     "Minimum height (rows)": "Mindesthöhe (Zeilen)"
 }, "nplurals=2; plural=(n != 1);");

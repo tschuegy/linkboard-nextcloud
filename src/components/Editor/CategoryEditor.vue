@@ -53,6 +53,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </NcCheckboxRadioSwitch>
                 </div>
                 <div class="category-editor__field">
+                    <NcCheckboxRadioSwitch :checked.sync="gridConfig.responsiveLayout">
+                        {{ t('linkboard', 'Responsive column adjustment') }}
+                    </NcCheckboxRadioSwitch>
+                </div>
+                <div class="category-editor__field">
                     <label>{{ t('linkboard', 'Minimum height (rows)') }}</label>
                     <NcTextField :value="String(gridConfig.minHeight)" type="number" @update:value="gridConfig.minHeight = parseInt($event) || 0" />
                 </div>
@@ -120,6 +125,7 @@ export default {
                 rowHeight: (cfg._gridSettings || {}).rowHeight || 80,
                 autoCompress: (cfg._gridSettings || {}).autoCompress !== undefined ? (cfg._gridSettings || {}).autoCompress : true,
                 minHeight: (cfg._gridSettings || {}).minHeight || 0,
+                responsiveLayout: (cfg._gridSettings || {}).responsiveLayout !== undefined ? (cfg._gridSettings || {}).responsiveLayout : false,
             },
             typeOptions: [
                 { id: 'default', label: t('linkboard', 'Default') },
@@ -177,6 +183,7 @@ export default {
                     rowHeight: gs.rowHeight || 80,
                     autoCompress: gs.autoCompress !== undefined ? gs.autoCompress : true,
                     minHeight: gs.minHeight || 0,
+                    responsiveLayout: gs.responsiveLayout !== undefined ? gs.responsiveLayout : false,
                 }
             },
             deep: true,
@@ -229,6 +236,7 @@ export default {
                 rowHeight: this.gridConfig.rowHeight,
                 autoCompress: this.gridConfig.autoCompress,
                 minHeight: this.gridConfig.minHeight,
+                responsiveLayout: this.gridConfig.responsiveLayout,
             }
             payload.config = JSON.stringify(existingConfig)
             this.$emit('save', payload)
