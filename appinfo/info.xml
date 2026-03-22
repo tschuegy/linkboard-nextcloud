@@ -24,7 +24,7 @@ and access everything from within Nextcloud.
 
 Each user gets their own personal dashboard – up to 500 services.
     ]]></description>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
     <licence>AGPL-3.0-or-later</licence>
     <author>Andreas Busslinger</author>
     <namespace>LinkBoard</namespace>
