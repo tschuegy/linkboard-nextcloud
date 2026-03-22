@@ -114,7 +114,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         :is-resizable="editMode"
                         :vertical-compact="gridSettings.autoCompress"
                         :use-css-transforms="true"
-                        :responsive="true"
+                        :responsive="gridSettings.responsiveLayout"
                         :cols="responsiveCols"
                         :margin="[12, 12]"
                         >
@@ -241,6 +241,7 @@ export default {
                 rowHeight: gs.rowHeight || 80,
                 autoCompress: gs.autoCompress !== undefined ? gs.autoCompress : true,
                 minHeight: gs.minHeight || 0,
+                responsiveLayout: gs.responsiveLayout !== undefined ? gs.responsiveLayout : false,
             }
         },
         gridMinHeight: function() {
