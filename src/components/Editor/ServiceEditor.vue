@@ -66,6 +66,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     label="label"
                     :reduce="opt => opt.value" />
             </div>
+            <div v-if="form.widgetType === 'table'" class="service-editor__field">
+                <p class="service-editor__hint">
+                    {{ t('linkboard', 'Edit the table directly on the card.') }}
+                </p>
+            </div>
             <template v-if="selectedWidgetDef">
                 <template v-for="field in selectedWidgetDef.configFields">
                     <div v-if="field.type === 'mappings'" :key="field.key" class="service-editor__mappings">
@@ -113,7 +118,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </div>
                 </template>
             </template>
-            <template v-if="form.widgetType && form.widgetType !== 'resources'">
+            <template v-if="form.widgetType && form.widgetType !== 'resources' && form.widgetType !== 'table'">
                 <div class="service-editor__field">
                     <NcTextField
                         :value="widgetConfigValue('_itemsPerRow')"
@@ -224,6 +229,10 @@ export default {
                             cfg[def.configFields[i].key] = []
                         }
                     }
+                }
+                if (newVal === 'table') {
+                    cfg.columns = ['Column 1', 'Column 2']
+                    cfg.rows = [['', '']]
                 }
                 if (savedLayout) cfg._layout = savedLayout
                 if (savedItemsPerRow) cfg._itemsPerRow = savedItemsPerRow
@@ -338,6 +347,13 @@ export default {
 
     &__mappings {
         display: flex; flex-direction: column; gap: 8px;
+    }
+
+    &__hint {
+        font-size: 13px;
+        color: var(--color-text-maxcontrast);
+        margin: 0;
+        font-style: italic;
     }
 
     &__mappings-title {

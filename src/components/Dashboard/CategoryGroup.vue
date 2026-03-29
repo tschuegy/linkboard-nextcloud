@@ -312,9 +312,7 @@ export default {
         },
 
         handleServiceClick: function(service) {
-            if (this.editMode) {
-                this.$emit('edit-service', service.id)
-            } else if (service.href) {
+            if (!this.editMode && service.href) {
                 window.open(service.href, service.target || '_blank')
             }
         },

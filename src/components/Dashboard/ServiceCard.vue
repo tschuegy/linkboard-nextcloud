@@ -53,6 +53,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             :data="widgetData.data || null"
             :config="resourceConfig"
             :manual-colors="manualColors" />
+        <TableDisplay
+            v-else-if="service.widgetType === 'table'"
+            :service="service"
+            :edit-mode="editMode"
+            :manual-colors="manualColors" />
         <WidgetContainer
             v-else-if="service.widgetType && widgetData"
             :data="filteredWidgetFields"
@@ -77,10 +82,11 @@ import { t } from '@nextcloud/l10n'
 import ServiceIcon from '../Shared/ServiceIcon.vue'
 import WidgetContainer from '../Widget/WidgetContainer.vue'
 import ResourceDisplay from './ResourceDisplay.vue'
+import TableDisplay from './TableDisplay.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 export default {
     name: 'ServiceCard',
-    components: { ServiceIcon, WidgetContainer, ResourceDisplay, PencilIcon },
+    components: { ServiceIcon, WidgetContainer, ResourceDisplay, TableDisplay, PencilIcon },
     props: {
         service: { type: Object, required: true },
         editMode: { type: Boolean, default: false },

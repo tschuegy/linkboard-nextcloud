@@ -291,21 +291,26 @@ class WidgetProxyController extends ApiController {
      * Fetch data for a local widget (no HTTP requests).
      */
     private function getLocalWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, array $config): array {
-        $diskPathsRaw = $config['diskPaths'] ?? '/';
-        $diskPaths = array_filter(array_map('trim', explode(',', (string)$diskPathsRaw)));
-        if (empty($diskPaths)) {
-            $diskPaths = ['/'];
-        }
-        $tempUnit = $config['tempUnit'] ?? 'C';
+        if ($widget->getId() === 'resources') {
+            $diskPathsRaw = $config['diskPaths'] ?? '/';
+            $diskPaths = array_filter(array_map('trim', explode(',', (string)$diskPathsRaw)));
+            if (empty($diskPaths)) {
+                $diskPaths = ['/'];
+            }
+            $tempUnit = $config['tempUnit'] ?? 'C';
 
-        return $this->resourceService->getResources([
-            'showCpu' => true,
-            'showMemory' => true,
-            'showUptime' => true,
-            'showCpuTemp' => true,
-            'tempUnit' => $tempUnit,
-            'diskPaths' => $diskPaths,
-        ]);
+            return $this->resourceService->getResources([
+                'showCpu' => true,
+                'showMemory' => true,
+                'showUptime' => true,
+                'showCpuTemp' => true,
+                'tempUnit' => $tempUnit,
+                'diskPaths' => $diskPaths,
+            ]);
+        }
+
+        // For table and other local widgets: pass config through as data
+        return $config;
     }
 
     /**

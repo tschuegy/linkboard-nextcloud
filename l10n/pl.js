@@ -147,5 +147,13 @@ OC.L10N.register("linkboard", {
     "Row height (px)": "Row height (px)",
     "Auto-arrange cards": "Auto-arrange cards",
     "Responsive column adjustment": "Responsive column adjustment",
-    "Minimum height (rows)": "Minimum height (rows)"
+    "Minimum height (rows)": "Minimum height (rows)",
+    "Edit the table directly on the card.": "Edit the table directly on the card.",
+    "Add column": "Add column",
+    "Add row": "Add row",
+    "Remove column": "Remove column",
+    "Remove row": "Remove row",
+    "No table data": "No table data",
+    "New column": "New column",
+    "Header": "Header"
 }, "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

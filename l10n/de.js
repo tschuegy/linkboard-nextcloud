@@ -147,5 +147,13 @@ OC.L10N.register("linkboard", {
     "Row height (px)": "Zeilenhöhe (px)",
     "Auto-arrange cards": "Karten automatisch anordnen",
     "Responsive column adjustment": "Responsive Spaltenanpassung",
-    "Minimum height (rows)": "Mindesthöhe (Zeilen)"
+    "Minimum height (rows)": "Mindesthöhe (Zeilen)",
+    "Edit the table directly on the card.": "Bearbeite die Tabelle direkt auf der Karte.",
+    "Add column": "Spalte hinzufügen",
+    "Add row": "Zeile hinzufügen",
+    "Remove column": "Spalte entfernen",
+    "Remove row": "Zeile entfernen",
+    "No table data": "Keine Tabellendaten",
+    "New column": "Neue Spalte",
+    "Header": "Überschrift"
 }, "nplurals=2; plural=(n != 1);");

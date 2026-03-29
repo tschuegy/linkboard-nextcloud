@@ -33,7 +33,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Status History** – Response time charts, uptime tracking, and a dedicated status overview page
 - **Offline Notifications** – Nextcloud notifications when services go down, with configurable threshold and recovery alerts
 - **External Notification Channels** – 19 providers: Discord, Slack, Telegram, Matrix, Teams, Ntfy, Gotify, Pushover, E-Mail (SMTP), and more, with per-service overrides
-- **135 Built-in Widgets** – Real-time data from Proxmox, Patchman, Immich, Uptime Kuma, and 130+ more ([full list](WIDGETS.md))
+- **136 Built-in Widgets** – Real-time data from Proxmox, Patchman, Immich, Uptime Kuma, and 130+ more; plus an inline-editable Table widget ([full list](WIDGETS.md))
 - **System Resources** – Monitor CPU, memory, disk usage, uptime, and CPU temperature with progress bars
 - **Category Spacers** – Decorative separator categories with multiple styles (solid, dashed, dotted, dots, stars, and more)
 - **Flexible Icons** – Upload custom images (PNG, SVG, WebP…), use Material Design Icons (inline SVG), or any URL
@@ -120,7 +120,7 @@ linkboard/
 │   ├── Controller/    # REST API controllers
 │   ├── Db/            # Entity & mapper classes
 │   ├── Service/       # Business logic
-│   ├── Widget/        # 135 widget definitions
+│   ├── Widget/        # 136 widget definitions
 │   └── Migration/     # Database migrations
 ├── src/               # Vue.js frontend
 │   ├── components/    # Vue components

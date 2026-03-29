@@ -148,7 +148,15 @@
     "Row height (px)": "Zeilenhöhe (px)",
     "Auto-arrange cards": "Karten automatisch anordnen",
     "Responsive column adjustment": "Responsive Spaltenanpassung",
-    "Minimum height (rows)": "Mindesthöhe (Zeilen)"
+    "Minimum height (rows)": "Mindesthöhe (Zeilen)",
+    "Edit the table directly on the card.": "Bearbeite die Tabelle direkt auf der Karte.",
+    "Add column": "Spalte hinzufügen",
+    "Add row": "Zeile hinzufügen",
+    "Remove column": "Spalte entfernen",
+    "Remove row": "Zeile entfernen",
+    "No table data": "Keine Tabellendaten",
+    "Header": "Überschrift",
+    "New column": "Neue Spalte"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

@@ -2,7 +2,7 @@
 
 [Back to README](README.md)
 
-LinkBoard ships with **135 built-in widgets** that display real-time data from self-hosted services. Each widget is configured per-service in the service editor. The table below lists every available widget, its internal ID, and the configuration fields it accepts.
+LinkBoard ships with **136 built-in widgets** that display real-time data from self-hosted services. Each widget is configured per-service in the service editor. The table below lists every available widget, its internal ID, and the configuration fields it accepts.
 
 | Widget | ID | Configuration | Tested |
 |---|---|---|---|
@@ -119,6 +119,7 @@ LinkBoard ships with **135 built-in widgets** that display real-time data from s
 | Stocks | `stocks` | `api_key` (required), `symbol` (required) | [ ] |
 | Syncthing Relay | `syncthingrelay` | — | [ ] |
 | System Resources | `resources` | `diskPaths` (optional), `tempUnit` (optional) | [ ] |
+| Table | `table` | — | [x] |
 | Tailscale | `tailscale` | `api_key` (required), `tailnet` (required) | [ ] |
 | Tandoor | `tandoor` | `api_key` (required) | [ ] |
 | Tautulli | `tautulli` | `api_key` (required) | [ ] |
