@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\StatusCheckService;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Db\StatusCacheMapper;
@@ -20,9 +21,14 @@ class StatusApiController extends ApiController {
         private StatusCheckService $statusCheckService,
         private ServiceService $serviceService,
         private StatusCacheMapper $statusCacheMapper,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
+    }
+
+    private function effectiveUserId(): string {
+        return $this->globalBoardService->resolve($this->userId)['sourceUserId'];
     }
 
     /**
@@ -30,7 +36,7 @@ class StatusApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function index(): DataResponse {
-        $services = $this->serviceService->findAll($this->userId);
+        $services = $this->serviceService->findAll($this->effectiveUserId());
         $serviceIds = array_map(fn($s) => $s->getId(), $services);
         $statusMap = $this->statusCheckService->getStatusMap($serviceIds);
 
@@ -43,7 +49,7 @@ class StatusApiController extends ApiController {
     #[NoAdminRequired]
     public function check(int $id): DataResponse {
         try {
-            $status = $this->statusCheckService->checkService($id, $this->userId);
+            $status = $this->statusCheckService->checkService($id, $this->effectiveUserId());
             return new DataResponse($status);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
@@ -64,7 +70,7 @@ class StatusApiController extends ApiController {
 
         try {
             // Verify ownership
-            $this->serviceService->find($id, $this->userId);
+            $this->serviceService->find($id, $this->effectiveUserId());
 
             $history = $this->statusCheckService->getHistory($id, $period);
             $cache = $this->statusCacheMapper->findByServiceId($id);
@@ -103,7 +109,7 @@ class StatusApiController extends ApiController {
             $period = '24h';
         }
 
-        $services = $this->serviceService->findAll($this->userId);
+        $services = $this->serviceService->findAll($this->effectiveUserId());
         $result = [];
 
         foreach ($services as $service) {
@@ -146,7 +152,7 @@ class StatusApiController extends ApiController {
         $checked = $this->statusCheckService->checkAllEnabled();
 
         // Return updated status map
-        $services = $this->serviceService->findAll($this->userId);
+        $services = $this->serviceService->findAll($this->effectiveUserId());
         $serviceIds = array_map(fn($s) => $s->getId(), $services);
         $statusMap = $this->statusCheckService->getStatusMap($serviceIds);
 

@@ -101,6 +101,25 @@ class CategoryMapper extends QBMapper {
     }
 
     /**
+     * Get all user IDs that have at least one category, with count.
+     * @return array<array{user_id: string, category_count: int}>
+     */
+    public function getUsersWithCategories(): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('user_id')
+            ->selectAlias($qb->func()->count('id'), 'category_count')
+            ->from($this->getTableName())
+            ->groupBy('user_id')
+            ->orderBy('user_id', 'ASC');
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        return $rows;
+    }
+
+    /**
      * Delete all categories for a user
      */
     public function deleteAllByUser(string $userId): void {

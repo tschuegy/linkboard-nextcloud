@@ -44,6 +44,8 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Keyboard Shortcuts** – Quick access via `/`, `E`, `R`, `Esc` ([see below](#keyboard-shortcuts))
 - **Multi-Language** – Full i18n support with 57 languages
 - **Per-User** – Each Nextcloud user gets their own private dashboard
+- **Global Board** – Admins can designate one user's board as a shared read-only dashboard for all users
+- **Group Restriction** – Optionally restrict LinkBoard access to specific Nextcloud groups
 
 ## Keyboard Shortcuts
 
@@ -60,6 +62,90 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 
 - Nextcloud 32 or 33
 - PHP 8.2 – 8.4
+
+## Administration
+
+LinkBoard provides admin settings under **Settings > Administration > LinkBoard**.
+
+### Group Restriction
+
+By default, LinkBoard is available to all users. Admins can restrict access to specific Nextcloud groups. Only users in the selected groups (and admins) will see LinkBoard in the navigation.
+
+### Global Board
+
+Admins can enable a global board that replaces all personal dashboards with a single shared board:
+
+1. Go to **Settings > Administration > LinkBoard**
+2. Enable **"Show a global LinkBoard for all users"**
+3. Select a user whose board should be displayed to everyone
+4. Click **Save**
+
+When active, all users see the selected user's board in read-only mode. Only admins can edit the global board (add/remove categories and services). Personal boards are preserved and will reappear when the global board is disabled.
+
+### Status Checks & Cron
+
+LinkBoard uses Nextcloud's background job system for periodic status checks. The minimum check interval is 1 minute, but **status checks can only run as often as Nextcloud's cron is triggered**.
+
+Most Nextcloud installations use a system cron job that runs every 5 minutes by default. If you need 1-minute status checks, you must ensure the Nextcloud cron runs every minute.
+
+#### Recommended: Systemd Timer (Linux)
+
+Create the service file `/etc/systemd/system/nextcloud-cron.service`:
+
+```ini
+[Unit]
+Description=Nextcloud cron.php
+After=network.target
+
+[Service]
+User=www-data
+ExecStart=/usr/bin/php /var/www/nextcloud/cron.php
+```
+
+Create the timer file `/etc/systemd/system/nextcloud-cron.timer`:
+
+```ini
+[Unit]
+Description=Run Nextcloud cron.php every minute
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1min
+Unit=nextcloud-cron.service
+
+[Install]
+WantedBy=timers.target
+```
+
+Enable and start the timer:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now nextcloud-cron.timer
+```
+
+Verify it's running:
+
+```bash
+systemctl list-timers | grep nextcloud
+# Should show: nextcloud-cron.timer with ~1min interval
+```
+
+#### Alternative: Crontab
+
+If you prefer a traditional crontab entry:
+
+```bash
+sudo crontab -u www-data -e
+```
+
+Add this line to run every minute:
+
+```
+* * * * * php /var/www/nextcloud/cron.php
+```
+
+> **Note:** Make sure **Settings > Administration > Basic settings > Background jobs** is set to **Cron** in your Nextcloud instance.
 
 ## Installation
 

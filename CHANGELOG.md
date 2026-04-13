@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.5] – 2026-04-13
+
+### Added
+- Admin settings page under Settings > Administration > LinkBoard
+- Global Board: admins can designate one user's board as a shared read-only dashboard for all users
+- Group Restriction: optionally restrict LinkBoard access to specific Nextcloud groups
+- Container-aware memory detection for System Resources widget (cgroup v2/v1 support)
+
+### Fixed
+- System Resources widget showing wrong memory total in LXC/Docker containers (e.g. "1024.0 TiB" instead of actual RAM)
+- Response time chart timezone handling (UTC suffix for correct local time display)
+
+### Changed
+- Admin settings (status check interval) moved from in-app settings to dedicated Nextcloud admin page
+- Edit mode restricted to users with write access when global board is active
+
 ## [1.6.4] – 2026-03-29
 
 ### Added

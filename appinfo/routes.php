@@ -39,6 +39,8 @@ return [
         // ── Admin Settings API ───────────────────────────────
         ['name' => 'settings_api#getAdminSettings',    'url' => '/api/v1/admin/settings', 'verb' => 'GET'],
         ['name' => 'settings_api#updateAdminSettings', 'url' => '/api/v1/admin/settings', 'verb' => 'PUT'],
+        ['name' => 'settings_api#searchGroups',        'url' => '/api/v1/admin/groups',   'verb' => 'GET'],
+        ['name' => 'settings_api#listBoards',          'url' => '/api/v1/admin/boards',   'verb' => 'GET'],
 
         // ── Icons API ─────────────────────────────────────────
         ['name' => 'icon_api#index',    'url' => '/api/v1/icons',            'verb' => 'GET'],

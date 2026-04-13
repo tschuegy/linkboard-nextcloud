@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\ResourceService;
 use OCA\LinkBoard\Service\NotFoundException;
@@ -31,9 +32,14 @@ class WidgetProxyController extends ApiController {
         private ResourceService $resourceService,
         private LoggerInterface $logger,
         private IL10N $l10n,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
+    }
+
+    private function effectiveUserId(): string {
+        return $this->globalBoardService->resolve($this->userId)['sourceUserId'];
     }
 
     /**
@@ -51,7 +57,7 @@ class WidgetProxyController extends ApiController {
      */
     #[NoAdminRequired]
     public function getAllData(): DataResponse {
-        $services = $this->serviceService->findAll($this->userId);
+        $services = $this->serviceService->findAll($this->effectiveUserId());
         $result = [];
 
         foreach ($services as $service) {
@@ -94,7 +100,7 @@ class WidgetProxyController extends ApiController {
     #[NoAdminRequired]
     public function getData(int $serviceId): DataResponse {
         try {
-            $service = $this->serviceService->find($serviceId, $this->userId);
+            $service = $this->serviceService->find($serviceId, $this->effectiveUserId());
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $this->l10n->t('Service not found')], Http::STATUS_NOT_FOUND);
         }

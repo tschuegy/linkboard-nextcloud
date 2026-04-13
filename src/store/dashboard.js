@@ -55,6 +55,8 @@ export const useDashboardStore = defineStore('dashboard', {
         latestVersionUrl: null,
         isAdmin: false,
         adminSettings: {},
+        globalBoardActive: false,
+        canEdit: true,
     }),
 
     getters: {
@@ -141,6 +143,8 @@ export const useDashboardStore = defineStore('dashboard', {
                 this.latestVersionUrl = data.latestVersionUrl || null
                 this.isAdmin = data.isAdmin || false
                 this.adminSettings = data.adminSettings || {}
+                this.globalBoardActive = data.globalBoardActive || false
+                this.canEdit = data.canEdit !== false
                 // Fetch widget catalog, widget data, and resource data in parallel
                 this.fetchWidgetCatalog()
                 this.fetchAllWidgetData()

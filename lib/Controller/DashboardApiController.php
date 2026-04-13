@@ -5,6 +5,7 @@ namespace OCA\LinkBoard\Controller;
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\CategoryService;
 use OCA\LinkBoard\Db\StatusHistoryMapper;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\SettingsService;
 use OCA\LinkBoard\Service\StatusCheckService;
@@ -28,6 +29,7 @@ class DashboardApiController extends ApiController {
         private StatusHistoryMapper $statusHistoryMapper,
         private IGroupManager $groupManager,
         private IAppConfig $appConfig,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
@@ -36,9 +38,12 @@ class DashboardApiController extends ApiController {
     /** Get the entire dashboard: settings, categories with services + status */
     #[NoAdminRequired]
     public function index(): DataResponse {
+        $resolved = $this->globalBoardService->resolve($this->userId);
+        $sourceUserId = $resolved['sourceUserId'];
+
         $settings = $this->settingsService->getAll($this->userId);
-        $categories = $this->categoryService->findAll($this->userId);
-        $allServices = $this->serviceService->findAll($this->userId);
+        $categories = $this->categoryService->findAll($sourceUserId);
+        $allServices = $this->serviceService->findAll($sourceUserId);
 
         // Get all service IDs for status lookup
         $serviceIds = array_map(fn($s) => $s->getId(), $allServices);
@@ -104,6 +109,8 @@ class DashboardApiController extends ApiController {
             'adminSettings' => [
                 'status_check_interval' => $this->appConfig->getValueInt(Application::APP_ID, 'status_check_interval', 300),
             ],
+            'globalBoardActive' => $resolved['globalBoardActive'],
+            'canEdit' => $resolved['canEdit'],
         ]);
     }
 }

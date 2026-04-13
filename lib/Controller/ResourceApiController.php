@@ -6,6 +6,7 @@ namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\CategoryService;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\NotFoundException;
 use OCA\LinkBoard\Service\ResourceService;
 use OCP\AppFramework\ApiController;
@@ -20,15 +21,20 @@ class ResourceApiController extends ApiController {
         IRequest $request,
         private ResourceService $resourceService,
         private CategoryService $categoryService,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
     }
 
+    private function effectiveUserId(): string {
+        return $this->globalBoardService->resolve($this->userId)['sourceUserId'];
+    }
+
     #[NoAdminRequired]
     public function getData(int $categoryId): DataResponse {
         try {
-            $category = $this->categoryService->find($categoryId, $this->userId);
+            $category = $this->categoryService->find($categoryId, $this->effectiveUserId());
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
         }

@@ -11,6 +11,7 @@ declare(strict_types=1);
 use OCP\Util;
 
 // Expose the app ID for the Vue.js frontend
+Util::addScript('linkboard', 'linkboard-vendors');
 Util::addScript('linkboard', 'linkboard-main');
 
 ?>

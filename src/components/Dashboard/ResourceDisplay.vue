@@ -24,9 +24,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <div class="resource-display__row">
                 <MemoryIcon :size="18" class="resource-display__icon" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}" />
                 <span class="resource-display__label" :style="manualColors.widgetValue ? { color: manualColors.widgetValue } : {}">{{ t('linkboard', 'Memory') }}</span>
-                <span class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ formatBytes(data.memory.used) }} {{ t('linkboard', 'of {total}', { total: formatBytes(data.memory.total) }) }}</span>
+                <span v-if="data.memory.total" class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ formatBytes(data.memory.used) }} {{ t('linkboard', 'of {total}', { total: formatBytes(data.memory.total) }) }}</span>
+                <span v-else class="resource-display__value" :style="manualColors.widgetLabel ? { color: manualColors.widgetLabel } : {}">{{ formatBytes(data.memory.used) }}</span>
             </div>
-            <div class="resource-display__bar">
+            <div v-if="data.memory.percent !== null" class="resource-display__bar">
                 <div class="resource-display__bar-fill" :style="barStyle(data.memory.percent)"></div>
             </div>
         </div>

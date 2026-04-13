@@ -178,7 +178,7 @@ export default {
         t,
         formatTime: function(dateStr) {
             if (!dateStr) return ''
-            var d = new Date(dateStr.replace(' ', 'T'))
+            var d = new Date(dateStr.replace(' ', 'T') + 'Z')
             return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         },
         onChartHover: function(event) {

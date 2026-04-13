@@ -32,6 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </template>
                 </NcButton>
                 <NcButton
+                    v-if="canEdit"
                     :type="editMode ? 'primary' : 'tertiary'"
                     :aria-label="editMode ? t('linkboard', 'Lock layout') : t('linkboard', 'Unlock layout')"
                     @click="toggleEditMode">
@@ -131,7 +132,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     @status-click="openStatusHistory" />
             </div>
 
-            <div v-if="editMode" class="linkboard__add-category" @click="showNewCategoryDialog">
+            <div v-if="editMode && canEdit" class="linkboard__add-category" @click="showNewCategoryDialog">
                 <PlusIcon :size="32" />
                 <span>{{ t('linkboard', 'New category') }}</span>
             </div>
@@ -267,7 +268,7 @@ export default {
     computed: {
         ...mapState(useDashboardStore, [
             'categories', 'settings', 'loading', 'error',
-            'editMode', 'editingService', 'editingCategory',
+            'editMode', 'canEdit', 'editingService', 'editingCategory',
             'statusChecking', 'pingEnabledCount',
             'appVersion', 'latestVersion', 'latestVersionUrl',
         ]),
@@ -551,7 +552,7 @@ export default {
                 break
             case 'e':
             case 'E':
-                if (!e.ctrlKey && !e.metaKey) {
+                if (!e.ctrlKey && !e.metaKey && this.canEdit) {
                     this.toggleEditMode()
                     if (this.editMode) {
                         this.showShortcutHint = true

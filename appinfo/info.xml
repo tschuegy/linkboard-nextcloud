@@ -24,7 +24,7 @@ and access everything from within Nextcloud.
 
 Each user gets their own personal dashboard – up to 500 services.
     ]]></description>
-    <version>1.6.4</version>
+    <version>1.6.5</version>
     <licence>AGPL-3.0-or-later</licence>
     <author>Andreas Busslinger</author>
     <namespace>LinkBoard</namespace>
@@ -58,4 +58,8 @@ Each user gets their own personal dashboard – up to 500 services.
     <background-jobs>
         <job>OCA\LinkBoard\BackgroundJob\StatusCheckJob</job>
     </background-jobs>
+    <settings>
+        <admin>OCA\LinkBoard\Settings\Admin</admin>
+        <admin-section>OCA\LinkBoard\Settings\AdminSection</admin-section>
+    </settings>
 </info>

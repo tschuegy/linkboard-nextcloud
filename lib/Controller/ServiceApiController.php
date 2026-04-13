@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\NotFoundException;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\ValidationException;
@@ -19,27 +20,36 @@ class ServiceApiController extends ApiController {
     public function __construct(
         IRequest $request,
         private ServiceService $serviceService,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
     }
 
+    private function effectiveUserId(): string {
+        return $this->globalBoardService->resolve($this->userId)['sourceUserId'];
+    }
+
+    private function canWrite(): bool {
+        return $this->globalBoardService->resolve($this->userId)['canEdit'];
+    }
+
     #[NoAdminRequired]
     public function index(): DataResponse {
-        $services = $this->serviceService->findAll($this->userId);
+        $services = $this->serviceService->findAll($this->effectiveUserId());
         return new DataResponse($services);
     }
 
     #[NoAdminRequired]
     public function byCategory(int $categoryId): DataResponse {
-        $services = $this->serviceService->findByCategory($categoryId, $this->userId);
+        $services = $this->serviceService->findByCategory($categoryId, $this->effectiveUserId());
         return new DataResponse($services);
     }
 
     #[NoAdminRequired]
     public function show(int $id): DataResponse {
         try {
-            $service = $this->serviceService->find($id, $this->userId);
+            $service = $this->serviceService->find($id, $this->effectiveUserId());
             return new DataResponse($service);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
@@ -61,9 +71,12 @@ class ServiceApiController extends ApiController {
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
     ): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         try {
             $service = $this->serviceService->create(
-                $this->userId, $categoryId, $name, $description, $href,
+                $this->effectiveUserId(), $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
                 $widgetType, $widgetConfig, $notificationOverrides,
             );
@@ -91,9 +104,12 @@ class ServiceApiController extends ApiController {
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
     ): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         try {
             $service = $this->serviceService->update(
-                $id, $this->userId, $categoryId, $name, $description, $href,
+                $id, $this->effectiveUserId(), $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
                 $widgetType, $widgetConfig, $notificationOverrides,
             );
@@ -105,8 +121,11 @@ class ServiceApiController extends ApiController {
 
     #[NoAdminRequired]
     public function destroy(int $id): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         try {
-            $this->serviceService->delete($id, $this->userId);
+            $this->serviceService->delete($id, $this->effectiveUserId());
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
@@ -115,18 +134,24 @@ class ServiceApiController extends ApiController {
 
     #[NoAdminRequired]
     public function reorder(): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         $order = $this->request->getParam('order', '[]');
         if (is_string($order)) {
             $order = json_decode($order, true) ?? [];
         }
-        $this->serviceService->reorder($order, $this->userId);
+        $this->serviceService->reorder($order, $this->effectiveUserId());
         return new DataResponse(['status' => 'ok']);
     }
 
     #[NoAdminRequired]
     public function move(int $id, int $newCategoryId): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         try {
-            $service = $this->serviceService->move($id, $newCategoryId, $this->userId);
+            $service = $this->serviceService->move($id, $newCategoryId, $this->effectiveUserId());
             return new DataResponse($service);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);

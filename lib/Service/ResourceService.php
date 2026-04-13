@@ -61,6 +61,16 @@ class ResourceService {
     }
 
     public function getMemoryUsage(): ?array {
+        // Prefer cgroup limits (correct in containers: LXC, Docker, Podman, etc.)
+        $cgroup = $this->getCgroupMemory();
+        if ($cgroup !== null) {
+            $total = $cgroup['total'];
+            $used = $cgroup['used'];
+            $percent = round($used / $total * 100, 1);
+            return ['used' => $used, 'total' => $total, 'percent' => $percent];
+        }
+
+        // Fallback: /proc/meminfo (bare-metal / VMs)
         if (!is_readable('/proc/meminfo')) {
             return null;
         }
@@ -86,6 +96,17 @@ class ResourceService {
         }
 
         $used = $total - $available;
+
+        // Sanity check: if total exceeds 256 TiB, /proc/meminfo is likely
+        // bogus (common in LXC containers without a memory limit)
+        if ($total > 281474976710656) {
+            return [
+                'used' => $used,
+                'total' => null,
+                'percent' => null,
+            ];
+        }
+
         $percent = round($used / $total * 100, 1);
 
         return [
@@ -93,6 +114,45 @@ class ResourceService {
             'total' => $total,
             'percent' => $percent,
         ];
+    }
+
+    private function getCgroupMemory(): ?array {
+        // Try cgroup v2
+        $cgroupInfo = @file_get_contents('/proc/self/cgroup');
+        if ($cgroupInfo !== false) {
+            foreach (explode("\n", $cgroupInfo) as $line) {
+                if (preg_match('/^0::(.+)$/', trim($line), $m)) {
+                    $path = '/sys/fs/cgroup' . $m[1];
+                    // Walk up the hierarchy looking for a numeric memory.max
+                    while (strlen($path) > strlen('/sys/fs/cgroup')) {
+                        $max = @file_get_contents($path . '/memory.max');
+                        $current = @file_get_contents($path . '/memory.current');
+                        if ($max !== false && $current !== false) {
+                            $max = trim($max);
+                            if ($max !== 'max' && is_numeric($max) && (int)$max <= 281474976710656) {
+                                return ['total' => (int)$max, 'used' => (int)trim($current)];
+                            }
+                        }
+                        $path = dirname($path);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Try cgroup v1
+        $limit = @file_get_contents('/sys/fs/cgroup/memory/memory.limit_in_bytes');
+        $usage = @file_get_contents('/sys/fs/cgroup/memory/memory.usage_in_bytes');
+        if ($limit !== false && $usage !== false) {
+            $limit = (int)trim($limit);
+            $usage = (int)trim($usage);
+            // cgroup v1 "no limit" sentinel is 9223372036854771712
+            if ($limit > 0 && $limit < 9223372036854771712) {
+                return ['total' => $limit, 'used' => $usage];
+            }
+        }
+
+        return null;
     }
 
     /** @return array<array{path: string, used: int, total: int, percent: float}> */
