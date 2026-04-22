@@ -20,7 +20,7 @@ class Version001011Date20260421000000 extends SimpleMigrationStep {
         $servicesTable = $schema->getTable('linkboard_services');
         if (!$servicesTable->hasColumn('show_scrollbar')) {
             $servicesTable->addColumn('show_scrollbar', Types::BOOLEAN, [
-                'notnull' => true,
+                'notnull' => false,
                 'default' => false,
             ]);
             $changed = true;
