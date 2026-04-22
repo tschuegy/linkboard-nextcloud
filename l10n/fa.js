@@ -124,5 +124,7 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "Invalid JSON in payload: %s",
     "Invalid JSON": "Invalid JSON",
     "Import failed: %s": "Import failed: %s",
-    "Maximum number of services reached (%s)": "Maximum number of services reached (%s)"
+    "Maximum number of services reached (%s)": "Maximum number of services reached (%s)",
+    "Display": "Display",
+    "Show scrollbar": "Show scrollbar"
 }, "nplurals=2; plural=(n > 1);");

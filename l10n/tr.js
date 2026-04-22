@@ -124,5 +124,7 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "Geçersiz JSON: %s",
     "Invalid JSON": "Geçersiz JSON",
     "Import failed: %s": "İçe aktarma başarısız: %s",
-    "Maximum number of services reached (%s)": "Maksimum hizmet sayısına ulaşıldı (%s)"
+    "Maximum number of services reached (%s)": "Maksimum hizmet sayısına ulaşıldı (%s)",
+    "Display": "Display",
+    "Show scrollbar": "Show scrollbar"
 }, "nplurals=2; plural=(n > 1);");

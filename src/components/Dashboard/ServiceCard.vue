@@ -10,6 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         class="service-card"
         :class="[
             { 'service-card--edit': editMode },
+            { 'service-card--scrollbar': service.showScrollbar },
             'service-card--style-' + cardStyle,
             'service-card--bg-' + cardBackground,
             statusClass,
@@ -157,6 +158,28 @@ export default {
     min-height: 64px;
     height: 100%;
     overflow-y: auto;
+
+    // Default: hide scrollbar visually; content stays scrollable via trackpad/touch/keys
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar { display: none; }
+    :deep(.table-display) {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        &::-webkit-scrollbar { display: none; }
+    }
+
+    // Modifier: restore native scrollbar
+    &--scrollbar {
+        scrollbar-width: auto;
+        -ms-overflow-style: auto;
+        &::-webkit-scrollbar { display: initial; width: auto; height: auto; }
+        :deep(.table-display) {
+            scrollbar-width: auto;
+            -ms-overflow-style: auto;
+            &::-webkit-scrollbar { display: initial; }
+        }
+    }
 
     &:hover {
         transform: translateY(-1px);

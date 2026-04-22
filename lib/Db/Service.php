@@ -34,6 +34,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setWidgetConfig(?string $widgetConfig)
  * @method string|null getNotificationOverrides()
  * @method void setNotificationOverrides(?string $notificationOverrides)
+ * @method bool getShowScrollbar()
+ * @method void setShowScrollbar(bool $showScrollbar)
  * @method string|null getCreatedAt()
  * @method void setCreatedAt(?string $createdAt)
  * @method string|null getUpdatedAt()
@@ -55,6 +57,7 @@ class Service extends Entity implements JsonSerializable {
     protected ?string $widgetType = null;
     protected ?string $widgetConfig = null;
     protected ?string $notificationOverrides = null;
+    protected bool $showScrollbar = false;
     protected $createdAt = null;
     protected $updatedAt = null;
 
@@ -63,6 +66,7 @@ class Service extends Entity implements JsonSerializable {
         $this->addType('categoryId', 'integer');
         $this->addType('sortOrder', 'integer');
         $this->addType('pingEnabled', 'boolean');
+        $this->addType('showScrollbar', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -82,6 +86,7 @@ class Service extends Entity implements JsonSerializable {
             'widgetType' => $this->getWidgetType(),
             'widgetConfig' => $this->getWidgetConfig() ? json_decode($this->getWidgetConfig(), true) : null,
             'notificationOverrides' => $this->getNotificationOverrides() ? json_decode($this->getNotificationOverrides(), true) : null,
+            'showScrollbar' => $this->getShowScrollbar(),
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
         ];

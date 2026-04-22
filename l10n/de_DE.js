@@ -143,5 +143,7 @@ OC.L10N.register("linkboard", {
     "No boards found": "Keine Boards gefunden",
     "These settings apply to all users.": "Diese Einstellungen gelten für alle Benutzer.",
     "Administration": "Administration",
-    "Save admin settings": "Admin-Einstellungen speichern"
+    "Save admin settings": "Admin-Einstellungen speichern",
+    "Display": "Darstellung",
+    "Show scrollbar": "Scrollbar anzeigen"
 }, "nplurals=2; plural=(n != 1);");

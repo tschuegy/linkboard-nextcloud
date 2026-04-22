@@ -431,3 +431,15 @@ parameters:
 			identifier: nullCoalesce.expr
 			count: 1
 			path: lib/Widget/Widgets/SyncthingRelayWidget.php
+
+		-
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001011Date20260421000000.php
+
+		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001011Date20260421000000.php

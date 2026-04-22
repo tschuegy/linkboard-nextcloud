@@ -70,6 +70,7 @@ class ServiceApiController extends ApiController {
         ?string $widgetType = null,
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
+        bool $showScrollbar = false,
     ): DataResponse {
         if (!$this->canWrite()) {
             return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
@@ -78,7 +79,7 @@ class ServiceApiController extends ApiController {
             $service = $this->serviceService->create(
                 $this->effectiveUserId(), $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
-                $widgetType, $widgetConfig, $notificationOverrides,
+                $widgetType, $widgetConfig, $notificationOverrides, $showScrollbar,
             );
             return new DataResponse($service, Http::STATUS_CREATED);
         } catch (NotFoundException $e) {
@@ -103,6 +104,7 @@ class ServiceApiController extends ApiController {
         ?string $widgetType = null,
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
+        ?bool $showScrollbar = null,
     ): DataResponse {
         if (!$this->canWrite()) {
             return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
@@ -111,7 +113,7 @@ class ServiceApiController extends ApiController {
             $service = $this->serviceService->update(
                 $id, $this->effectiveUserId(), $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
-                $widgetType, $widgetConfig, $notificationOverrides,
+                $widgetType, $widgetConfig, $notificationOverrides, $showScrollbar,
             );
             return new DataResponse($service);
         } catch (NotFoundException $e) {

@@ -124,5 +124,7 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "잘못된 JSON: %s",
     "Invalid JSON": "잘못된 JSON",
     "Import failed: %s": "가져오기 실패: %s",
-    "Maximum number of services reached (%s)": "최대 서비스 수에 도달했습니다 (%s)"
+    "Maximum number of services reached (%s)": "최대 서비스 수에 도달했습니다 (%s)",
+    "Display": "Display",
+    "Show scrollbar": "Show scrollbar"
 }, "nplurals=1; plural=0;");

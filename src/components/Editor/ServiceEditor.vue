@@ -33,6 +33,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcSelect v-model="form.categoryId" :options="categoryOptions" :clearable="false" label="label" :reduce="opt => opt.value" />
             </div>
 
+            <div class="service-editor__section-title">{{ t('linkboard', 'Display') }}</div>
+            <NcCheckboxRadioSwitch
+                :checked="form.showScrollbar"
+                type="switch"
+                @update:checked="form.showScrollbar = $event">
+                {{ t('linkboard', 'Show scrollbar') }}
+            </NcCheckboxRadioSwitch>
+
             <div class="service-editor__section-title">{{ t('linkboard', 'Status Check') }}</div>
             <NcTextField v-model="form.pingUrl" :label="t('linkboard', 'Ping URL (optional)')" placeholder="https://service:8006" />
             <NcCheckboxRadioSwitch
@@ -163,6 +171,7 @@ export default {
         return {
             form: {
                 ...this.service,
+                showScrollbar: !!this.service.showScrollbar,
                 widgetConfig: this.service.widgetConfig ? { ...this.service.widgetConfig } : {},
                 notificationOverrides: this.service.notificationOverrides ? { ...this.service.notificationOverrides } : {},
             },
@@ -205,6 +214,7 @@ export default {
             handler(newVal) {
                 this.form = {
                     ...newVal,
+                    showScrollbar: !!newVal.showScrollbar,
                     widgetConfig: newVal.widgetConfig ? { ...newVal.widgetConfig } : {},
                     notificationOverrides: newVal.notificationOverrides ? { ...newVal.notificationOverrides } : {},
                 }
@@ -294,6 +304,7 @@ export default {
                 categoryId: this.form.categoryId,
                 pingUrl: this.form.pingUrl || null,
                 pingEnabled: !!this.form.pingEnabled,
+                showScrollbar: !!this.form.showScrollbar,
             }
             if (this.form.widgetType) {
                 payload.widgetType = this.form.widgetType

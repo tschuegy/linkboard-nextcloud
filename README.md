@@ -39,6 +39,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Flexible Icons** – Upload custom images (PNG, SVG, WebP…), use Material Design Icons (inline SVG), or any URL
 - **Theming** – Dark, light, or auto mode with custom background images and blur effects
 - **Card Styles** – Glass, Solid, Flat, or Transparent card backgrounds
+- **Per-Card Scrollbar Toggle** – Hide scrollbars by default for a cleaner look; enable them per card when needed (content stays scrollable either way)
 - **Configurable Layout** – Adjust columns, card styles, search bar, and more
 - **Import / Export** – YAML & JSON support, compatible with Gethomepage services.yaml
 - **Keyboard Shortcuts** – Quick access via `/`, `E`, `R`, `Esc` ([see below](#keyboard-shortcuts))

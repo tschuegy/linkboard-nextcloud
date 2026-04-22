@@ -62,6 +62,7 @@ class ServiceService {
         ?string $widgetType = null,
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
+        bool $showScrollbar = false,
     ): Service {
         // Validate category exists and belongs to user
         try {
@@ -96,6 +97,7 @@ class ServiceService {
         $service->setWidgetType($widgetType);
         $service->setWidgetConfig($widgetConfig ? json_encode($widgetConfig) : null);
         $service->setNotificationOverrides($notificationOverrides ? json_encode($notificationOverrides) : null);
+        $service->setShowScrollbar($showScrollbar);
         $service->setCreatedAt($now);
         $service->setUpdatedAt($now);
 
@@ -118,6 +120,7 @@ class ServiceService {
         ?string $widgetType = null,
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
+        ?bool $showScrollbar = null,
     ): Service {
         $service = $this->find($id, $userId);
 
@@ -154,6 +157,7 @@ class ServiceService {
         }
         if ($widgetConfig !== null) { $service->setWidgetConfig(json_encode($widgetConfig)); }
         if ($notificationOverrides !== null) { $service->setNotificationOverrides(json_encode($notificationOverrides)); }
+        if ($showScrollbar !== null) { $service->setShowScrollbar($showScrollbar); }
 
         $service->setUpdatedAt((new DateTime())->format('Y-m-d H:i:s'));
 

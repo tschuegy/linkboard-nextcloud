@@ -124,5 +124,7 @@ OC.L10N.register("linkboard", {
     "Invalid JSON in payload: %s": "無效的 JSON：%s",
     "Invalid JSON": "無效的 JSON",
     "Import failed: %s": "匯入失败：%s",
-    "Maximum number of services reached (%s)": "已達到服务最大數量（%s）"
+    "Maximum number of services reached (%s)": "已達到服务最大數量（%s）",
+    "Display": "Display",
+    "Show scrollbar": "Show scrollbar"
 }, "nplurals=1; plural=0;");
