@@ -20,9 +20,6 @@ Thumbs.db
 # Nextcloud
 config/
 
-# Composer
-composer.lock
-
 # Claude Code
 CLAUDE.md
 
