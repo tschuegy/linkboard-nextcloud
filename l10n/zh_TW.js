@@ -126,5 +126,6 @@ OC.L10N.register("linkboard", {
     "Import failed: %s": "匯入失败：%s",
     "Maximum number of services reached (%s)": "已達到服务最大數量（%s）",
     "Display": "Display",
-    "Show scrollbar": "Show scrollbar"
+    "Show scrollbar": "Show scrollbar",
+    "avg {ms} ms · max {max} ms · {time}": "avg {ms} ms · max {max} ms · {time}"
 }, "nplurals=1; plural=0;");

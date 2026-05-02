@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.8] – 2026-05-02
+
+### Fixed
+- Status check response time was inflated for HTTPS targets and slow backends because it timed the entire HTTP transaction (DNS + TCP + TLS handshake + server processing). It now records pure TCP-handshake RTT via `CURLINFO_CONNECT_TIME_T`, matching ICMP ping expectations.
+
+### Changed
+- Status overview "Last 7 days" view now bucketed server-side (~30-min buckets, 336 points) instead of streaming every raw row to the browser. Eliminates the multi-second freeze and "stop script" dialog. The chart shows the per-bucket average plus a dashed max-line so spikes remain visible.
+- `historyAll` API uses a single batched DB query for all ping-enabled services (no more N+1 over services).
+
 ## [1.6.7] – 2026-04-22
 
 ### Fixed

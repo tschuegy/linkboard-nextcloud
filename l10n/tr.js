@@ -126,5 +126,6 @@ OC.L10N.register("linkboard", {
     "Import failed: %s": "İçe aktarma başarısız: %s",
     "Maximum number of services reached (%s)": "Maksimum hizmet sayısına ulaşıldı (%s)",
     "Display": "Display",
-    "Show scrollbar": "Show scrollbar"
+    "Show scrollbar": "Show scrollbar",
+    "avg {ms} ms · max {max} ms · {time}": "avg {ms} ms · max {max} ms · {time}"
 }, "nplurals=2; plural=(n > 1);");

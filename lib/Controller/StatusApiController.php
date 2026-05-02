@@ -5,6 +5,7 @@ namespace OCA\LinkBoard\Controller;
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\StatusCheckService;
+use OCA\LinkBoard\Service\StatusHistoryAggregator;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Db\StatusCacheMapper;
 use OCA\LinkBoard\Service\NotFoundException;
@@ -19,6 +20,7 @@ class StatusApiController extends ApiController {
     public function __construct(
         IRequest $request,
         private StatusCheckService $statusCheckService,
+        private StatusHistoryAggregator $aggregator,
         private ServiceService $serviceService,
         private StatusCacheMapper $statusCacheMapper,
         private GlobalBoardService $globalBoardService,
@@ -63,35 +65,25 @@ class StatusApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function history(int $id, string $period = '24h'): DataResponse {
-        // Validate period
         if (!in_array($period, ['1h', '3h', '24h', '7d'], true)) {
             $period = '24h';
         }
 
         try {
-            // Verify ownership
             $this->serviceService->find($id, $this->effectiveUserId());
 
             $history = $this->statusCheckService->getHistory($id, $period);
             $cache = $this->statusCacheMapper->findByServiceId($id);
+            $agg = $this->aggregator->aggregate($history, $period);
 
-            $totalFailures = $cache ? $cache->getTotalFailures() : 0;
-            $currentStatus = $cache ? $cache->getStatus() : 'unknown';
-
-            // Calculate uptime percentage
-            $total = count($history);
-            $online = 0;
-            foreach ($history as $entry) {
-                if ($entry->getStatus() === 'online') {
-                    $online++;
-                }
-            }
-            $uptimePercent = $total > 0 ? round(($online / $total) * 100, 2) : null;
+            $uptimePercent = $agg['total'] > 0
+                ? round(($agg['onlineCount'] / $agg['total']) * 100, 2)
+                : null;
 
             return new DataResponse([
-                'history' => array_map(fn($h) => $h->jsonSerialize(), $history),
-                'totalFailures' => $totalFailures,
-                'currentStatus' => $currentStatus,
+                'history' => $agg['history'],
+                'totalFailures' => $cache ? $cache->getTotalFailures() : 0,
+                'currentStatus' => $cache ? $cache->getStatus() : 'unknown',
                 'uptimePercent' => $uptimePercent,
                 'period' => $period,
             ]);
@@ -110,32 +102,35 @@ class StatusApiController extends ApiController {
         }
 
         $services = $this->serviceService->findAll($this->effectiveUserId());
+        $pingServices = array_values(array_filter($services, fn($s) => $s->getPingEnabled()));
+        if (empty($pingServices)) {
+            return new DataResponse([]);
+        }
+
+        $serviceIds = array_map(fn($s) => $s->getId(), $pingServices);
+
+        // 2 queries instead of 2N
+        $historyByService = $this->statusCheckService->getHistoryForServices($serviceIds, $period);
+        $cacheById = [];
+        foreach ($this->statusCacheMapper->findByServiceIds($serviceIds) as $c) {
+            $cacheById[$c->getServiceId()] = $c;
+        }
+
         $result = [];
+        foreach ($pingServices as $svc) {
+            $id = $svc->getId();
+            $entries = $historyByService[$id] ?? [];
+            $agg = $this->aggregator->aggregate($entries, $period);
 
-        foreach ($services as $service) {
-            if (!$service->getPingEnabled()) {
-                continue;
-            }
-            $id = $service->getId();
-            $history = $this->statusCheckService->getHistory($id, $period);
-            $cache = $this->statusCacheMapper->findByServiceId($id);
-
-            $totalFailures = $cache ? $cache->getTotalFailures() : 0;
-            $currentStatus = $cache ? $cache->getStatus() : 'unknown';
-
-            $total = count($history);
-            $online = 0;
-            foreach ($history as $entry) {
-                if ($entry->getStatus() === 'online') {
-                    $online++;
-                }
-            }
-            $uptimePercent = $total > 0 ? round(($online / $total) * 100, 2) : null;
+            $cache = $cacheById[$id] ?? null;
+            $uptimePercent = $agg['total'] > 0
+                ? round(($agg['onlineCount'] / $agg['total']) * 100, 2)
+                : null;
 
             $result[$id] = [
-                'history' => array_map(fn($h) => $h->jsonSerialize(), $history),
-                'totalFailures' => $totalFailures,
-                'currentStatus' => $currentStatus,
+                'history' => $agg['history'],
+                'totalFailures' => $cache ? $cache->getTotalFailures() : 0,
+                'currentStatus' => $cache ? $cache->getStatus() : 'unknown',
                 'uptimePercent' => $uptimePercent,
                 'period' => $period,
             ];

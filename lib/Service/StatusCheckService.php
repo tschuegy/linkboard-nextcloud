@@ -133,7 +133,7 @@ class StatusCheckService {
 
         $startTime = microtime(true);
         curl_exec($ch);
-        $responseMs = (int)round((microtime(true) - $startTime) * 1000);
+        $responseMs = $this->measureNetworkRtt($ch, $startTime);
 
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
@@ -165,7 +165,7 @@ class StatusCheckService {
 
             $startTime = microtime(true);
             curl_exec($ch);
-            $responseMs = (int)round((microtime(true) - $startTime) * 1000);
+            $responseMs = $this->measureNetworkRtt($ch, $startTime);
 
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $error = curl_error($ch);
@@ -188,11 +188,37 @@ class StatusCheckService {
     }
 
     /**
+     * Network RTT in ms — TCP handshake time only, excluding DNS, TLS, and
+     * server processing. Approximates ICMP ping RTT. Falls back to wall-clock
+     * elapsed when TCP never connected (timeout, refused, unreachable).
+     *
+     * @param \CurlHandle $ch
+     */
+    private function measureNetworkRtt($ch, float $startTime): int {
+        $connectUs    = (int)curl_getinfo($ch, CURLINFO_CONNECT_TIME_T);
+        $namelookupUs = (int)curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME_T);
+
+        if ($connectUs > 0) {
+            return (int)round(max(0, $connectUs - $namelookupUs) / 1000);
+        }
+        return (int)round((microtime(true) - $startTime) * 1000);
+    }
+
+    /**
      * Get status history for a service
      * @return StatusHistory[]
      */
     public function getHistory(int $serviceId, string $period = '24h'): array {
         return $this->statusHistoryMapper->findByServiceId($serviceId, $period);
+    }
+
+    /**
+     * Get status history for many services in a single query.
+     * @param int[] $serviceIds
+     * @return array<int, StatusHistory[]> serviceId => entries (oldest→newest)
+     */
+    public function getHistoryForServices(array $serviceIds, string $period = '24h'): array {
+        return $this->statusHistoryMapper->findByServiceIdsForPeriod($serviceIds, $period);
     }
 
     /**

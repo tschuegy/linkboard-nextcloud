@@ -126,5 +126,6 @@ OC.L10N.register("linkboard", {
     "Import failed: %s": "가져오기 실패: %s",
     "Maximum number of services reached (%s)": "최대 서비스 수에 도달했습니다 (%s)",
     "Display": "Display",
-    "Show scrollbar": "Show scrollbar"
+    "Show scrollbar": "Show scrollbar",
+    "avg {ms} ms · max {max} ms · {time}": "avg {ms} ms · max {max} ms · {time}"
 }, "nplurals=1; plural=0;");

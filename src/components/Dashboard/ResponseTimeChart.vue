@@ -44,7 +44,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         :width="region.width"
                         :height="chartHeight"
                         fill="rgba(239, 68, 68, 0.1)" />
-                    <!-- Response time line -->
+                    <!-- Max response time line (visible when buckets contain a max distinct from avg) -->
+                    <polyline
+                        v-if="hasMaxLine"
+                        :points="polylineMaxPoints"
+                        fill="none"
+                        stroke="#22c55e"
+                        stroke-width="1"
+                        stroke-opacity="0.35"
+                        stroke-dasharray="2 2"
+                        vector-effect="non-scaling-stroke" />
+                    <!-- Response time line (avg) -->
                     <polyline
                         :points="polylinePoints"
                         fill="none"
@@ -65,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     v-if="hoveredPoint"
                     class="response-chart__tooltip"
                     :style="{ left: hoverX + 'px', top: (hoverY - 32) + 'px' }">
-                    {{ hoveredPoint.ms }} ms · {{ formatTime(hoveredPoint.checkedAt) }}
+                    {{ tooltipText }}
                 </div>
             </div>
             <div class="response-chart__labels">
@@ -100,7 +110,14 @@ export default {
             for (var i = 0; i < this.historyData.history.length; i++) {
                 var entry = this.historyData.history[i]
                 if (entry.responseMs !== null) {
-                    points.push({ index: i, ms: entry.responseMs, status: entry.status, checkedAt: entry.checkedAt })
+                    var msMax = entry.responseMsMax != null ? entry.responseMsMax : entry.responseMs
+                    points.push({
+                        index: i,
+                        ms: entry.responseMs,
+                        msMax: msMax,
+                        status: entry.status,
+                        checkedAt: entry.checkedAt,
+                    })
                 }
             }
             return points
@@ -108,9 +125,17 @@ export default {
         maxMs: function() {
             var max = 0
             for (var i = 0; i < this.chartPoints.length; i++) {
-                if (this.chartPoints[i].ms > max) max = this.chartPoints[i].ms
+                var p = this.chartPoints[i]
+                if (p.ms > max) max = p.ms
+                if (p.msMax > max) max = p.msMax
             }
             return max || 1
+        },
+        hasMaxLine: function() {
+            for (var i = 0; i < this.chartPoints.length; i++) {
+                if (this.chartPoints[i].msMax > this.chartPoints[i].ms) return true
+            }
+            return false
         },
         polylinePoints: function() {
             if (this.chartPoints.length < 2) return ''
@@ -122,6 +147,26 @@ export default {
                 parts.push(x.toFixed(1) + ',' + y.toFixed(1))
             }
             return parts.join(' ')
+        },
+        polylineMaxPoints: function() {
+            if (this.chartPoints.length < 2) return ''
+            var total = this.historyData.history.length
+            var parts = []
+            for (var j = 0; j < this.chartPoints.length; j++) {
+                var x = (this.chartPoints[j].index / (total - 1)) * this.chartWidth
+                var y = this.chartHeight - (this.chartPoints[j].msMax / this.maxMs) * (this.chartHeight - 10) - 5
+                parts.push(x.toFixed(1) + ',' + y.toFixed(1))
+            }
+            return parts.join(' ')
+        },
+        tooltipText: function() {
+            if (!this.hoveredPoint) return ''
+            var p = this.hoveredPoint
+            var time = this.formatTime(p.checkedAt)
+            if (p.msMax > p.ms) {
+                return t('linkboard', 'avg {ms} ms · max {max} ms · {time}', { ms: p.ms, max: p.msMax, time: time })
+            }
+            return p.ms + ' ms · ' + time
         },
         gridLines: function() {
             if (this.chartPoints.length < 2) return []

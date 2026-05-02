@@ -145,5 +145,6 @@ OC.L10N.register("linkboard", {
     "Administration": "Administration",
     "Save admin settings": "Admin-Einstellungen speichern",
     "Display": "Darstellung",
-    "Show scrollbar": "Scrollbar anzeigen"
+    "Show scrollbar": "Scrollbar anzeigen",
+    "avg {ms} ms · max {max} ms · {time}": "⌀ {ms} ms · max {max} ms · {time}"
 }, "nplurals=2; plural=(n != 1);");

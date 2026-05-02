@@ -18,7 +18,7 @@ class StatusHistoryMapper extends QBMapper {
      * @return StatusHistory[]
      */
     public function findByServiceId(int $serviceId, string $period = '24h'): array {
-        $cutoff = $this->calculateCutoff($period);
+        $cutoff = $this->getPeriodCutoff($period);
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -28,6 +28,35 @@ class StatusHistoryMapper extends QBMapper {
             ->orderBy('checked_at', 'ASC');
 
         return $this->findEntities($qb);
+    }
+
+    /**
+     * @param int[] $serviceIds
+     * @return array<int, StatusHistory[]> serviceId => entries (oldest→newest)
+     */
+    public function findByServiceIdsForPeriod(array $serviceIds, string $period): array {
+        if (empty($serviceIds)) {
+            return [];
+        }
+
+        $cutoff = $this->getPeriodCutoff($period);
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->in('service_id', $qb->createNamedParameter($serviceIds, IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->gte('checked_at', $qb->createNamedParameter($cutoff)))
+            ->orderBy('service_id', 'ASC')
+            ->addOrderBy('checked_at', 'ASC');
+
+        $grouped = [];
+        foreach ($serviceIds as $sid) {
+            $grouped[(int) $sid] = [];
+        }
+        foreach ($this->findEntities($qb) as $entity) {
+            $grouped[$entity->getServiceId()][] = $entity;
+        }
+        return $grouped;
     }
 
     public function deleteOlderThan(int $days = 7): int {
@@ -89,7 +118,7 @@ class StatusHistoryMapper extends QBMapper {
         $qb->executeStatement();
     }
 
-    private function calculateCutoff(string $period): string {
+    public function getPeriodCutoff(string $period): string {
         $modifier = match ($period) {
             '1h' => '-1 hour',
             '3h' => '-3 hours',
