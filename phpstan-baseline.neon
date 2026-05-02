@@ -187,7 +187,13 @@ parameters:
 			path: lib/Controller/StatusApiController.php
 
 		-
-			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\<string, array\<array\>\|float\|int\|string\|null\>\> given\.$#'
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\<string, array\<int, array\<string, int\|string\|null\>\>\|float\|int\|string\|null\>\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: lib/Controller/StatusApiController.php
@@ -199,7 +205,7 @@ parameters:
 			path: lib/Controller/StatusApiController.php
 
 		-
-			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\<array\>\|float\|int\|string\|null\> given\.$#'
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\<int, array\<string, int\|string\|null\>\>\|float\|int\|string\|null\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: lib/Controller/StatusApiController.php
@@ -391,6 +397,18 @@ parameters:
 			path: lib/Migration/Version001010Date20260317000000.php
 
 		-
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001011Date20260421000000.php
+
+		-
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Migration/Version001011Date20260421000000.php
+
+		-
 			message: '#^Call to function is_array\(\) with array\<mixed, mixed\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -431,15 +449,3 @@ parameters:
 			identifier: nullCoalesce.expr
 			count: 1
 			path: lib/Widget/Widgets/SyncthingRelayWidget.php
-
-		-
-			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
-			identifier: class.notFound
-			count: 1
-			path: lib/Migration/Version001011Date20260421000000.php
-
-		-
-			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
-			identifier: class.notFound
-			count: 1
-			path: lib/Migration/Version001011Date20260421000000.php
