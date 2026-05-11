@@ -61,7 +61,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 
 ## Requirements
 
-- Nextcloud 32 or 33
+- Nextcloud 32, 33, or 34
 - PHP 8.2 – 8.4
 
 ## Administration
