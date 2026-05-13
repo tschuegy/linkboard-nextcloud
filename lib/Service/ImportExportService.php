@@ -92,6 +92,14 @@ class ImportExportService {
                 if (empty($catData['name'])) continue;
                 $oldId = $catData['id'] ?? null;
 
+                $type = (isset($catData['type']) && is_string($catData['type'])) ? $catData['type'] : 'default';
+                $configValue = $catData['config'] ?? null;
+                if (is_array($configValue)) {
+                    $configValue = json_encode($configValue);
+                } elseif (!is_string($configValue)) {
+                    $configValue = null;
+                }
+
                 $category = $this->categoryService->create(
                     $userId,
                     $catData['name'],
@@ -99,8 +107,16 @@ class ImportExportService {
                     $catData['tab'] ?? null,
                     isset($catData['columns']) ? (int)$catData['columns'] : null,
                     (bool)($catData['collapsed'] ?? false),
+                    null,
+                    $type,
+                    $configValue,
                 );
                 $stats['categories']++;
+
+                if (isset($catData['sortOrder']) && is_int($catData['sortOrder'])) {
+                    $category->setSortOrder($catData['sortOrder']);
+                    $this->categoryMapper->update($category);
+                }
 
                 if ($oldId !== null) {
                     $oldIdToNewId[$oldId] = $category->getId();
@@ -109,12 +125,19 @@ class ImportExportService {
                 // Import services for this category
                 $services = $catData['services'] ?? [];
                 foreach ($services as $svcData) {
-                    if (empty($svcData['name'])) continue;
+                    if (!isset($svcData['name']) || !is_string($svcData['name'])) continue;
 
-                    $this->serviceService->create(
+                    // Empty-name workaround: Service entity defaults $name to '',
+                    // so setName('') is a no-op for the dirty-tracking and the INSERT
+                    // omits the column, hitting "Field 'name' doesn't have a default value".
+                    // Insert with a placeholder, then UPDATE to the real empty value.
+                    $emptyName  = ($svcData['name'] === '');
+                    $createName = $emptyName ? ' ' : $svcData['name'];
+
+                    $service = $this->serviceService->create(
                         $userId,
                         $category->getId(),
-                        $svcData['name'],
+                        $createName,
                         $svcData['description'] ?? null,
                         $svcData['href'] ?? null,
                         $svcData['icon'] ?? null,
@@ -125,8 +148,19 @@ class ImportExportService {
                         $svcData['widgetType'] ?? null,
                         $svcData['widgetConfig'] ?? null,
                         $svcData['notificationOverrides'] ?? null,
+                        (bool)($svcData['showScrollbar'] ?? false),
                     );
                     $stats['services']++;
+
+                    if ($emptyName) {
+                        $service->setName('');
+                        $this->serviceMapper->update($service);
+                    }
+
+                    if (isset($svcData['sortOrder']) && is_int($svcData['sortOrder'])) {
+                        $service->setSortOrder($svcData['sortOrder']);
+                        $this->serviceMapper->update($service);
+                    }
                 }
             }
 

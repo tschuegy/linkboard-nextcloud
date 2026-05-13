@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.10] – 2026-05-13
+
+### Fixed
+- Import dropped services whose `name` field was an empty string (e.g. icon/widget-only cards) — they are now imported as intended.
+- Import discarded the category `type` and `config` (grid settings) — categories with a custom `_gridSettings.colCount` now keep their layout instead of falling back to the 12-column default.
+- Import re-assigned `sortOrder` sequentially instead of preserving the exported values — category and service order now matches the source instance.
+- Import dropped the per-service `showScrollbar` flag — it is now restored from the export.
+
 ## [1.6.9] – 2026-05-11
 
 ### Added
