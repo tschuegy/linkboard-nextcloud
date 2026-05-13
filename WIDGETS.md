@@ -4,6 +4,37 @@
 
 LinkBoard ships with **136 built-in widgets** that display real-time data from self-hosted services. Each widget is configured per-service in the service editor. The table below lists every available widget, its internal ID, and the configuration fields it accepts.
 
+## How to configure a widget
+
+Widgets are configured **in the LinkBoard service editor** (the dialog you open when adding or editing a service tile) — there is no YAML or config file. Pick a widget type from the dropdown, then fill in the fields the widget needs. The fields available for each widget are listed in the table below.
+
+### Service URL
+
+The widget always uses the same URL as the service tile itself. Make sure the protocol matches what the target service expects — most modern services (Proxmox, TrueNAS, UniFi OS, Synology…) require `https://`.
+
+### Credentials and tokens
+
+Most widgets accept a plain value: either a `username` + `password` pair, or a single `api_key` / `token` that you paste in as-is.
+
+A few widgets need a **composite token** assembled from several pieces. The two Proxmox widgets are the most common example:
+
+| Widget | Token format | Example |
+|---|---|---|
+| Proxmox VE | `<user>@<realm>!<token_id>=<secret>` | `monitor@pam!linkboard=12345678-1234-1234-1234-123456789abc` |
+| Proxmox Backup Server | `<user>@<realm>!<token_id>:<secret>` | `monitor@pbs!linkboard:12345678-1234-1234-1234-123456789abc` |
+
+Notes for both Proxmox widgets:
+
+- `<user>` is the Proxmox user name, `<realm>` is the authentication realm (typically `pam` or `pve` for VE, `pbs` for Backup Server).
+- `<token_id>` is the **ID** of the API token (you choose this when creating the token).
+- `<secret>` is the **UUID** Proxmox shows you exactly once when the token is created — copy it immediately.
+- Proxmox VE uses `=` between token_id and secret; Proxmox Backup Server uses `:`. They are not interchangeable.
+- The token needs a role with read permissions: `PVEAuditor` on `/` for Proxmox VE, `Audit` on `/` (with Propagate) for Proxmox Backup Server.
+
+If a widget doesn't respond as expected, double-check the protocol (`https://` vs `http://`), the token format, and the role/permissions on the token in the upstream service.
+
+## Widget catalog
+
 | Widget | ID | Configuration | Tested |
 |---|---|---|---|
 | AdGuard Home | `adguard` | `username` (required), `password` (required) | [x] |
@@ -101,8 +132,8 @@ LinkBoard ships with **136 built-in widgets** that display real-time data from s
 | Portainer | `portainer` | `api_key` (required), `env` (optional) | [ ] |
 | Prometheus | `prometheus` | `api_key` (optional) | [ ] |
 | Prowlarr | `prowlarr` | `api_key` (required) | [ ] |
-| Proxmox Backup Server | `proxmoxbackupserver` | `api_token` (required) — Format: `user@realm!tokenid:secret`. Token needs `Audit` role on path `/` with Propagate. Service URL must use `https://`. | [x] |
-| Proxmox VE | `proxmox` | `api_token` (required) — Format: `user@realm!tokenid=UUID`. Token needs `PVEAuditor` role on path `/`. Service URL must use `https://`. | [x] |
+| Proxmox Backup Server | `proxmoxbackupserver` | `api_token` (required) — Format: `<user>@<realm>!<token_id>:<secret>` (see [composite tokens](#credentials-and-tokens) for a full example). Token needs `Audit` role on path `/` with Propagate. Service URL must use `https://`. | [x] |
+| Proxmox VE | `proxmox` | `api_token` (required) — Format: `<user>@<realm>!<token_id>=<secret>` (see [composite tokens](#credentials-and-tokens) for a full example). Token needs `PVEAuditor` role on path `/`. Service URL must use `https://`. | [x] |
 | Pterodactyl | `pterodactyl` | `api_key` (required) | [ ] |
 | pyLoad | `pyload` | `username` (required), `password` (required) | [ ] |
 | qBittorrent | `qbittorrent` | `username` (required), `password` (required) | [ ] |
