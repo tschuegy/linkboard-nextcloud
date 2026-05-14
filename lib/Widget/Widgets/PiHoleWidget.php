@@ -4,6 +4,13 @@ namespace OCA\LinkBoard\Widget\Widgets;
 
 use OCA\LinkBoard\Widget\AbstractWidget;
 
+/**
+ * Pi-hole v6 uses a two-step session-based REST API:
+ *   POST /api/auth                       → returns { session: { sid: "..." } }
+ *   GET  /api/stats/summary?sid=<SID>    → returns { queries: { total, blocked, percent_blocked } }
+ *
+ * Implemented via buildRequests (auth) + buildFollowUpRequests (stats using the SID).
+ */
 class PiHoleWidget extends AbstractWidget {
 
     public function getId(): string { return 'pihole'; }
@@ -11,29 +18,63 @@ class PiHoleWidget extends AbstractWidget {
 
     public function getConfigFields(): array {
         return [
-            ['key' => 'api_token', 'label' => 'API Token', 'type' => 'password', 'required' => false, 'placeholder' => 'Optional for public stats'],
+            [
+                'key'         => 'password',
+                'label'       => 'Admin Password',
+                'type'        => 'password',
+                'required'    => true,
+                'placeholder' => 'Pi-hole admin or app password (required in v6)',
+            ],
         ];
     }
 
-    public function getAllowedFields(): array { return ['queries', 'blocked', 'percentage']; }
+    public function getAllowedFields(): array {
+        return ['queries', 'blocked', 'percentage'];
+    }
 
     public function getFieldLabels(): array {
-        return ['queries' => 'Queries', 'blocked' => 'Blocked', 'percentage' => 'Blocked %'];
+        return [
+            'queries'    => 'Queries',
+            'blocked'    => 'Blocked',
+            'percentage' => 'Blocked %',
+        ];
     }
 
     public function buildRequests(string $baseUrl, array $config): array {
-        $auth = !empty($config['api_token']) ? '&auth=' . $config['api_token'] : '';
+        $base = $this->getApiBase($baseUrl);
         return [[
-            'url' => rtrim($baseUrl, '/') . '/admin/api.php?summaryRaw' . $auth,
+            'url'     => $base . '/api/auth',
+            'method'  => 'POST',
+            'headers' => ['Content-Type: application/json', 'Accept: application/json'],
+            'body'    => json_encode(['password' => $config['password'] ?? '']),
         ]];
     }
 
+    public function buildFollowUpRequests(array $responses, string $baseUrl, array $config): array {
+        $sid = $responses[0]['session']['sid'] ?? null;
+        if (!is_string($sid) || $sid === '') {
+            return [];
+        }
+        $base = $this->getApiBase($baseUrl);
+        return [['url' => $base . '/api/stats/summary?sid=' . urlencode($sid)]];
+    }
+
     public function mapResponse(array $responses, array $config): array {
-        $data = $responses[0] ?? [];
+        $stats   = is_array(end($responses)) ? end($responses) : [];
+        $queries = $stats['queries'] ?? [];
+
         return [
-            'queries' => number_format((float)($data['dns_queries_today'] ?? 0)),
-            'blocked' => number_format((float)($data['ads_blocked_today'] ?? 0)),
-            'percentage' => round((float)($data['ads_percentage_today'] ?? 0), 1) . '%',
+            'queries'    => number_format((float)($queries['total']           ?? 0)),
+            'blocked'    => number_format((float)($queries['blocked']         ?? 0)),
+            'percentage' => round((float)($queries['percent_blocked']         ?? 0), 1) . '%',
         ];
+    }
+
+    private function getApiBase(string $url): string {
+        $base = rtrim($url, '/');
+        if (str_ends_with($base, '/admin')) {
+            $base = substr($base, 0, -6);
+        }
+        return $base;
     }
 }

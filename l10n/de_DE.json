@@ -147,7 +147,8 @@
     "Save admin settings": "Admin-Einstellungen speichern",
     "Display": "Darstellung",
     "Show scrollbar": "Scrollbar anzeigen",
-    "avg {ms} ms · max {max} ms · {time}": "⌀ {ms} ms · max {max} ms · {time}"
+    "avg {ms} ms · max {max} ms · {time}": "⌀ {ms} ms · max {max} ms · {time}",
+    "Invalid format": "Ungültiges Format"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

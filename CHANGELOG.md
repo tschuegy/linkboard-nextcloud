@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.11] – 2026-05-14
+
+### Added
+- Inline format hint below widget config fields. When a widget defines a `pattern` (regex) and `validationMessage` for a config field, the editor now shows a red helper text under the field when the value doesn't match. Initially enabled for Proxmox VE and Proxmox Backup Server API tokens. Non-blocking — the backend remains authoritative.
+
+### Fixed
+- Pi-hole widget rewritten for the v6 REST API (the legacy `/admin/api.php?summaryRaw` endpoint was removed in v6). The widget now performs the two-step session login (`POST /api/auth` → `GET /api/stats/summary?sid=...`) via the existing `buildFollowUpRequests` framework path. Config field renamed from `api_token` (optional) to `password` (required in v6); existing Pi-hole services must be reconfigured once.
+
 ## [1.6.10] – 2026-05-13
 
 ### Fixed

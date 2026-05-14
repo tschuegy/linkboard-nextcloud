@@ -126,7 +126,7 @@ If a widget doesn't respond as expected, double-check the protocol (`https://` v
 | Peanut (NUT UPS) | `peanut` | — | [ ] |
 | pfSense | `pfsense` | `username` (required), `password` (required) | [ ] |
 | PhotoPrism | `photoprism` | `username` (optional), `password` (required) | [ ] |
-| Pi-hole | `pihole` | `api_token` (optional) | [ ] |
+| Pi-hole | `pihole` | `password` (required, Pi-hole v6+) | [x] |
 | Plant-It | `plantit` | `api_key` (required) | [ ] |
 | Plex | `plex` | `token` (required) | [ ] |
 | Portainer | `portainer` | `api_key` (required), `env` (optional) | [ ] |

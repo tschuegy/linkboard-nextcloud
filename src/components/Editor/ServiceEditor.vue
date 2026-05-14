@@ -122,6 +122,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                             :type="field.type === 'password' ? 'password' : 'text'"
                             :placeholder="field.placeholder || ''"
                             :autocomplete="field.type === 'password' ? 'off' : undefined"
+                            :error="!!fieldErrors[field.key]"
+                            :helper-text="fieldErrors[field.key] || ''"
                             @update:value="setWidgetConfigValue(field.key, $event)" />
                     </div>
                 </template>
@@ -207,6 +209,26 @@ export default {
             return (this.form.widgetConfig && Array.isArray(this.form.widgetConfig.mappings))
                 ? this.form.widgetConfig.mappings
                 : []
+        },
+        fieldErrors() {
+            var errors = {}
+            if (!this.selectedWidgetDef) return errors
+            var fields = this.selectedWidgetDef.configFields || []
+            for (var i = 0; i < fields.length; i++) {
+                var f = fields[i]
+                if (!f.pattern) continue
+                var value = this.widgetConfigValue(f.key)
+                if (!value) continue
+                try {
+                    var re = new RegExp(f.pattern)
+                    if (!re.test(value)) {
+                        errors[f.key] = f.validationMessage || t('linkboard', 'Invalid format')
+                    }
+                } catch (e) {
+                    // Malformed regex from backend — skip silently
+                }
+            }
+            return errors
         },
     },
     watch: {

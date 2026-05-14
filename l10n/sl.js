@@ -127,5 +127,6 @@ OC.L10N.register("linkboard", {
     "Maximum number of services reached (%s)": "Maximum number of services reached (%s)",
     "Display": "Display",
     "Show scrollbar": "Show scrollbar",
-    "avg {ms} ms · max {max} ms · {time}": "avg {ms} ms · max {max} ms · {time}"
+    "avg {ms} ms · max {max} ms · {time}": "avg {ms} ms · max {max} ms · {time}",
+    "Invalid format": "Invalid format"
 }, "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);");
