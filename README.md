@@ -48,6 +48,18 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Global Board** – Admins can designate one user's board as a shared read-only dashboard for all users
 - **Group Restriction** – Optionally restrict LinkBoard access to specific Nextcloud groups
 
+## Example Configuration
+
+Want to see what a populated dashboard looks like? Check out
+[`examples/linkboard-example.json`](examples/linkboard-example.json) —
+a ready-to-import sample board with 11 categories, 21 services, and
+10 widgets (Proxmox, AdGuard, custom API, system resources, table).
+
+Download the file, then import it via **Settings → Import / Export →
+Import JSON** inside LinkBoard. URLs (`192.168.1.1`) and auth headers
+are placeholders — replace them with your own before importing, or
+import as-is and edit each service afterwards.
+
 ## Keyboard Shortcuts
 
 | Key | Action |

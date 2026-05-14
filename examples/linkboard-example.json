@@ -1,0 +1,919 @@
+{
+    "version": "1.0",
+    "exportedAt": "2026-05-14T07:53:02+00:00",
+    "app": "linkboard",
+    "settings": {
+        "title": "LinkBoard",
+        "theme": "auto",
+        "background_url": "",
+        "background_blur": "md",
+        "max_columns": "6",
+        "card_style": "default",
+        "card_background": "glass",
+        "status_style": "basic",
+        "show_search": "false",
+        "show_category_count": "false",
+        "check_for_updates": "true",
+        "notify_failures_threshold": "3",
+        "notify_recovery": "true",
+        "notify_nextcloud": "false",
+        "status_check_timeout": "500",
+        "status_checks_parallel": "true",
+        "font_color_mode": "auto",
+        "manual_color_title": "#b6469d",
+        "manual_color_category": "#ddcb55",
+        "manual_color_service": "#0082c9",
+        "manual_color_description": "#5b64b3",
+        "manual_color_widget_value": "#68F005",
+        "manual_color_widget_label": "#2B02F6",
+        "manual_color_card_bg": "#ED8A0C",
+        "manual_color_header_button": "#4F033D",
+        "show_status_bars": "true",
+        "status_bars_opacity": "0.46",
+        "allowed_image_domains": "",
+        "spacer_style": "heavy"
+    },
+    "categories": [
+        {
+            "id": 41,
+            "name": "Server and Patch-Monitoring",
+            "slug": "server-and-patch-monitoring",
+            "icon": "mdi-server",
+            "sortOrder": 0,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": null,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 80,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 99,
+                    "name": "",
+                    "description": null,
+                    "href": null,
+                    "icon": "",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "resources",
+                    "widgetConfig": {
+                        "mappings": [],
+                        "tempUnit": "C",
+                        "diskPaths": "/",
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 3,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                },
+                {
+                    "id": 100,
+                    "name": "PatchMon",
+                    "description": "PatchMon Statistics",
+                    "href": "http://192.168.1.1:3000",
+                    "icon": "patchmon.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 1,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "customapi",
+                    "widgetConfig": {
+                        "mappings": [
+                            {
+                                "field": "total_hosts",
+                                "label": "Total Hosts"
+                            },
+                            {
+                                "field": "hosts_needing_updates",
+                                "label": "Needs Updates"
+                            },
+                            {
+                                "field": "security_updates",
+                                "label": "Security Updates"
+                            }
+                        ],
+                        "url": "http://192.168.1.1:3000/api/v1/gethomepage/stats",
+                        "auth_header": "PasteHereYourAuthHeader",
+                        "method": "GET",
+                        "_itemsPerRow": "3",
+                        "_layout": {
+                            "x": 3,
+                            "y": 0,
+                            "w": 2,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 42,
+            "name": "Notes",
+            "slug": "notes",
+            "icon": null,
+            "sortOrder": 1,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": null,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 101,
+                    "name": "TriliumServer",
+                    "description": "Trilium Next",
+                    "href": "http://192.168.1.1:8080",
+                    "icon": "https://artifacthub.io/image/7316d8ad-d87b-417b-a89f-781a19df03d6@3x",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 12,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 44,
+            "name": "Immich",
+            "slug": "immich",
+            "icon": null,
+            "sortOrder": 2,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": null,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 103,
+                    "name": "Immich",
+                    "description": "",
+                    "href": "http://192.168.1.1:2283",
+                    "icon": "immich.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 12,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 46,
+            "name": "Network",
+            "slug": "network",
+            "icon": null,
+            "sortOrder": 3,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": null,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 24,
+                    "rowHeight": 60,
+                    "autoCompress": false,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 107,
+                    "name": "unifi.ui.com",
+                    "description": "Manage Unifi Dream Machine",
+                    "href": "https://unifi.ui.com/",
+                    "icon": "https://unifi.ui.com/favicon.ico?v3",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 2,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 8,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:48:55"
+                }
+            ]
+        },
+        {
+            "id": 47,
+            "name": "Proxmox",
+            "slug": "proxmox",
+            "icon": null,
+            "sortOrder": 4,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": null,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 24,
+                    "rowHeight": 80,
+                    "autoCompress": true,
+                    "minHeight": 0,
+                    "responsiveLayout": false
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 108,
+                    "name": "Server1",
+                    "description": "",
+                    "href": "https://192.168.1.1:8006",
+                    "icon": "proxmox.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "proxmox",
+                    "widgetConfig": {
+                        "api_token": "monitor@pam!linkboard=12345678-1234-1234-1234-123456789abc",
+                        "_itemsPerRow": "4",
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 5,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:50:58"
+                },
+                {
+                    "id": 109,
+                    "name": "Server1",
+                    "description": null,
+                    "href": null,
+                    "icon": "proxmox.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "table",
+                    "widgetConfig": {
+                        "columns": [
+                            "Name",
+                            "Description"
+                        ],
+                        "rows": [
+                            [
+                                "Immich",
+                                "Immich"
+                            ],
+                            [
+                                "Patchmon",
+                                "PatchMon"
+                            ],
+                            [
+                                "Nextcloud",
+                                "nextcloud 33 TEST"
+                            ],
+                            [
+                                "Nextcloud2",
+                                "nextcloud 32 TEST"
+                            ]
+                        ],
+                        "_layout": {
+                            "x": 0,
+                            "y": 2,
+                            "w": 5,
+                            "h": 5
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:50:58"
+                },
+                {
+                    "id": 110,
+                    "name": "Server2",
+                    "description": "",
+                    "href": "https://192.168.1.1:8006",
+                    "icon": "proxmox.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 1,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "proxmox",
+                    "widgetConfig": {
+                        "api_token": "monitor@pam!linkboard=12345678-1234-1234-1234-123456789abc",
+                        "_itemsPerRow": "4",
+                        "_layout": {
+                            "x": 5,
+                            "y": 0,
+                            "w": 5,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:50:58"
+                },
+                {
+                    "id": 111,
+                    "name": "Server2",
+                    "description": null,
+                    "href": null,
+                    "icon": "proxmox.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 1,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "table",
+                    "widgetConfig": {
+                        "columns": [
+                            "Name",
+                            "Description"
+                        ],
+                        "rows": [
+                            [
+                                "n8n",
+                                "n8n"
+                            ],
+                            [
+                                "bitwarden",
+                                "bitwarden"
+                            ],
+                            [
+                                "OpenArchiver",
+                                "Open-Archiver"
+                            ]
+                        ],
+                        "_layout": {
+                            "x": 5,
+                            "y": 2,
+                            "w": 5,
+                            "h": 5
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:50:58"
+                },
+                {
+                    "id": 112,
+                    "name": "Server3",
+                    "description": "",
+                    "href": "https://192.168.1.1:8006",
+                    "icon": "proxmox.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 2,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "proxmox",
+                    "widgetConfig": {
+                        "api_token": "monitor@pam!linkboard=12345678-1234-1234-1234-123456789abc",
+                        "_itemsPerRow": "4",
+                        "_layout": {
+                            "x": 10,
+                            "y": 0,
+                            "w": 5,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:50:58"
+                },
+                {
+                    "id": 113,
+                    "name": "Server3",
+                    "description": null,
+                    "href": null,
+                    "icon": "proxmox.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 2,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "table",
+                    "widgetConfig": {
+                        "columns": [
+                            "Name",
+                            "Description"
+                        ],
+                        "rows": [
+                            [
+                                "UptimeKuma",
+                                "Uptime Kuma"
+                            ],
+                            [
+                                "Grafana",
+                                "grafana-mina"
+                            ],
+                            [
+                                "Trilium",
+                                "Trilium"
+                            ]
+                        ],
+                        "_layout": {
+                            "x": 10,
+                            "y": 2,
+                            "w": 5,
+                            "h": 5
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:50:58"
+                }
+            ]
+        },
+        {
+            "id": 48,
+            "name": "Stirling-PDF",
+            "slug": "stirling-pdf",
+            "icon": null,
+            "sortOrder": 5,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": 44,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 120,
+                    "name": "Stirling PDF",
+                    "description": "",
+                    "href": "http://192.168.1.1:8080",
+                    "icon": "https://raw.githubusercontent.com/Stirling-Tools/Stirling-PDF/main/docs/stirling.png",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 12,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 49,
+            "name": "Uptime",
+            "slug": "uptime",
+            "icon": null,
+            "sortOrder": 6,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": 42,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 121,
+                    "name": "Uptime Kuma",
+                    "description": "Uptime Kuma",
+                    "href": "http://192.168.1.1:3001/",
+                    "icon": "https://uptime.kuma.pet/img/icon.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 11,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 51,
+            "name": "Switches",
+            "slug": "switches",
+            "icon": null,
+            "sortOrder": 6,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": 46,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 24,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 126,
+                    "name": "Switch1",
+                    "description": "Mikrotik CRS309-1G-8S+",
+                    "href": "http://192.168.1.1",
+                    "icon": "mikrotik.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 7,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:49:38"
+                },
+                {
+                    "id": 127,
+                    "name": "Switch2",
+                    "description": "Mikrotik CRS309-1G-8S+",
+                    "href": "http://192.168.1.1",
+                    "icon": "mikrotik.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 1,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 7,
+                            "y": 0,
+                            "w": 7,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:49:38"
+                },
+                {
+                    "id": 128,
+                    "name": "Switch3",
+                    "description": "Mikrotik CRS309-1G-8S+",
+                    "href": "http://192.168.1.1",
+                    "icon": "mikrotik.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 2,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 7,
+                            "y": 1,
+                            "w": 7,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:49:38"
+                },
+                {
+                    "id": 129,
+                    "name": "Switch4",
+                    "description": "Mikrotik CSS326-24G-2S+",
+                    "href": "http://192.168.1.1",
+                    "icon": "mikrotik.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 3,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 1,
+                            "w": 7,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:49:38"
+                }
+            ]
+        },
+        {
+            "id": 52,
+            "name": "OpenArchiver",
+            "slug": "openarchiver",
+            "icon": null,
+            "sortOrder": 7,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": 44,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 130,
+                    "name": "OpenArchiver",
+                    "description": "Open Archiver",
+                    "href": "http://192.168.1.1:3000",
+                    "icon": "https://demo.openarchiver.com/logos/logo-sq.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 10,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 54,
+            "name": "AdGuard Home",
+            "slug": "adguard-home",
+            "icon": null,
+            "sortOrder": 7,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": null,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 80,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 133,
+                    "name": "AdGuard1",
+                    "description": "",
+                    "href": "http://192.168.1.1",
+                    "icon": "adguard-home.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "adguard",
+                    "widgetConfig": {
+                        "password": "YourPassword",
+                        "username": "YourUser",
+                        "_itemsPerRow": "3",
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 2,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                },
+                {
+                    "id": 134,
+                    "name": "AdGuard2",
+                    "description": "",
+                    "href": "http://192.168.1.1",
+                    "icon": "adguard-home.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 1,
+                    "pingUrl": null,
+                    "pingEnabled": false,
+                    "widgetType": "adguard",
+                    "widgetConfig": {
+                        "username": "YourUser",
+                        "password": "YourPassword",
+                        "_itemsPerRow": "3",
+                        "_layout": {
+                            "x": 2,
+                            "y": 0,
+                            "w": 2,
+                            "h": 2
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        },
+        {
+            "id": 58,
+            "name": "Paperless-ngx",
+            "slug": "paperless-ngx",
+            "icon": null,
+            "sortOrder": 13,
+            "collapsed": false,
+            "tab": null,
+            "columns": null,
+            "parentId": 44,
+            "type": "default",
+            "config": {
+                "_gridSettings": {
+                    "colCount": 12,
+                    "rowHeight": 60,
+                    "autoCompress": true,
+                    "minHeight": 0
+                }
+            },
+            "createdAt": "2026-05-14 07:47:39",
+            "updatedAt": "2026-05-14 07:47:39",
+            "services": [
+                {
+                    "id": 145,
+                    "name": "Paperless",
+                    "description": "Paperless-ngx",
+                    "href": "http://192.168.1.1:8000/",
+                    "icon": "paperless.svg",
+                    "iconColor": null,
+                    "target": "_blank",
+                    "sortOrder": 0,
+                    "pingUrl": null,
+                    "pingEnabled": true,
+                    "widgetType": null,
+                    "widgetConfig": {
+                        "_layout": {
+                            "x": 0,
+                            "y": 0,
+                            "w": 11,
+                            "h": 1
+                        }
+                    },
+                    "notificationOverrides": null,
+                    "showScrollbar": false,
+                    "createdAt": "2026-05-14 07:47:39",
+                    "updatedAt": "2026-05-14 07:47:39"
+                }
+            ]
+        }
+    ]
+}
