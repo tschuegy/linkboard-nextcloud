@@ -36,7 +36,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **136 Built-in Widgets** – Real-time data from Proxmox, Patchman, Immich, Uptime Kuma, and 130+ more; plus an inline-editable Table widget ([full list](WIDGETS.md))
 - **System Resources** – Monitor CPU, memory, disk usage, uptime, and CPU temperature with progress bars
 - **Category Spacers** – Decorative separator categories with multiple styles (solid, dashed, dotted, dots, stars, and more)
-- **Flexible Icons** – Upload custom images (PNG, SVG, WebP…), use Material Design Icons (inline SVG), or any URL
+- **Flexible Icons** – Upload custom images (PNG, SVG, WebP…), use Material Design Icons (inline SVG) by name in either kebab-case (`mdi-cloud`) or camelCase (`mdiCloud`), or any URL
 - **Theming** – Dark, light, or auto mode with custom background images and blur effects
 - **Card Styles** – Glass, Solid, Flat, or Transparent card backgrounds
 - **Per-Card Scrollbar Toggle** – Hide scrollbars by default for a cleaner look; enable them per card when needed (content stays scrollable either way)

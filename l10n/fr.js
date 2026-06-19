@@ -21,7 +21,7 @@ OC.L10N.register("linkboard", {
     "Name": "Nom",
     "e.g. Proxmox, Switches, ...": "ex. Proxmox, Switches, ...",
     "Icon (optional)": "Icône (optionnel)",
-    "e.g. proxmox.png or mdi-server": "ex. proxmox.png ou mdi-server",
+    "e.g. proxmox.png, mdi-cloud or mdiCloud": "ex. proxmox.png ou mdi-server",
     "Cancel": "Annuler",
     "Create": "Créer",
     "New service": "Nouveau service",

@@ -22,7 +22,7 @@
     "Name": "Name",
     "e.g. Proxmox, Switches, ...": "z.B. Proxmox, Switches, ...",
     "Icon (optional)": "Icon (optional)",
-    "e.g. proxmox.png or mdi-server": "z.B. proxmox.png oder mdi-server",
+    "e.g. proxmox.png, mdi-cloud or mdiCloud": "z.B. proxmox.png, mdi-cloud oder mdiCloud",
     "Cancel": "Abbrechen",
     "Create": "Erstellen",
     "New service": "Neuer Service",

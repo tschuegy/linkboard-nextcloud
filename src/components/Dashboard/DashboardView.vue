@@ -160,7 +160,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             @update:open="showNewCategory = $event">
             <div class="linkboard__dialog-form">
                 <NcTextField v-model="newCategoryName" :label="t('linkboard', 'Name')" :placeholder="t('linkboard', 'e.g. Proxmox, Switches, ...')" />
-                <NcTextField v-if="newCategoryType === 'default'" v-model="newCategoryIcon" :label="t('linkboard', 'Icon (optional)')" :placeholder="t('linkboard', 'e.g. proxmox.png or mdi-server')" />
+                <NcTextField v-if="newCategoryType === 'default'" v-model="newCategoryIcon" :label="t('linkboard', 'Icon (optional)')" :placeholder="t('linkboard', 'e.g. proxmox.png, mdi-cloud or mdiCloud')" />
                 <div class="linkboard__dialog-field">
                     <label>{{ t('linkboard', 'Category type') }}</label>
                     <NcSelect v-model="newCategoryType" :options="typeOptions" :clearable="false" label="label" :reduce="opt => opt.id" />

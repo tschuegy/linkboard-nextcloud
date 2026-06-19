@@ -25,7 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
 
             <template v-if="form.type === 'default'">
-                <NcTextField v-model="form.icon" :label="t('linkboard', 'Icon')" placeholder="proxmox.png, https://..., oder mdi-server" />
+                <NcTextField v-model="form.icon" :label="t('linkboard', 'Icon')" placeholder="proxmox.png, https://..., mdi-cloud, mdiCloud" />
                 <NcTextField v-model="form.tab" :label="t('linkboard', 'Tab (optional)')" :placeholder="t('linkboard', 'Tab name for grouping')" />
 
                 <div class="category-editor__field">

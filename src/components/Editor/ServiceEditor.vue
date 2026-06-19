@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <NcTextField v-model="form.name" :label="t('linkboard', 'Name')" />
             <NcTextField v-model="form.description" :label="t('linkboard', 'Description')" />
             <NcTextField v-model="form.href" :label="t('linkboard', 'URL')" />
-            <NcTextField v-model="form.icon" :label="t('linkboard', 'Icon')" placeholder="proxmox.png, https://..., oder mdi-server" />
+            <NcTextField v-model="form.icon" :label="t('linkboard', 'Icon')" placeholder="proxmox.png, https://..., mdi-cloud, mdiCloud" />
             <NcTextField v-model="form.iconColor" :label="t('linkboard', 'Icon color (optional)')" placeholder="#FF6600" />
 
             <div class="service-editor__field">

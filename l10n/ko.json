@@ -22,7 +22,7 @@
     "Name": "이름",
     "e.g. Proxmox, Switches, ...": "예: Proxmox, Switches, ...",
     "Icon (optional)": "아이콘 (선택사항)",
-    "e.g. proxmox.png or mdi-server": "예: proxmox.png 또는 mdi-server",
+    "e.g. proxmox.png, mdi-cloud or mdiCloud": "예: proxmox.png 또는 mdi-server",
     "Cancel": "취소",
     "Create": "생성",
     "New service": "새 서비스",

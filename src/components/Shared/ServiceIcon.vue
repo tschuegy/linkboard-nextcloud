@@ -42,6 +42,11 @@ import { iconApi } from '../../services/api.js'
 
 var mdiModuleCache = null
 
+// Detect MDI icon names in both kebab-case (mdi-cloud) and camelCase (mdiCloud) form
+function isMdiIcon(icon) {
+    return !!icon && (icon.startsWith('mdi-') || /^mdi[A-Z]/.test(icon))
+}
+
 export default {
     name: 'ServiceIcon',
 
@@ -89,7 +94,7 @@ export default {
             }
 
             // MDI icons rendered via inline SVG (mdiPath)
-            if (this.icon.startsWith('mdi-')) {
+            if (isMdiIcon(this.icon)) {
                 return null
             }
 
@@ -120,7 +125,7 @@ export default {
         icon() {
             this.imgError = false
             this.cdnFailed = false
-            if (this.icon && this.icon.startsWith('mdi-')) {
+            if (isMdiIcon(this.icon)) {
                 this.loadMdiIcon(this.icon)
             } else {
                 this.mdiPath = null
@@ -129,7 +134,7 @@ export default {
     },
 
     mounted() {
-        if (this.icon && this.icon.startsWith('mdi-')) {
+        if (isMdiIcon(this.icon)) {
             this.loadMdiIcon(this.icon)
         }
     },
