@@ -3,7 +3,7 @@
 A beautiful, customizable service dashboard for Nextcloud.
 
 ![Nextcloud](https://img.shields.io/badge/Nextcloud-30--33-blue)
-![PHP](https://img.shields.io/badge/PHP-8.1+-purple)
+![PHP](https://img.shields.io/badge/PHP-8.2--8.5-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/tschuegy)](https://github.com/sponsors/tschuegy)
 
@@ -74,7 +74,7 @@ import as-is and edit each service afterwards.
 ## Requirements
 
 - Nextcloud 32, 33, or 34
-- PHP 8.2 – 8.4
+- PHP 8.2 – 8.5
 
 ## Administration
 
