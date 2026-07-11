@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.13] – 2026-07-11
+
+### Added
+- PHP 8.5 support (`max-version` raised from 8.4 to 8.5 in `appinfo/info.xml`). Nextcloud 33 and 34 support PHP 8.5, so LinkBoard no longer shows as incompatible on those servers ([#9](https://github.com/tschuegy/linkboard-nextcloud/issues/9)).
+
 ## [1.6.12] – 2026-06-19
 
 ### Fixed
