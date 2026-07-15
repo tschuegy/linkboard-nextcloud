@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace OCA\LinkBoard\NotificationProvider;
 
+use OCA\LinkBoard\Service\OutboundRequestGuard;
+
 /**
  * Base class for all LinkBoard notification providers.
  *
@@ -34,16 +36,18 @@ abstract class AbstractNotificationProvider {
      * @return array{httpCode: int, body: string, error: string}
      */
     protected function curlRequest(string $url, string $method, array $headers, ?string $body): array {
+        (new OutboundRequestGuard())->assertAllowed($url);
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 15,
             CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 3,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_USERAGENT => 'LinkBoard/1.0 Notification',
             CURLOPT_CUSTOMREQUEST => strtoupper($method),
             CURLOPT_HTTPHEADER => $headers,

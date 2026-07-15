@@ -39,7 +39,7 @@ class NotificationChannelApiController extends ApiController {
     #[NoAdminRequired]
     public function index(): DataResponse {
         $channels = $this->mapper->findAllByUser($this->userId);
-        return new DataResponse(array_map(fn($c) => $c->jsonSerialize(), $channels));
+        return new DataResponse(array_map(fn($c) => $this->serializeChannel($c), $channels));
     }
 
     /**
@@ -60,7 +60,7 @@ class NotificationChannelApiController extends ApiController {
         $channel->setEnabled($enabled);
 
         $channel = $this->mapper->insert($channel);
-        return new DataResponse($channel->jsonSerialize(), Http::STATUS_CREATED);
+        return new DataResponse($this->serializeChannel($channel), Http::STATUS_CREATED);
     }
 
     /**
@@ -82,11 +82,11 @@ class NotificationChannelApiController extends ApiController {
         }
 
         if ($name !== null) $channel->setName($name);
-        if ($config !== null) $channel->setConfig($config);
+        if ($config !== null) { $channel->setConfig($this->mergeSecretConfig($channel, $providerType ?? $channel->getProviderType(), $config)); }
         if ($enabled !== null) $channel->setEnabled($enabled);
 
         $channel = $this->mapper->update($channel);
-        return new DataResponse($channel->jsonSerialize());
+        return new DataResponse($this->serializeChannel($channel));
     }
 
     /**
@@ -111,5 +111,25 @@ class NotificationChannelApiController extends ApiController {
         $result = $this->dispatcher->testChannel($id, $this->userId);
         $status = $result['success'] ? Http::STATUS_OK : Http::STATUS_BAD_REQUEST;
         return new DataResponse($result, $status);
+    }
+    private function serializeChannel(NotificationChannel $channel): array {
+        $data = $channel->jsonSerialize();
+        $provider = $this->providerRegistry->get($channel->getProviderType());
+        foreach ($provider?->getConfigFields() ?? [] as $field) {
+            if ($field['type'] === 'password') { unset($data['config'][$field['key']]); }
+        }
+        return $data;
+    }
+
+    private function mergeSecretConfig(NotificationChannel $channel, string $providerType, string $config): string {
+        $new = json_decode($config, true);
+        if (!is_array($new)) { throw new \InvalidArgumentException('Invalid channel configuration'); }
+        $old = json_decode($channel->getConfig(), true);
+        $old = is_array($old) ? $old : [];
+        foreach ($this->providerRegistry->get($providerType)?->getConfigFields() ?? [] as $field) {
+            $key = $field['key'];
+            if ($field['type'] === 'password' && empty($new[$key]) && isset($old[$key])) { $new[$key] = $old[$key]; }
+        }
+        return json_encode($new, JSON_THROW_ON_ERROR);
     }
 }

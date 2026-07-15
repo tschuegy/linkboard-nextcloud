@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.14] – 2026-07-15
+
+### Added
+- Global TLS certificate verification policy with an optional per-service exception for status checks and widgets.
+
+### Changed
+- Outbound requests are restricted to HTTP(S), reject loopback, link-local and reserved targets, do not follow redirects, and enforce response-size limits.
+- Notification channel secrets are no longer returned by the API; blank secret fields preserve stored credentials on update.
+- Imports are size-limited, validated and executed inside a database transaction.
+- Uploaded icons receive server-generated filenames; active SVG uploads are no longer accepted.
+
+### Fixed
+- Manual status refresh can no longer trigger checks and notifications for other users.
+- TLS certificate verification is enabled by default for status checks, widgets, notifications and update checks.
+
 ## [1.6.13] – 2026-07-11
 
 ### Added

@@ -34,6 +34,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setWidgetConfig(?string $widgetConfig)
  * @method string|null getNotificationOverrides()
  * @method void setNotificationOverrides(?string $notificationOverrides)
+ * @method bool getIgnoreTls()
+ * @method void setIgnoreTls(bool $ignoreTls)
  * @method bool getShowScrollbar()
  * @method void setShowScrollbar(bool $showScrollbar)
  * @method string|null getCreatedAt()
@@ -57,6 +59,7 @@ class Service extends Entity implements JsonSerializable {
     protected ?string $widgetType = null;
     protected ?string $widgetConfig = null;
     protected ?string $notificationOverrides = null;
+    protected bool $ignoreTls = false;
     protected bool $showScrollbar = false;
     protected $createdAt = null;
     protected $updatedAt = null;
@@ -66,10 +69,21 @@ class Service extends Entity implements JsonSerializable {
         $this->addType('categoryId', 'integer');
         $this->addType('sortOrder', 'integer');
         $this->addType('pingEnabled', 'boolean');
+        $this->addType('ignoreTls', 'boolean');
         $this->addType('showScrollbar', 'boolean');
     }
 
     public function jsonSerialize(): array {
+        return $this->toArray(true);
+    }
+
+    public function withoutSecrets(): self {
+        $copy = clone $this;
+        $copy->setWidgetConfig(null);
+        return $copy;
+    }
+
+    public function toArray(bool $includeSecrets = false): array {
         return [
             'id' => $this->getId(),
             'categoryId' => $this->getCategoryId(),
@@ -84,8 +98,9 @@ class Service extends Entity implements JsonSerializable {
             'pingUrl' => $this->getPingUrl(),
             'pingEnabled' => $this->getPingEnabled(),
             'widgetType' => $this->getWidgetType(),
-            'widgetConfig' => $this->getWidgetConfig() ? json_decode($this->getWidgetConfig(), true) : null,
+            'widgetConfig' => $includeSecrets && $this->getWidgetConfig() ? json_decode($this->getWidgetConfig(), true) : null,
             'notificationOverrides' => $this->getNotificationOverrides() ? json_decode($this->getNotificationOverrides(), true) : null,
+            'ignoreTls' => $this->getIgnoreTls(),
             'showScrollbar' => $this->getShowScrollbar(),
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),

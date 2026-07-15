@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Service;
 
 use DateTime;
+use OCP\IDBConnection;
 use OCA\LinkBoard\Db\Category;
 use OCA\LinkBoard\Db\CategoryMapper;
 use OCA\LinkBoard\Db\Service;
@@ -19,6 +20,7 @@ class ImportExportService {
         private CategoryService $categoryService,
         private ServiceService $serviceService,
         private SettingsService $settingsService,
+        private IDBConnection $db,
     ) {
     }
 
@@ -61,6 +63,20 @@ class ImportExportService {
      * @param string $mode 'replace' = delete existing, 'merge' = add to existing
      */
     public function import(string $userId, array $data, string $mode = 'replace'): array {
+        if (!in_array($mode, ['replace', 'merge'], true)) { throw new \InvalidArgumentException('Invalid import mode'); }
+        if (count($data['categories'] ?? []) > 500) { throw new \InvalidArgumentException('Too many categories'); }
+        $this->db->beginTransaction();
+        try {
+            $result = $this->importData($userId, $data, $mode);
+            $this->db->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    private function importData(string $userId, array $data, string $mode): array {
         $stats = ['categories' => 0, 'services' => 0, 'settings' => 0];
 
         if ($mode === 'replace') {
@@ -149,6 +165,7 @@ class ImportExportService {
                         $svcData['widgetConfig'] ?? null,
                         $svcData['notificationOverrides'] ?? null,
                         (bool)($svcData['showScrollbar'] ?? false),
+                        (bool)($svcData['ignoreTls'] ?? false),
                     );
                     $stats['services']++;
 

@@ -9,6 +9,8 @@ use OCA\LinkBoard\Db\StatusHistory;
 use OCA\LinkBoard\Db\StatusHistoryMapper;
 use OCA\LinkBoard\Db\ServiceMapper;
 use Psr\Log\LoggerInterface;
+use OCP\IAppConfig;
+use OCA\LinkBoard\AppInfo\Application;
 
 class StatusCheckService {
 
@@ -20,6 +22,8 @@ class StatusCheckService {
         private NotificationService $notificationService,
         private NotificationDispatcherService $notificationDispatcher,
         private SettingsService $settingsService,
+        private IAppConfig $appConfig,
+        private OutboundRequestGuard $requestGuard,
     ) {
     }
 
@@ -37,17 +41,20 @@ class StatusCheckService {
         $settings = $this->settingsService->getAll($userId);
         $timeoutMs = (int)($settings['status_check_timeout'] ?? 5000);
 
-        return $this->performCheck($serviceId, $pingUrl, $timeoutMs);
+        return $this->performCheck($serviceId, $pingUrl, $timeoutMs, $service->getIgnoreTls());
     }
 
     /**
      * Check all services that have ping enabled
      */
-    public function checkAllEnabled(): int {
+    public function checkAllEnabled(?string $onlyUserId = null): int {
         $qb = $this->serviceMapper->getDb()->getQueryBuilder();
-        $qb->select('id', 'ping_url', 'href', 'user_id', 'name')
+        $qb->select('id', 'ping_url', 'href', 'user_id', 'name', 'ignore_tls')
             ->from('linkboard_services')
             ->where($qb->expr()->eq('ping_enabled', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
+        if ($onlyUserId !== null) {
+            $qb->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($onlyUserId)));
+        }
 
         $result = $qb->executeQuery();
         $checked = 0;
@@ -69,7 +76,7 @@ class StatusCheckService {
                     $userSettings[$userId] ??= $this->settingsService->getAll($userId);
                     $timeoutMs = (int)($userSettings[$userId]['status_check_timeout'] ?? 5000);
 
-                    $cache = $this->performCheck($serviceId, $pingUrl, $timeoutMs);
+                    $cache = $this->performCheck($serviceId, $pingUrl, $timeoutMs, (bool)$row['ignore_tls']);
                     $checked++;
                     $threshold = (int)($userSettings[$userId]['notify_failures_threshold'] ?? 3);
                     $notifyRecovery = ($userSettings[$userId]['notify_recovery'] ?? 'true') === 'true';
@@ -116,7 +123,9 @@ class StatusCheckService {
     /**
      * Perform HTTP check
      */
-    private function performCheck(int $serviceId, string $url, int $timeoutMs = 5000): StatusCache {
+    private function performCheck(int $serviceId, string $url, int $timeoutMs = 5000, bool $ignoreTls = false): StatusCache {
+        $this->requestGuard->assertAllowed($url);
+        $verifyTls = $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true) || !$ignoreTls;
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
@@ -124,10 +133,11 @@ class StatusCheckService {
             CURLOPT_TIMEOUT_MS => $timeoutMs,
             CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
             CURLOPT_NOBODY => true,        // HEAD request
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 3,
-            CURLOPT_SSL_VERIFYPEER => false, // Allow self-signed certs (homelab)
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
+            CURLOPT_SSL_VERIFYPEER => $verifyTls,
+            CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
             CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
         ]);
 
@@ -156,10 +166,11 @@ class StatusCheckService {
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT_MS => $timeoutMs,
                 CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_MAXREDIRS => 3,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
+                CURLOPT_SSL_VERIFYPEER => $verifyTls,
+                CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
                 CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
             ]);
 

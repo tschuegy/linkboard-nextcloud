@@ -22,7 +22,6 @@ class IconApiController extends ApiController {
     private const ALLOWED_MIME_TYPES = [
         'image/png',
         'image/jpeg',
-        'image/svg+xml',
         'image/webp',
         'image/gif',
         'image/x-icon',
@@ -80,16 +79,16 @@ class IconApiController extends ApiController {
         $mimeType = mime_content_type($file['tmp_name']);
         if (!in_array($mimeType, self::ALLOWED_MIME_TYPES, true)) {
             return new DataResponse(
-                ['error' => $this->l10n->t('Invalid file type. Allowed: PNG, JPEG, SVG, WebP, GIF, ICO')],
+                ['error' => $this->l10n->t('Invalid file type. Allowed: PNG, JPEG, WebP, GIF, ICO')],
                 Http::STATUS_BAD_REQUEST
             );
         }
 
-        // Sanitize filename
-        $filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', basename($file['name']));
-        if (empty($filename)) {
-            $filename = 'icon_' . time() . '.png';
-        }
+        $extensions = [
+            'image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp',
+            'image/gif' => 'gif', 'image/x-icon' => 'ico',
+        ];
+        $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mimeType];
 
         try {
             $folder = $this->getUserIconFolder(true);
@@ -111,6 +110,9 @@ class IconApiController extends ApiController {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function serve(string $filename): Http\Response {
+        if (str_ends_with(strtolower($filename), '.svg')) {
+            return new DataResponse(['error' => $this->l10n->t('Icon not found')], Http::STATUS_NOT_FOUND);
+        }
         try {
             $folder = $this->getUserIconFolder();
             $file = $folder->getFile($filename);

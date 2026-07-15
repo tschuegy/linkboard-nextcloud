@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace OCA\LinkBoard\Widget;
 
+use OCA\LinkBoard\Service\OutboundRequestGuard;
+
 /**
  * Lightweight WebSocket JSON-RPC 2.0 client using native PHP streams.
  * No composer dependencies required.
@@ -20,7 +22,7 @@ class WebSocketJsonRpcClient {
      * @param int        $timeout Connection and read timeout in seconds
      * @return array              Array of result values, one per call
      */
-    public function execute(string $wsUrl, ?array $auth, array $calls, int $timeout = 15): array {
+    public function execute(string $wsUrl, ?array $auth, array $calls, int $timeout = 15, bool $verifyTls = true): array {
         $parsed = parse_url($wsUrl);
         if (!$parsed || !isset($parsed['host'])) {
             throw new \RuntimeException('Invalid WebSocket URL: ' . $wsUrl);
@@ -35,9 +37,9 @@ class WebSocketJsonRpcClient {
         $address = $transport . '://' . $host . ':' . $port;
 
         $context = stream_context_create(['ssl' => [
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'allow_self_signed' => true,
+            'verify_peer' => $verifyTls,
+            'verify_peer_name' => $verifyTls,
+            'allow_self_signed' => !$verifyTls,
         ]]);
 
         $socket = @stream_socket_client($address, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
@@ -134,6 +136,10 @@ class WebSocketJsonRpcClient {
             $len = unpack('n', $this->readExact($socket, 2))[1];
         } elseif ($len === 127) {
             $len = unpack('J', $this->readExact($socket, 8))[1];
+        }
+
+        if ($len > OutboundRequestGuard::MAX_RESPONSE_BYTES) {
+            throw new \RuntimeException('WebSocket frame exceeds size limit');
         }
 
         $mask = $masked ? $this->readExact($socket, 4) : null;

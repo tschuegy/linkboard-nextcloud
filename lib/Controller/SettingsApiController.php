@@ -81,6 +81,7 @@ class SettingsApiController extends ApiController {
             'allowed_groups' => $allowedGroups,
             'global_board_enabled' => $globalBoardEnabled,
             'global_board_user' => $globalBoardUser,
+            'tls_verification_enabled' => $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true),
         ]);
     }
 
@@ -90,6 +91,7 @@ class SettingsApiController extends ApiController {
         ?array $allowedGroups = null,
         ?bool $globalBoardEnabled = null,
         ?string $globalBoardUser = null,
+        ?bool $tlsVerificationEnabled = null,
     ): DataResponse {
         $statusCheckInterval = max(60, min(1800, $statusCheckInterval));
         $this->appConfig->setValueInt(Application::APP_ID, 'status_check_interval', $statusCheckInterval);
@@ -112,12 +114,16 @@ class SettingsApiController extends ApiController {
                 $this->appConfig->setValueString(Application::APP_ID, 'global_board_user', $globalBoardUser);
             }
         }
+        if ($tlsVerificationEnabled !== null) {
+            $this->appConfig->setValueBool(Application::APP_ID, 'tls_verification_enabled', $tlsVerificationEnabled);
+        }
 
         return new DataResponse([
             'status_check_interval' => $statusCheckInterval,
             'allowed_groups' => $allowedGroups ?? $this->appConfig->getValueArray(Application::APP_ID, 'allowed_groups', []),
             'global_board_enabled' => $this->appConfig->getValueBool(Application::APP_ID, 'global_board_enabled', false),
             'global_board_user' => $this->appConfig->getValueString(Application::APP_ID, 'global_board_user', ''),
+            'tls_verification_enabled' => $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true),
         ]);
     }
 

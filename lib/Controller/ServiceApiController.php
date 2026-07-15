@@ -37,20 +37,20 @@ class ServiceApiController extends ApiController {
     #[NoAdminRequired]
     public function index(): DataResponse {
         $services = $this->serviceService->findAll($this->effectiveUserId());
-        return new DataResponse($services);
+        return new DataResponse($this->canWrite() ? $services : array_map(fn($service) => $service->withoutSecrets(), $services));
     }
 
     #[NoAdminRequired]
     public function byCategory(int $categoryId): DataResponse {
         $services = $this->serviceService->findByCategory($categoryId, $this->effectiveUserId());
-        return new DataResponse($services);
+        return new DataResponse($this->canWrite() ? $services : array_map(fn($service) => $service->withoutSecrets(), $services));
     }
 
     #[NoAdminRequired]
     public function show(int $id): DataResponse {
         try {
             $service = $this->serviceService->find($id, $this->effectiveUserId());
-            return new DataResponse($service);
+            return new DataResponse($this->canWrite() ? $service : $service->withoutSecrets());
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
         }
@@ -71,6 +71,7 @@ class ServiceApiController extends ApiController {
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
         bool $showScrollbar = false,
+        bool $ignoreTls = false,
     ): DataResponse {
         if (!$this->canWrite()) {
             return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
@@ -79,7 +80,7 @@ class ServiceApiController extends ApiController {
             $service = $this->serviceService->create(
                 $this->effectiveUserId(), $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
-                $widgetType, $widgetConfig, $notificationOverrides, $showScrollbar,
+                $widgetType, $widgetConfig, $notificationOverrides, $showScrollbar, $ignoreTls,
             );
             return new DataResponse($service, Http::STATUS_CREATED);
         } catch (NotFoundException $e) {
@@ -105,6 +106,7 @@ class ServiceApiController extends ApiController {
         ?array $widgetConfig = null,
         ?array $notificationOverrides = null,
         ?bool $showScrollbar = null,
+        ?bool $ignoreTls = null,
     ): DataResponse {
         if (!$this->canWrite()) {
             return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
@@ -113,7 +115,7 @@ class ServiceApiController extends ApiController {
             $service = $this->serviceService->update(
                 $id, $this->effectiveUserId(), $categoryId, $name, $description, $href,
                 $icon, $iconColor, $target, $pingUrl, $pingEnabled,
-                $widgetType, $widgetConfig, $notificationOverrides, $showScrollbar,
+                $widgetType, $widgetConfig, $notificationOverrides, $showScrollbar, $ignoreTls,
             );
             return new DataResponse($service);
         } catch (NotFoundException $e) {

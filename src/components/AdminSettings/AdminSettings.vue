@@ -54,6 +54,19 @@
 		</div>
 
 		<div class="linkboard-admin__section">
+			<h3>{{ t('linkboard', 'TLS certificate verification') }}</h3>
+			<NcCheckboxRadioSwitch
+				:checked="tlsVerificationEnabled"
+				type="switch"
+				@update:checked="tlsVerificationEnabled = $event">
+				{{ t('linkboard', 'Enforce TLS certificate verification for all services') }}
+			</NcCheckboxRadioSwitch>
+			<p class="linkboard-admin__hint">
+				{{ t('linkboard', 'When disabled, users can ignore TLS certificate errors for individual services.') }}
+			</p>
+		</div>
+
+		<div class="linkboard-admin__section">
 			<h3>{{ t('linkboard', 'Status check interval') }}</h3>
 			<div class="linkboard-admin__range-row">
 				<input type="range" min="1" max="30" step="1"
@@ -92,6 +105,7 @@ export default {
 			availableGroups: config.allowedGroups || [],
 			statusCheckIntervalMin: Math.round((config.statusCheckInterval || 300) / 60),
 			globalBoardEnabled: config.globalBoardEnabled || false,
+			tlsVerificationEnabled: config.tlsVerificationEnabled !== false,
 			selectedBoardUser: config.globalBoardUser || null,
 			availableBoards: config.globalBoardUser ? [config.globalBoardUser] : [],
 			loadingBoards: false,
@@ -142,6 +156,7 @@ export default {
 				allowedGroups: this.selectedGroups.map(g => g.id),
 				globalBoardEnabled: this.globalBoardEnabled,
 				globalBoardUser: this.selectedBoardUser ? this.selectedBoardUser.userId : '',
+				tlsVerificationEnabled: this.tlsVerificationEnabled,
 			}
 			axios.put(url, data)
 				.then(() => {

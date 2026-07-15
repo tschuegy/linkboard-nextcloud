@@ -7,6 +7,7 @@ use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\ResourceService;
 use OCA\LinkBoard\Service\NotFoundException;
+use OCA\LinkBoard\Service\OutboundRequestGuard;
 use OCA\LinkBoard\Widget\WebSocketJsonRpcClient;
 use OCA\LinkBoard\Widget\WidgetRegistry;
 use OCP\AppFramework\ApiController;
@@ -15,6 +16,7 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IL10N;
 use OCP\IRequest;
+use OCP\IAppConfig;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -34,6 +36,8 @@ class WidgetProxyController extends ApiController {
         private IL10N $l10n,
         private GlobalBoardService $globalBoardService,
         private ?string $userId,
+        private IAppConfig $appConfig,
+        private OutboundRequestGuard $requestGuard,
     ) {
         parent::__construct(Application::APP_ID, $request);
     }
@@ -75,7 +79,7 @@ class WidgetProxyController extends ApiController {
             if (!is_array($config)) $config = [];
 
             try {
-                $data = $this->fetchWidgetData($widget, $baseUrl, $config);
+                $data = $this->fetchWidgetData($widget, $baseUrl, $config, $this->shouldVerifyTls($service->getIgnoreTls()));
                 $result[$service->getId()] = [
                     'data' => $data,
                     'fieldLabels' => $widget->getFieldLabelsForConfig($config),
@@ -125,7 +129,7 @@ class WidgetProxyController extends ApiController {
         if (!is_array($config)) $config = [];
 
         try {
-            $data = $this->fetchWidgetData($widget, $baseUrl, $config);
+            $data = $this->fetchWidgetData($widget, $baseUrl, $config, $this->shouldVerifyTls($service->getIgnoreTls()));
             return new DataResponse([
                 'data' => $data,
                 'fieldLabels' => $widget->getFieldLabelsForConfig($config),
@@ -150,7 +154,7 @@ class WidgetProxyController extends ApiController {
      * - _*_login / _*_needs_token: Generic token auth (Kavita, PhotoPrism, Flood, etc.)
      * - _transmission_rpc: Transmission CSRF retry (409 → X-Transmission-Session-Id)
      */
-    private function fetchWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, ?string $baseUrl, array $config): array {
+    private function fetchWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, ?string $baseUrl, array $config, bool $verifyTls): array {
         if ($widget->isLocal()) {
             $data = $this->getLocalWidgetData($widget, $config);
             return $widget->mapResponse([$data], $config);
@@ -162,13 +166,18 @@ class WidgetProxyController extends ApiController {
         $cookieJar = null;
 
         foreach ($requestSpecs as $spec) {
+            $spec['_verify_tls'] = $verifyTls;
             // Handle WebSocket JSON-RPC requests
-            if (!empty($spec['_websocket_jsonrpc'])) {
+            $guardUrl = preg_replace("#^ws(s?):#i", "http$1:", $spec["url"]);
+            if (!empty($spec["_websocket_jsonrpc"])) {
+                $this->requestGuard->assertAllowed((string)$guardUrl);
                 $wsClient = new WebSocketJsonRpcClient();
                 $results = $wsClient->execute(
                     $spec['url'],
                     $spec['auth'] ?? null,
                     $spec['calls'] ?? [],
+                    15,
+                    $verifyTls,
                 );
                 foreach ($results as $r) {
                     $responses[] = $r;
@@ -218,6 +227,7 @@ class WidgetProxyController extends ApiController {
         // Execute follow-up requests (two-stage widgets)
         $followUpSpecs = $widget->buildFollowUpRequests($responses, $baseUrl, $config);
         foreach ($followUpSpecs as $spec) {
+            $spec['_verify_tls'] = $verifyTls;
             $responses[] = $this->executeRequest($spec, null);
         }
 
@@ -322,23 +332,29 @@ class WidgetProxyController extends ApiController {
     /**
      * Apply common cURL options to a handle.
      */
+    private function shouldVerifyTls(bool $ignoreTls): bool {
+        return $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true) || !$ignoreTls;
+    }
+
     private function applyCurlOptions(\CurlHandle $ch, array $spec, ?string $cookieJar = null): void {
         $method = strtoupper($spec['method'] ?? 'GET');
         $url = $spec['url'];
         $headers = $spec['headers'] ?? [];
+        $verifyTls = $spec['_verify_tls'] ?? true;
+        $this->requestGuard->assertAllowed($url);
 
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 15,
             CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 3,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
+            CURLOPT_SSL_VERIFYPEER => $verifyTls,
+            CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
             CURLOPT_USERAGENT => 'LinkBoard/1.0 WidgetProxy',
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_UNRESTRICTED_AUTH => true,
         ]);
 
         if ($cookieJar) {

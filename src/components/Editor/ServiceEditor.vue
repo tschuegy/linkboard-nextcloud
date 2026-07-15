@@ -49,6 +49,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 @update:checked="form.pingEnabled = $event">
                 {{ t('linkboard', 'Status check enabled') }}
             </NcCheckboxRadioSwitch>
+            <NcCheckboxRadioSwitch
+                v-if="!tlsVerificationEnabled"
+                :checked="form.ignoreTls"
+                type="switch"
+                @update:checked="form.ignoreTls = $event">
+                {{ t('linkboard', 'Ignore TLS certificate errors for this service') }}
+            </NcCheckboxRadioSwitch>
 
             <template v-if="form.pingEnabled && notificationChannels.length">
                 <div class="service-editor__field">
@@ -174,6 +181,7 @@ export default {
             form: {
                 ...this.service,
                 showScrollbar: !!this.service.showScrollbar,
+                ignoreTls: !!this.service.ignoreTls,
                 widgetConfig: this.service.widgetConfig ? { ...this.service.widgetConfig } : {},
                 notificationOverrides: this.service.notificationOverrides ? { ...this.service.notificationOverrides } : {},
             },
@@ -200,6 +208,9 @@ export default {
                 opts.push({ value: w.id, label: w.label })
             }
             return opts
+        },
+        tlsVerificationEnabled() {
+            return useDashboardStore().adminSettings.tls_verification_enabled !== false
         },
         selectedWidgetDef() {
             if (!this.form.widgetType) return null
@@ -237,6 +248,7 @@ export default {
                 this.form = {
                     ...newVal,
                     showScrollbar: !!newVal.showScrollbar,
+                    ignoreTls: !!newVal.ignoreTls,
                     widgetConfig: newVal.widgetConfig ? { ...newVal.widgetConfig } : {},
                     notificationOverrides: newVal.notificationOverrides ? { ...newVal.notificationOverrides } : {},
                 }
@@ -327,6 +339,7 @@ export default {
                 pingUrl: this.form.pingUrl || null,
                 pingEnabled: !!this.form.pingEnabled,
                 showScrollbar: !!this.form.showScrollbar,
+                ignoreTls: !this.tlsVerificationEnabled && !!this.form.ignoreTls,
             }
             if (this.form.widgetType) {
                 payload.widgetType = this.form.widgetType

@@ -65,7 +65,7 @@ class DashboardApiController extends ApiController {
         $servicesByCategory = [];
         foreach ($allServices as $service) {
             $catId = $service->getCategoryId();
-            $svcData = $service->jsonSerialize();
+            $svcData = $service->toArray($resolved['canEdit']);
             // Attach status data
             $svcData['status'] = $statusMap[$service->getId()] ?? null;
             $svcData['recentHistory'] = $recentHistoryMap[$service->getId()] ?? [];
@@ -108,6 +108,7 @@ class DashboardApiController extends ApiController {
             'isAdmin' => $isAdmin,
             'adminSettings' => [
                 'status_check_interval' => $this->appConfig->getValueInt(Application::APP_ID, 'status_check_interval', 300),
+                'tls_verification_enabled' => $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true),
             ],
             'globalBoardActive' => $resolved['globalBoardActive'],
             'canEdit' => $resolved['canEdit'],

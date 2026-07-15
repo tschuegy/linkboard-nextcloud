@@ -58,6 +58,7 @@ class Admin implements ISettings {
 			'statusCheckInterval' => $statusCheckInterval,
 			'globalBoardEnabled' => $globalBoardEnabled,
 			'globalBoardUser' => $globalBoardUser,
+			'tlsVerificationEnabled' => $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true),
 		]);
 
 		Util::addScript('linkboard', 'linkboard-vendors');

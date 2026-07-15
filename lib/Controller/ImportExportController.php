@@ -44,23 +44,17 @@ class ImportExportController extends ApiController {
 
     #[NoAdminRequired]
     public function importJson(): DataResponse {
-        // Debug: log everything we can see
+        // Accept wrapped JSON as well as Nextcloud-flattened request data.
         $allParams = $this->request->getParams();
-        $paramKeys = array_keys($allParams);
-        $this->logger->info('LinkBoard import: getParams keys=[' . implode(', ', $paramKeys) . ']');
-
-        // Try multiple ways to get the payload
         $payload = $this->request->getParam('payload', '');
         $mode = $this->request->getParam('mode', 'replace');
-
-        $this->logger->info('LinkBoard import: getParam(payload) length=' . strlen($payload) . ', mode=' . $mode);
+        if (strlen((string)$payload) > 5 * 1024 * 1024) { return new DataResponse(['error' => $this->l10n->t('Import payload too large')], Http::STATUS_BAD_REQUEST); }
 
         // If payload is empty, maybe the whole body IS the data (not wrapped)
         if (empty($payload)) {
             // Try getting 'categories' directly - maybe NC flattened the nested JSON
             $categories = $this->request->getParam('categories');
             if (!empty($categories)) {
-                $this->logger->info('LinkBoard import: found categories param directly, type=' . gettype($categories));
                 $data = $allParams;
                 // Remove NC internal params
                 unset($data['_route'], $data['_method']);
@@ -70,7 +64,6 @@ class ImportExportController extends ApiController {
             // Last resort: check if data was sent as 'data' param
             $dataParam = $this->request->getParam('data');
             if (!empty($dataParam)) {
-                $this->logger->info('LinkBoard import: found data param, type=' . gettype($dataParam));
                 if (is_string($dataParam)) {
                     $data = json_decode($dataParam, true);
                 } else {
@@ -79,14 +72,6 @@ class ImportExportController extends ApiController {
                 if (is_array($data)) {
                     return $this->doImport($data, $mode);
                 }
-            }
-
-            // Log what we actually have for debugging
-            foreach ($paramKeys as $key) {
-                $val = $allParams[$key];
-                $type = gettype($val);
-                $preview = is_string($val) ? substr($val, 0, 100) : json_encode($val);
-                $this->logger->info("LinkBoard import param: {$key} ({$type}) = {$preview}");
             }
 
             return new DataResponse([
@@ -109,6 +94,7 @@ class ImportExportController extends ApiController {
     public function importYaml(): DataResponse {
         $payload = $this->request->getParam('payload', '');
         $mode = $this->request->getParam('mode', 'replace');
+        if (strlen((string)$payload) > 5 * 1024 * 1024) { return new DataResponse(['error' => $this->l10n->t('Import payload too large')], Http::STATUS_BAD_REQUEST); }
 
         if (empty($payload)) {
             $dataParam = $this->request->getParam('data');
@@ -128,7 +114,6 @@ class ImportExportController extends ApiController {
     }
 
     private function doImport(array $data, string $mode): DataResponse {
-        $this->logger->info('LinkBoard import: starting import, keys=' . implode(',', array_keys($data)) . ', mode=' . $mode);
 
         try {
             $stats = $this->importExportService->import($this->userId, $data, $mode);

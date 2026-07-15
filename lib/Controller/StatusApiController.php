@@ -144,7 +144,7 @@ class StatusApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function checkAll(): DataResponse {
-        $checked = $this->statusCheckService->checkAllEnabled();
+        $checked = $this->statusCheckService->checkAllEnabled($this->effectiveUserId());
 
         // Return updated status map
         $services = $this->serviceService->findAll($this->effectiveUserId());

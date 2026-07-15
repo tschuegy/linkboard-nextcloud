@@ -58,8 +58,8 @@ class VersionCheckService {
             CURLOPT_TIMEOUT => 5,
             CURLOPT_CONNECTTIMEOUT => 3,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_USERAGENT => 'LinkBoard/1.0 UpdateCheck',
             CURLOPT_HTTPHEADER => ['Accept: application/vnd.github+json'],
         ]);

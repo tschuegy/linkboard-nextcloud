@@ -211,6 +211,12 @@
                 <notnull>false</notnull>
             </field>
             <field>
+                <name>ignore_tls</name>
+                <type>boolean</type>
+                <notnull>false</notnull>
+                <default>false</default>
+            </field>
+            <field>
                 <name>created_at</name>
                 <type>timestamp</type>
                 <notnull>true</notnull>
