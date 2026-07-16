@@ -20,7 +20,8 @@ Thumbs.db
 # Nextcloud
 config/
 
-# Claude Code
+# Local agent instructions (never commit or package)
+AGENTS.md
 CLAUDE.md
 
 # Internal documentation (specs, plans)
