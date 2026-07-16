@@ -6,6 +6,7 @@ use OCA\LinkBoard\Db\NotificationChannelMapper;
 use OCA\LinkBoard\Db\ServiceMapper;
 use OCA\LinkBoard\NotificationProvider\NotificationProviderRegistry;
 use Psr\Log\LoggerInterface;
+use OCP\IL10N;
 
 class NotificationDispatcherService {
 
@@ -16,6 +17,7 @@ class NotificationDispatcherService {
         private NotificationService $notificationService,
         private SettingsService $settingsService,
         private LoggerInterface $logger,
+        private IL10N $l10n,
     ) {
     }
 
@@ -66,7 +68,13 @@ class NotificationDispatcherService {
             $provider->send($config, 'LinkBoard Test', 'This is a test notification from LinkBoard.');
             return ['success' => true];
         } catch (\Throwable $e) {
-            return ['success' => false, 'error' => $e->getMessage()];
+            $this->logger->warning('LinkBoard: Notification channel test failed', [
+                'channelId' => $channelId,
+                'providerType' => $channel->getProviderType(),
+                'exceptionClass' => $e::class,
+                'exceptionCode' => $e->getCode(),
+            ]);
+            return ['success' => false, 'error' => $this->l10n->t('Notification test failed')];
         }
     }
 
@@ -103,10 +111,11 @@ class NotificationDispatcherService {
                 $config = array_map(fn($v) => is_string($v) ? trim($v) : $v, $config);
                 $provider->send($config, $title, $message);
             } catch (\Throwable $e) {
-                $this->logger->warning('LinkBoard: Notification channel "{name}" ({type}) failed: {error}', [
+                $this->logger->warning('LinkBoard: Notification channel "{name}" ({type}) failed', [
                     'name' => $channel->getName(),
                     'type' => $channel->getProviderType(),
-                    'error' => $e->getMessage(),
+                    'exceptionClass' => $e::class,
+                    'exceptionCode' => $e->getCode(),
                 ]);
             }
         }

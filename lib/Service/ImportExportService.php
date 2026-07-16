@@ -90,12 +90,14 @@ class ImportExportService {
 
         // Import settings
         if (isset($data['settings']) && is_array($data['settings'])) {
+            $settings = [];
             foreach ($data['settings'] as $key => $value) {
-                if (is_string($key) && !empty($key)) {
-                    $this->settingsService->set($key, is_string($value) ? $value : json_encode($value), $userId);
-                    $stats['settings']++;
+                if (is_string($key) && SettingsService::isSupported($key)) {
+                    $settings[$key] = $value;
                 }
             }
+            $this->settingsService->setMultiple($settings, $userId);
+            $stats['settings'] = count($settings);
         }
 
         // Import categories and services (two-pass for parentId)

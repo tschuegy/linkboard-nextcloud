@@ -98,6 +98,7 @@
     "Failed to reorder services": "サービスの並べ替えに失敗",
     "Failed to update settings": "設定の保存に失敗",
     "Status check failed": "ステータスチェック失敗",
+    "Notification test failed": "Notification test failed",
     "Status History": "ステータス履歴",
     "Status overview": "ステータス概要",
     "Status": "ステータス",

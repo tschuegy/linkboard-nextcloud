@@ -7,12 +7,14 @@ namespace OCA\LinkBoard\Controller;
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Db\CategoryMapper;
 use OCA\LinkBoard\Service\SettingsService;
+use OCA\LinkBoard\Service\ValidationException;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IAppConfig;
 use OCP\IGroupManager;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUserManager;
 
@@ -25,6 +27,7 @@ class SettingsApiController extends ApiController {
         private IGroupManager $groupManager,
         private IUserManager $userManager,
         private CategoryMapper $categoryMapper,
+        private IL10N $l10n,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
@@ -38,15 +41,29 @@ class SettingsApiController extends ApiController {
 
     #[NoAdminRequired]
     public function updateAll(array $settings): DataResponse {
-        $this->settingsService->setMultiple($settings, $this->userId);
-        $allSettings = $this->settingsService->getAll($this->userId);
-        return new DataResponse($allSettings);
+        try {
+            $this->settingsService->setMultiple($settings, $this->userId);
+            $allSettings = $this->settingsService->getAll($this->userId);
+            return new DataResponse($allSettings);
+        } catch (ValidationException) {
+            return new DataResponse(
+                ['error' => $this->l10n->t('Failed to update settings')],
+                Http::STATUS_UNPROCESSABLE_ENTITY,
+            );
+        }
     }
 
     #[NoAdminRequired]
     public function updateSingle(string $key, string $value): DataResponse {
-        $this->settingsService->set($key, $value, $this->userId);
-        return new DataResponse(['key' => $key, 'value' => $value]);
+        try {
+            $normalized = $this->settingsService->set($key, $value, $this->userId);
+            return new DataResponse(['key' => $key, 'value' => $normalized]);
+        } catch (ValidationException) {
+            return new DataResponse(
+                ['error' => $this->l10n->t('Failed to update settings')],
+                Http::STATUS_UNPROCESSABLE_ENTITY,
+            );
+        }
     }
 
     /** Any user can read admin settings (needed for display) */

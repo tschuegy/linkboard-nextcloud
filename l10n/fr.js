@@ -97,6 +97,7 @@ OC.L10N.register("linkboard", {
     "Failed to reorder services": "Échec du réordonnancement des services",
     "Failed to update settings": "Échec de la mise à jour des paramètres",
     "Status check failed": "Échec de la vérification du statut",
+    "Notification test failed": "Notification test failed",
     "Status History": "Historique du statut",
     "Status overview": "Aperçu du statut",
     "Status": "Statut",

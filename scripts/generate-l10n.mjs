@@ -185,6 +185,7 @@ const sourceStrings = [
 	'Failed to reorder services',
 	'Failed to update settings',
 	'Status check failed',
+	'Notification test failed',
 	// StatusHistoryModal / StatusOverviewPage
 	'Status History',
 	'Status overview',
@@ -318,6 +319,7 @@ const translations = {
 		'Failed to reorder services': 'Services konnten nicht umsortiert werden',
 		'Failed to update settings': 'Einstellungen konnten nicht gespeichert werden',
 		'Status check failed': 'Statusprüfung fehlgeschlagen',
+		'Notification test failed': 'Benachrichtigungstest fehlgeschlagen',
 		'Status History': 'Statusverlauf',
 		'Status overview': 'Statusübersicht',
 		'Status': 'Status',
@@ -1847,6 +1849,14 @@ for (const locale of allLocales) {
 		// Fallback: use English strings as-is (untranslated)
 		for (const s of sourceStrings) {
 			trans[s] = s
+		}
+	}
+
+	// Explicit translation maps may lag behind newly added source strings.
+	// Keep every locale complete by using the English source as placeholder.
+	for (const sourceString of sourceStrings) {
+		if (!Object.hasOwn(trans, sourceString)) {
+			trans[sourceString] = sourceString
 		}
 	}
 

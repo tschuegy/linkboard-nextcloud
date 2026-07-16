@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
+use OCA\LinkBoard\Service\BulkOperationGuard;
+use OCA\LinkBoard\Service\BulkOperationInProgressException;
 use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\StatusCheckService;
 use OCA\LinkBoard\Service\StatusHistoryAggregator;
@@ -12,8 +14,11 @@ use OCA\LinkBoard\Service\NotFoundException;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IL10N;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class StatusApiController extends ApiController {
 
@@ -24,6 +29,9 @@ class StatusApiController extends ApiController {
         private ServiceService $serviceService,
         private StatusCacheMapper $statusCacheMapper,
         private GlobalBoardService $globalBoardService,
+        private BulkOperationGuard $operationGuard,
+        private LoggerInterface $logger,
+        private IL10N $l10n,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
@@ -31,6 +39,10 @@ class StatusApiController extends ApiController {
 
     private function effectiveUserId(): string {
         return $this->globalBoardService->resolve($this->userId)['sourceUserId'];
+    }
+
+    private function canWrite(): bool {
+        return $this->globalBoardService->resolve($this->userId)['canEdit'];
     }
 
     /**
@@ -49,14 +61,28 @@ class StatusApiController extends ApiController {
      * Trigger a status check for a specific service
      */
     #[NoAdminRequired]
+    #[UserRateLimit(limit: 20, period: 60)]
     public function check(int $id): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse([], Http::STATUS_FORBIDDEN);
+        }
+
         try {
             $status = $this->statusCheckService->checkService($id, $this->effectiveUserId());
             return new DataResponse($status);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (BulkOperationInProgressException) {
+            return new DataResponse([], Http::STATUS_TOO_MANY_REQUESTS);
         } catch (\Throwable $e) {
-            return new DataResponse(['error' => 'Status check failed: ' . $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            $this->logger->warning('LinkBoard: Manual status check failed', [
+                'exceptionClass' => $e::class,
+                'exceptionCode' => $e->getCode(),
+            ]);
+            return new DataResponse(
+                ['error' => $this->l10n->t('Status check failed')],
+                Http::STATUS_INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -143,11 +169,39 @@ class StatusApiController extends ApiController {
      * Trigger status check for all enabled services
      */
     #[NoAdminRequired]
+    #[UserRateLimit(limit: 2, period: 60)]
     public function checkAll(): DataResponse {
-        $checked = $this->statusCheckService->checkAllEnabled($this->effectiveUserId());
+        if (!$this->canWrite()) {
+            return new DataResponse([], Http::STATUS_FORBIDDEN);
+        }
+
+        $effectiveUserId = $this->effectiveUserId();
+        try {
+            $checked = $this->operationGuard->run(
+                'status-check-all',
+                $effectiveUserId,
+                90,
+                fn(): int => $this->statusCheckService->checkAllEnabled(
+                    $effectiveUserId,
+                    StatusCheckService::MANUAL_MAX_CHECKS,
+                    StatusCheckService::MANUAL_TIME_BUDGET_SECONDS,
+                ),
+            );
+        } catch (BulkOperationInProgressException) {
+            return new DataResponse([], Http::STATUS_TOO_MANY_REQUESTS);
+        } catch (\Throwable $e) {
+            $this->logger->warning('LinkBoard: Manual bulk status check failed', [
+                'exceptionClass' => $e::class,
+                'exceptionCode' => $e->getCode(),
+            ]);
+            return new DataResponse(
+                ['error' => $this->l10n->t('Status check failed')],
+                Http::STATUS_INTERNAL_SERVER_ERROR,
+            );
+        }
 
         // Return updated status map
-        $services = $this->serviceService->findAll($this->effectiveUserId());
+        $services = $this->serviceService->findAll($effectiveUserId);
         $serviceIds = array_map(fn($s) => $s->getId(), $services);
         $statusMap = $this->statusCheckService->getStatusMap($serviceIds);
 

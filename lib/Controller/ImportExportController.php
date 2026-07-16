@@ -4,6 +4,7 @@ namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Service\ImportExportService;
+use OCA\LinkBoard\Service\ValidationException;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -121,6 +122,14 @@ class ImportExportController extends ApiController {
                 'success' => true,
                 'stats' => $stats,
             ]);
+        } catch (ValidationException $e) {
+            $this->logger->warning('LinkBoard import contains invalid settings', [
+                'exceptionClass' => $e::class,
+                'exceptionCode' => $e->getCode(),
+            ]);
+            return new DataResponse([
+                'error' => $this->l10n->t('Failed to update settings'),
+            ], Http::STATUS_UNPROCESSABLE_ENTITY);
         } catch (\Throwable $e) {
             $this->logger->error('LinkBoard import failed: ' . $e->getMessage(), ['exception' => $e]);
             return new DataResponse([

@@ -97,6 +97,7 @@ OC.L10N.register("linkboard", {
     "Failed to reorder services": "重新排序服务失败",
     "Failed to update settings": "儲存設定失败",
     "Status check failed": "状态检查失败",
+    "Notification test failed": "Notification test failed",
     "Status History": "状态历史",
     "Status overview": "状态概览",
     "Status": "状态",

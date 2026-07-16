@@ -98,6 +98,7 @@
     "Failed to reorder services": "Hizmetler yeniden sıralanamadı",
     "Failed to update settings": "Ayarlar kaydedilemedi",
     "Status check failed": "Durum kontrolü başarısız",
+    "Notification test failed": "Notification test failed",
     "Status History": "Durum geçmişi",
     "Status overview": "Durum özeti",
     "Status": "Durum",

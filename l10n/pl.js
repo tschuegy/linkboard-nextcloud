@@ -97,6 +97,7 @@ OC.L10N.register("linkboard", {
     "Failed to reorder services": "Nie udało się zmienić kolejności usług",
     "Failed to update settings": "Nie udało się zapisać ustawień",
     "Status check failed": "Sprawdzanie statusu nie powiodło się",
+    "Notification test failed": "Notification test failed",
     "Status History": "Historia statusu",
     "Status overview": "Przegląd statusu",
     "Status": "Status",

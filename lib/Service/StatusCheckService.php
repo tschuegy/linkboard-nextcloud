@@ -14,6 +14,10 @@ use OCA\LinkBoard\AppInfo\Application;
 
 class StatusCheckService {
 
+    public const MANUAL_MAX_CHECKS = 25;
+    public const MANUAL_TIME_BUDGET_SECONDS = 30;
+    private const SERVICE_LOCK_TTL_SECONDS = 45;
+
     public function __construct(
         private StatusCacheMapper $statusCacheMapper,
         private StatusHistoryMapper $statusHistoryMapper,
@@ -24,6 +28,7 @@ class StatusCheckService {
         private SettingsService $settingsService,
         private IAppConfig $appConfig,
         private OutboundRequestGuard $requestGuard,
+        private BulkOperationGuard $operationGuard,
     ) {
     }
 
@@ -34,20 +39,31 @@ class StatusCheckService {
         $service = $this->serviceMapper->findById($serviceId, $userId);
         $pingUrl = $service->getPingUrl() ?: $service->getHref();
 
-        if (empty($pingUrl)) {
-            return $this->saveStatus($serviceId, 'unknown', null, ['error' => 'No URL configured']);
-        }
-
         $settings = $this->settingsService->getAll($userId);
         $timeoutMs = (int)($settings['status_check_timeout'] ?? 5000);
 
-        return $this->performCheck($serviceId, $pingUrl, $timeoutMs, $service->getIgnoreTls());
+        return $this->operationGuard->run(
+            'status-service',
+            (string)$serviceId,
+            self::SERVICE_LOCK_TTL_SECONDS,
+            function () use ($serviceId, $pingUrl, $timeoutMs, $service): StatusCache {
+                if (empty($pingUrl)) {
+                    return $this->saveStatus($serviceId, 'unknown', null, ['error' => 'No URL configured']);
+                }
+
+                return $this->performCheck($serviceId, $pingUrl, $timeoutMs, $service->getIgnoreTls());
+            },
+        );
     }
 
     /**
      * Check all services that have ping enabled
      */
-    public function checkAllEnabled(?string $onlyUserId = null): int {
+    public function checkAllEnabled(
+        ?string $onlyUserId = null,
+        ?int $maxChecks = null,
+        ?int $timeBudgetSeconds = null,
+    ): int {
         $qb = $this->serviceMapper->getDb()->getQueryBuilder();
         $qb->select('id', 'ping_url', 'href', 'user_id', 'name', 'ignore_tls')
             ->from('linkboard_services')
@@ -57,26 +73,78 @@ class StatusCheckService {
         }
 
         $result = $qb->executeQuery();
-        $checked = 0;
-        $userSettings = [];
+        $rows = (function () use ($result): \Generator {
+            try {
+                while (($row = $result->fetch()) !== false) {
+                    yield $row;
+                }
+            } finally {
+                $result->closeCursor();
+            }
+        })();
 
-        while ($row = $result->fetch()) {
+        $checked = 0;
+        $attempted = 0;
+        $userSettings = [];
+        $deadline = $timeBudgetSeconds !== null
+            ? microtime(true) + max(1, $timeBudgetSeconds)
+            : null;
+
+        $previousCaches = [];
+        if ($onlyUserId !== null) {
+            $rows = iterator_to_array($rows, false);
+            $serviceIds = array_map(
+                static fn(array $row): int => (int)$row['id'],
+                $rows,
+            );
+            if ($serviceIds !== []) {
+                foreach ($this->statusCacheMapper->findByServiceIds($serviceIds) as $cache) {
+                    $previousCaches[$cache->getServiceId()] = $cache;
+                }
+            }
+
+            usort(
+                $rows,
+                static function (array $left, array $right) use ($previousCaches): int {
+                    $leftCheck = ($previousCaches[(int)$left['id']] ?? null)?->getLastCheck() ?? '';
+                    $rightCheck = ($previousCaches[(int)$right['id']] ?? null)?->getLastCheck() ?? '';
+                    return $leftCheck <=> $rightCheck;
+                },
+            );
+        }
+
+        foreach ($rows as $row) {
             $pingUrl = $row['ping_url'] ?: $row['href'];
             if (!empty($pingUrl)) {
+                if ($maxChecks !== null && $attempted >= max(0, $maxChecks)) {
+                    break;
+                }
+                if ($deadline !== null && $attempted > 0 && microtime(true) >= $deadline) {
+                    break;
+                }
+                $attempted++;
+
                 try {
                     $serviceId = (int)$row['id'];
                     $userId = $row['user_id'];
                     $serviceName = $row['name'];
 
                     // Get existing cache before check to know previous state
-                    $previousCache = $this->statusCacheMapper->findByServiceId($serviceId);
+                    $previousCache = $onlyUserId !== null
+                        ? ($previousCaches[$serviceId] ?? null)
+                        : $this->statusCacheMapper->findByServiceId($serviceId);
                     $wasNotified = $previousCache ? $previousCache->getNotified() : false;
 
                     // Load user settings (cached per user)
                     $userSettings[$userId] ??= $this->settingsService->getAll($userId);
                     $timeoutMs = (int)($userSettings[$userId]['status_check_timeout'] ?? 5000);
 
-                    $cache = $this->performCheck($serviceId, $pingUrl, $timeoutMs, (bool)$row['ignore_tls']);
+                    $cache = $this->operationGuard->run(
+                        'status-service',
+                        (string)$serviceId,
+                        self::SERVICE_LOCK_TTL_SECONDS,
+                        fn(): StatusCache => $this->performCheck($serviceId, $pingUrl, $timeoutMs, (bool)$row['ignore_tls']),
+                    );
                     $checked++;
                     $threshold = (int)($userSettings[$userId]['notify_failures_threshold'] ?? 3);
                     $notifyRecovery = ($userSettings[$userId]['notify_recovery'] ?? 'true') === 'true';
@@ -97,12 +165,12 @@ class StatusCheckService {
                     }
                 } catch (\Throwable $e) {
                     $this->logger->warning('LinkBoard: Status check failed for service ' . $row['id'], [
-                        'exception' => $e,
+                        'exceptionClass' => $e::class,
+                        'exceptionCode' => $e->getCode(),
                     ]);
                 }
             }
         }
-        $result->closeCursor();
 
         return $checked;
     }
@@ -124,31 +192,35 @@ class StatusCheckService {
      * Perform HTTP check
      */
     private function performCheck(int $serviceId, string $url, int $timeoutMs = 5000, bool $ignoreTls = false): StatusCache {
-        $this->requestGuard->assertAllowed($url);
         $verifyTls = $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true) || !$ignoreTls;
         $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT_MS => $timeoutMs,
-            CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
-            CURLOPT_NOBODY => true,        // HEAD request
-            CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
-            CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
-            CURLOPT_SSL_VERIFYPEER => $verifyTls,
-            CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
-            CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
-        ]);
+        try {
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT_MS => $timeoutMs,
+                CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
+                CURLOPT_NOBODY => true,        // HEAD request
+                CURLOPT_FOLLOWLOCATION => false,
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+                CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
+                CURLOPT_SSL_VERIFYPEER => $verifyTls,
+                CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
+                CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
+            ]);
+            $target = $this->requestGuard->pinCurl($ch, $url);
 
-        $startTime = microtime(true);
-        curl_exec($ch);
-        $responseMs = $this->measureNetworkRtt($ch, $startTime);
+            $startTime = microtime(true);
+            curl_exec($ch);
+            $responseMs = $this->measureNetworkRtt($ch, $startTime);
 
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        $errno = curl_errno($ch);
-        curl_close($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $this->requestGuard->assertCurlConnection($ch, $target['addresses']);
+            $error = curl_error($ch);
+            $errno = curl_errno($ch);
+        } finally {
+            curl_close($ch);
+        }
 
         if ($errno !== 0) {
             return $this->saveStatus($serviceId, 'offline', $responseMs, [
@@ -159,29 +231,34 @@ class StatusCheckService {
 
         // HEAD returned 5xx — retry with GET (some servers don't support HEAD)
         if ($httpCode >= 500) {
-            $this->logger->debug('LinkBoard: HEAD returned ' . $httpCode . ' for ' . $url . ', retrying with GET');
+            $this->logger->debug('LinkBoard: HEAD returned ' . $httpCode . ' for service ' . $serviceId . ', retrying with GET');
             $ch = curl_init();
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT_MS => $timeoutMs,
-                CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
-                CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
-            CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
-                CURLOPT_SSL_VERIFYPEER => $verifyTls,
-                CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
-                CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
-            ]);
+            try {
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT_MS => $timeoutMs,
+                    CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
+                    CURLOPT_FOLLOWLOCATION => false,
+                    CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+                    CURLOPT_MAXFILESIZE => OutboundRequestGuard::MAX_RESPONSE_BYTES,
+                    CURLOPT_SSL_VERIFYPEER => $verifyTls,
+                    CURLOPT_SSL_VERIFYHOST => $verifyTls ? 2 : 0,
+                    CURLOPT_USERAGENT => 'LinkBoard/1.0 StatusCheck',
+                ]);
+                $target = $this->requestGuard->pinCurl($ch, $url);
 
-            $startTime = microtime(true);
-            curl_exec($ch);
-            $responseMs = $this->measureNetworkRtt($ch, $startTime);
+                $startTime = microtime(true);
+                curl_exec($ch);
+                $responseMs = $this->measureNetworkRtt($ch, $startTime);
 
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $error = curl_error($ch);
-            $errno = curl_errno($ch);
-            curl_close($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $this->requestGuard->assertCurlConnection($ch, $target['addresses']);
+                $error = curl_error($ch);
+                $errno = curl_errno($ch);
+            } finally {
+                curl_close($ch);
+            }
 
             if ($errno !== 0) {
                 return $this->saveStatus($serviceId, 'offline', $responseMs, [

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.6.15] – 2026-07-16
+
+### Changed
+- User-controlled HTTP, WebSocket, and SMTP destinations are pinned to their validated DNS addresses; loopback, link-local, multicast, documentation, and reserved targets are rejected while RFC1918, ULA, and CGNAT homelab targets remain supported.
+- SMTP connections are restricted to common mail ports and now enforce bounded reads/writes, validated protocol responses, safe message headers, and correct STARTTLS or implicit TLS negotiation.
+- User settings are restricted to a typed allowlist; enum, boolean, color, URL, opacity, and length constraints are normalized before any values are persisted, and unknown imported settings are ignored.
+- Widget batch loading is paginated, time-bounded, rate-limited, deduplicated with atomic locks, and cached briefly to avoid repeated upstream requests.
+- Manual status checks are rate-limited and service-locked; bulk checks process the stalest services first within fixed request and runtime budgets while background checks remain comprehensive.
+
+### Fixed
+- Widget request failures no longer expose credential-bearing URLs or upstream exception details to dashboard viewers and application logs.
+- Temporary widget session cookie files are removed even when a request or response mapping fails.
+- WebSocket handshakes now verify the server's Sec-WebSocket-Accept value.
+- Notification test failures no longer return provider exception details or log potentially sensitive exception messages.
+- Read-only global-board viewers can no longer trigger status checks for the designated source user's services.
+
 ## [1.6.14] – 2026-07-15
 
 ### Added

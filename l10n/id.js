@@ -97,6 +97,7 @@ OC.L10N.register("linkboard", {
     "Failed to reorder services": "Failed to reorder services",
     "Failed to update settings": "Failed to update settings",
     "Status check failed": "Status check failed",
+    "Notification test failed": "Notification test failed",
     "Status History": "Status History",
     "Status overview": "Status overview",
     "Status": "Status",

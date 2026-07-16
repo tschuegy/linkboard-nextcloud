@@ -71,7 +71,7 @@ export const statusApi = {
 // ── Widgets ──────────────────────────────────────────
 export const widgetApi = {
     getCatalog: () => axios.get(url('/widgets/catalog')),
-    getAllData: () => axios.get(url('/widgets/data')),
+    getAllData: (offset = 0, limit = 20) => axios.get(url('/widgets/data'), { params: { offset, limit } }),
     getData: (serviceId) => axios.get(url(`/widgets/${serviceId}/data`)),
 }
 

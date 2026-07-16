@@ -28,10 +28,26 @@ Instead, use [GitHub Private Vulnerability Reporting](https://github.com/tschueg
 
 ## Security Considerations
 
-### SSL Verification
+### TLS Verification
 
-LinkBoard disables SSL certificate verification by default for service health checks and widget API requests. This is intentional for homelab environments where self-signed certificates are common. Users deploying in production environments with valid certificates should be aware of this behavior.
+TLS certificate verification is enabled by default. Administrators can globally permit per-service exceptions for status checks and widgets that use self-signed certificates in homelab environments. HTTP notification providers and SMTP TLS connections always verify certificates.
+
+### Outbound Requests
+
+User-configured HTTP, WebSocket, and SMTP targets are resolved and validated before connecting. The checked DNS addresses are pinned to the connection and the connected peer is verified again. Loopback, link-local, multicast, documentation, and reserved address ranges are blocked.
+
+Private RFC1918 networks, IPv6 ULA, and CGNAT addresses remain allowed because accessing internal homelab services is a core LinkBoard use case.
 
 ### Widget Proxy
 
-The widget proxy (`WidgetProxyController`) makes outbound HTTP requests to user-configured service URLs. These requests are scoped to the authenticated user's own service configurations and are not accessible to other users.
+The widget proxy makes outbound requests using stored service configurations and returns mapped response values. Request URLs, upstream exception details, and temporary session cookies are not exposed to dashboard viewers.
+
+When a global board is enabled, its widget requests use the designated source user's service configuration. Global-board viewers remain read-only and receive only mapped widget values or generic errors.
+
+### Input Validation and Abuse Resistance
+
+User settings are accepted only through a typed allowlist. Values are normalized and constrained before persistence, bulk updates are validated before the first write, and unsupported settings from imported files are ignored.
+
+Expensive widget and status operations use Nextcloud's rate limiting and atomic cache locks when a locking cache is configured. Widget batches are paginated and time-bounded, individual widgets have a request budget, and successful mapped results are cached briefly to reduce duplicate upstream traffic.
+
+Manual bulk status checks have fixed service and runtime budgets. Periodic background checks remain unrestricted by those manual budgets, while per-service locks prevent overlap with interactive checks. Read-only global-board viewers cannot trigger status checks.

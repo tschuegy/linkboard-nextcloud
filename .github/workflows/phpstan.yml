@@ -25,3 +25,9 @@ jobs:
 
       - name: Run PHPStan
         run: composer phpstan
+
+      - name: Run outbound request security checks
+        run: php tests/security/outbound_request_guard.php
+
+      - name: Run settings and bulk-operation security checks
+        run: php tests/security/settings_and_bulk_limits.php

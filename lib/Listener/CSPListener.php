@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Listener;
 
 use OCA\LinkBoard\Db\ServiceMapper;
-use OCA\LinkBoard\Db\SettingMapper;
+use OCA\LinkBoard\Service\SettingsService;
 use OCP\AppFramework\Http\EmptyContentSecurityPolicy;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
@@ -16,7 +16,7 @@ use OCP\Security\CSP\AddContentSecurityPolicyEvent;
 class CSPListener implements IEventListener {
 	public function __construct(
 		private IUserSession $userSession,
-		private SettingMapper $settingMapper,
+		private SettingsService $settingsService,
 		private ServiceMapper $serviceMapper,
 	) {
 	}
@@ -47,7 +47,7 @@ class CSPListener implements IEventListener {
 			}
 
 			// Auto-extract domain from background image URL
-			$settings = $this->settingMapper->getSettingsMap($userId);
+			$settings = $this->settingsService->getAll($userId);
 			$bgUrl = $settings['background_url'] ?? '';
 			if ($bgUrl !== '' && str_starts_with($bgUrl, 'https://')) {
 				$host = parse_url($bgUrl, PHP_URL_HOST);

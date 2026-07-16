@@ -23,6 +23,7 @@ class SettingMapper extends QBMapper {
         'card_style' => 'default',
         'card_background' => 'glass',
         'status_style' => 'dot',
+        'spacer_style' => 'solid',
         'show_search' => 'true',
         'show_category_count' => 'true',
         'check_for_updates' => 'true',
@@ -82,7 +83,10 @@ class SettingMapper extends QBMapper {
         $entities = $this->findAllByUser($userId);
 
         foreach ($entities as $entity) {
-            $settings[$entity->getKey()] = $entity->getValue();
+            $key = $entity->getKey();
+            if (array_key_exists($key, self::DEFAULTS)) {
+                $settings[$key] = $entity->getValue();
+            }
         }
 
         return $settings;

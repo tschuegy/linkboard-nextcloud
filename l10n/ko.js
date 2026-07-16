@@ -97,6 +97,7 @@ OC.L10N.register("linkboard", {
     "Failed to reorder services": "서비스 재정렬 실패",
     "Failed to update settings": "설정 저장 실패",
     "Status check failed": "상태 확인 실패",
+    "Notification test failed": "Notification test failed",
     "Status History": "상태 기록",
     "Status overview": "상태 개요",
     "Status": "상태",

@@ -427,8 +427,23 @@ export const useDashboardStore = defineStore('dashboard', {
         async fetchAllWidgetData() {
             this.widgetLoading = true
             try {
-                const { data } = await widgetApi.getAllData()
-                this.widgetData = data || {}
+                var offset = 0
+                var allData = {}
+                while (offset !== null) {
+                    const response = await widgetApi.getAllData(offset)
+                    Object.assign(allData, response.data || {})
+                    this.widgetData = { ...allData }
+
+                    var nextHeader = response.headers?.['x-linkboard-widget-next-offset']
+                    if (nextHeader === undefined || nextHeader === null || nextHeader === '') {
+                        offset = null
+                    } else {
+                        var nextOffset = parseInt(nextHeader, 10)
+                        offset = Number.isFinite(nextOffset) && nextOffset > offset
+                            ? nextOffset
+                            : null
+                    }
+                }
             } catch (err) {
                 console.error('LinkBoard: Failed to load widget data', err)
             } finally {

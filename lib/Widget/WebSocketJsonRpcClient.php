@@ -12,6 +12,12 @@ use OCA\LinkBoard\Service\OutboundRequestGuard;
  */
 class WebSocketJsonRpcClient {
 
+    private OutboundRequestGuard $requestGuard;
+
+    public function __construct(?OutboundRequestGuard $requestGuard = null) {
+        $this->requestGuard = $requestGuard ?? new OutboundRequestGuard();
+    }
+
     /**
      * Connect to a WebSocket endpoint, optionally authenticate, execute
      * JSON-RPC calls, and return an array of results (one per call).
@@ -24,31 +30,46 @@ class WebSocketJsonRpcClient {
      */
     public function execute(string $wsUrl, ?array $auth, array $calls, int $timeout = 15, bool $verifyTls = true): array {
         $parsed = parse_url($wsUrl);
-        if (!$parsed || !isset($parsed['host'])) {
-            throw new \RuntimeException('Invalid WebSocket URL: ' . $wsUrl);
+        $scheme = strtolower((string)($parsed['scheme'] ?? ''));
+        if (!is_array($parsed)
+            || !isset($parsed['host'])
+            || !in_array($scheme, ['http', 'https', 'ws', 'wss'], true)) {
+            throw new \RuntimeException('Invalid WebSocket URL');
         }
 
-        $useSsl = in_array($parsed['scheme'] ?? '', ['https', 'wss'], true);
-        $host = $parsed['host'];
-        $port = $parsed['port'] ?? ($useSsl ? 443 : 80);
+        $guardUrl = preg_replace('#^ws(s?):#i', 'http$1:', $wsUrl);
+        if (!is_string($guardUrl)) {
+            throw new \RuntimeException('Invalid WebSocket URL');
+        }
+        $target = $this->requestGuard->resolveAllowed($guardUrl);
+
+        $useSsl = in_array($scheme, ['https', 'wss'], true);
+        $host = $target['host'];
+        $port = $target['port'];
         $path = ($parsed['path'] ?? '/') . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
 
         $transport = $useSsl ? 'ssl' : 'tcp';
-        $address = $transport . '://' . $host . ':' . $port;
+        $remoteAddress = $target['addresses'][0];
+        $socketHost = str_contains($remoteAddress, ':') ? '[' . $remoteAddress . ']' : $remoteAddress;
+        $address = $transport . '://' . $socketHost . ':' . $port;
 
         $context = stream_context_create(['ssl' => [
             'verify_peer' => $verifyTls,
             'verify_peer_name' => $verifyTls,
             'allow_self_signed' => !$verifyTls,
+            'peer_name' => $host,
+            'SNI_enabled' => true,
         ]]);
 
         $socket = @stream_socket_client($address, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
         if (!$socket) {
-            throw new \RuntimeException('WebSocket connect failed: ' . $errstr . ' (' . $errno . ')');
+            throw new \RuntimeException('WebSocket connection failed');
         }
-        stream_set_timeout($socket, $timeout);
 
         try {
+            $peerAddress = $this->extractPeerAddress(stream_socket_get_name($socket, true));
+            $this->requestGuard->assertConnectedAddress($peerAddress, [$remoteAddress]);
+            stream_set_timeout($socket, $timeout);
             $this->handshake($socket, $host, $port, $path);
 
             $rpcId = 0;
@@ -79,7 +100,8 @@ class WebSocketJsonRpcClient {
 
     private function handshake($socket, string $host, int $port, string $path): void {
         $key = base64_encode(random_bytes(16));
-        $hostHeader = $host . ($port !== 443 && $port !== 80 ? ':' . $port : '');
+        $headerHost = str_contains($host, ':') ? '[' . $host . ']' : $host;
+        $hostHeader = $headerHost . ($port !== 443 && $port !== 80 ? ':' . $port : '');
 
         $request = "GET {$path} HTTP/1.1\r\n"
             . "Host: {$hostHeader}\r\n"
@@ -92,14 +114,43 @@ class WebSocketJsonRpcClient {
         fwrite($socket, $request);
 
         $response = '';
+        $responseBytes = 0;
         while (($line = fgets($socket)) !== false) {
             $response .= $line;
+            $responseBytes += strlen($line);
+            if ($responseBytes > 16384) {
+                throw new \RuntimeException('WebSocket handshake response exceeds size limit');
+            }
             if ($line === "\r\n") break;
         }
 
-        if (stripos($response, '101') === false) {
-            throw new \RuntimeException('WebSocket handshake failed: ' . trim(strtok($response, "\r\n")));
+        $statusLine = strtok($response, "\r\n");
+        if (!is_string($statusLine)
+            || preg_match('/^HTTP\/1\.[01]\s+101(?:\s|$)/i', $statusLine) !== 1) {
+            throw new \RuntimeException('WebSocket handshake failed');
         }
+
+        $expectedAccept = base64_encode(sha1($key . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
+        if (preg_match('/^Sec-WebSocket-Accept:\s*(.*?)\s*$/mi', $response, $matches) !== 1
+            || !hash_equals($expectedAccept, $matches[1])) {
+            throw new \RuntimeException('WebSocket handshake validation failed');
+        }
+    }
+
+    private function extractPeerAddress(string|false $peerName): string {
+        if (!is_string($peerName) || $peerName === '') {
+            throw new \RuntimeException('WebSocket peer address unavailable');
+        }
+        if ($peerName[0] === '[') {
+            $closingBracket = strpos($peerName, ']');
+            if ($closingBracket === false) {
+                throw new \RuntimeException('Invalid WebSocket peer address');
+            }
+            return substr($peerName, 1, $closingBracket - 1);
+        }
+
+        $portSeparator = strrpos($peerName, ':');
+        return $portSeparator === false ? $peerName : substr($peerName, 0, $portSeparator);
     }
 
     private function sendFrame($socket, string $payload): void {

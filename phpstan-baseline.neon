@@ -81,7 +81,7 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
 			identifier: argument.type
-			count: 7
+			count: 8
 			path: lib/Controller/ImportExportController.php
 
 		-
@@ -165,7 +165,7 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
 			identifier: argument.type
-			count: 1
+			count: 3
 			path: lib/Controller/SettingsApiController.php
 
 		-
@@ -189,7 +189,7 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
 			identifier: argument.type
-			count: 1
+			count: 5
 			path: lib/Controller/StatusApiController.php
 
 		-
@@ -219,8 +219,14 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, string\> given\.$#'
 			identifier: argument.type
-			count: 3
+			count: 4
 			path: lib/Controller/StatusApiController.php
+
+		-
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array given\.$#'
+			identifier: argument.type
+			count: 3
+			path: lib/Controller/WidgetProxyController.php
 
 		-
 			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<array\> given\.$#'
@@ -229,13 +235,7 @@ parameters:
 			path: lib/Controller/WidgetProxyController.php
 
 		-
-			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\<string, array\|string\>\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: lib/Controller/WidgetProxyController.php
-
-		-
-			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<string, array\> given\.$#'
+			message: '#^Parameter \#1 \$data of class OCP\\AppFramework\\Http\\DataResponse constructor expects T of OCP\\AppFramework\\Http\\DataResponseType, array\<int, array\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: lib/Controller/WidgetProxyController.php
