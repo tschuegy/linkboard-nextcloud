@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.7] – 2026-07-26
+
+### Fixed
+- Fritz!Box widget: the digest handshake never reached the box (issue #11). FRITZ!OS validates the SOAP body **before** authentication, and libcurl's explicit-digest mode strips the body off its first POST while waiting for the 401 challenge — the box answered that bodyless request with `500 "XML error"` instead of the challenge, so the credentials were never sent. The proxy now uses `CURLAUTH_ANYSAFE`, which sends the first request complete and unauthenticated (the sequence `curl --anyauth` performs, proven against real hardware) and authenticates on the challenge. Basic auth stays excluded, so credentials cannot be downgraded to cleartext.
+
+### Changed
+- The Fritz!Box mock now validates the SOAP body before authentication, in the order the real box does — a bodyless probe draws `500 "XML error"` even on the credentialed TR-064 endpoint, which is exactly the failure mode that broke the previous handshake.
+
 ## [1.7.6] – 2026-07-26
 
 ### Fixed

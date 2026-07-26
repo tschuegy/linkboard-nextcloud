@@ -108,13 +108,24 @@ if ($path === '/igdupnp/control/WANPPPConn1') {
 
 $isTr064 = str_starts_with($path, '/upnp/control/');
 
+// FRITZ!OS validates the SOAP body BEFORE authentication: a control request
+// without an envelope draws "XML error" even on a path that would have demanded
+// credentials (issue #11 — the real box answered a bodyless probe on the
+// authenticated TR-064 endpoint with 500, not 401). This order is what breaks
+// libcurl's explicit-digest mode, which strips the body off its first POST and
+// so never receives the challenge; only an --anyauth-style first request with
+// the full body reaches the 401.
+if (str_contains($path, '/control/') && file_get_contents('php://input') === '') {
+    upnpError(502, 'XML error');
+    return;
+}
+
 // TR-064 always demands credentials, IGD only when status transfer is off.
-// Auth is checked before the body: a digest client's bodyless first POST is
-// answered 401, the way a real box answers it (issue #11). The digest itself
-// is verified for real — a client that merely *sends* an Authorization header
-// with a wrong hash must not pass, or a broken digest implementation would go
-// unnoticed until it meets real hardware. The nonce is taken from the client
-// (php -S keeps no state between requests), which still validates the hash.
+// The digest itself is verified for real — a client that merely *sends* an
+// Authorization header with a wrong hash must not pass, or a broken digest
+// implementation would go unnoticed until it meets real hardware. The nonce is
+// taken from the client (php -S keeps no state between requests), which still
+// validates the hash.
 if ($isTr064 || getenv('FRITZMOCK_REQUIRE_AUTH') === '1') {
     $user = getenv('FRITZMOCK_USER') ?: 'lb';
     $pass = getenv('FRITZMOCK_PASS') ?: 'secret';
@@ -124,15 +135,6 @@ if ($isTr064 || getenv('FRITZMOCK_REQUIRE_AUTH') === '1') {
             . bin2hex(random_bytes(8)) . '", algorithm=MD5, qop="auth"');
         return;
     }
-}
-
-// Past auth, a control request without a SOAP envelope draws "XML error",
-// exactly as real FRITZ!OS answers it. libcurl produces such a request when
-// digest auth is attached to a POST up front — it strips the body while waiting
-// for a 401 challenge that an unauthenticated endpoint never sends (issue #11).
-if (str_contains($path, '/control/') && file_get_contents('php://input') === '') {
-    upnpError(502, 'XML error');
-    return;
 }
 
 // A real box selects the action from the SoapAction header, not from the path.

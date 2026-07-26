@@ -510,13 +510,6 @@ class WidgetProxyController extends ApiController {
             throw WidgetRequestException::curlError($errorCode);
         }
 
-        // 401 asks for the credentials the widget holds — retry with them
-        if ($httpCode === 401 && empty($spec['_auth_challenged'])
-            && (($spec['_http_auth']['password'] ?? '') !== '')) {
-            $spec['_auth_challenged'] = true;
-            return $this->executeRequest($spec, $cookieJar);
-        }
-
         if ($httpCode >= 400) {
             throw WidgetRequestException::httpStatus($httpCode);
         }
@@ -590,15 +583,20 @@ class WidgetProxyController extends ApiController {
 
         $target = $this->requestGuard->pinCurl($ch, $url);
 
-        // Digest credentials only enter the picture after the target has answered
-        // 401 (executeRequest retries with _auth_challenged set). Attaching
-        // CURLAUTH_DIGEST up front makes libcurl strip the body off the first
-        // POST in anticipation of a challenge — an endpoint that never
-        // challenges then processes an empty request instead (issue #11: the
-        // FRITZ!Box IGD answers it with 500 "XML error").
+        // CURLAUTH_ANYSAFE, never a single explicit method: with one method
+        // picked up front, libcurl strips the body off the first POST while it
+        // waits for the 401 challenge — and FRITZ!OS validates the SOAP body
+        // *before* authentication, so the bodyless request draws 500 "XML
+        // error" instead of the challenge and the handshake never starts
+        // (issue #11). With multiple methods to choose from, libcurl sends the
+        // first request complete and unauthenticated, exactly like `curl
+        // --anyauth`, which is proven against real hardware: endpoints without
+        // auth answer it directly, challenging endpoints get the credentials on
+        // the retry. ANYSAFE (unlike ANY) refuses Basic, so the password cannot
+        // be downgraded onto the wire in cleartext.
         $httpAuth = $spec['_http_auth'] ?? null;
-        if (!empty($spec['_auth_challenged']) && is_array($httpAuth) && ($httpAuth['password'] ?? '') !== '') {
-            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        if (is_array($httpAuth) && ($httpAuth['password'] ?? '') !== '') {
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANYSAFE);
             curl_setopt($ch, CURLOPT_USERPWD, ($httpAuth['username'] ?? '') . ':' . $httpAuth['password']);
         }
 
