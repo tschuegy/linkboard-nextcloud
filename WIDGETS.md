@@ -31,7 +31,27 @@ Notes for both Proxmox widgets:
 - Proxmox VE uses `=` between token_id and secret; Proxmox Backup Server uses `:`. They are not interchangeable.
 - The token needs a role with read permissions: `PVEAuditor` on `/` for Proxmox VE, `Audit` on `/` (with Propagate) for Proxmox Backup Server.
 
+Notes for the Immich widget:
+
+- The API key must belong to an **administrator account**. Immich serves the statistics endpoint the widget reads (`/api/server/statistics`) to admins only — an API key created on a regular account returns HTTP 403 even when every permission box is ticked.
+- The only permission the key needs is **`server.statistics`**. Everything else can be left unchecked.
+- Requires **Immich 1.118 or newer**. Older releases expose the statistics under `/api/server-info/…` and answer with HTTP 404.
+- The service URL is the plain Immich base URL — no `/api` suffix and no sub-path.
+
+## Troubleshooting
+
 If a widget doesn't respond as expected, double-check the protocol (`https://` vs `http://`), the token format, and the role/permissions on the token in the upstream service.
+
+When a widget fails, the tile shows the reason the upstream service gave:
+
+| Message | Meaning |
+|---|---|
+| `HTTP 401` / `HTTP 403` | The credential is wrong, lacks a required permission, or a reverse proxy in front of the service (Authelia, Authentik, Cloudflare Access…) demands its own login. |
+| `HTTP 404` | Wrong base URL — a sub-path or a trailing `/api` in the service URL — or an upstream version whose API paths have since changed. |
+| `HTTP 5xx` | The upstream service itself errored. |
+| `cURL <n>` | Network or TLS level failure before any response arrived, e.g. `7` connection refused, `28` timeout, `60` certificate not trusted. See the [libcurl error codes](https://curl.se/libcurl/c/libcurl-errors.html). |
+
+A green status dot does **not** rule out an authentication problem: the status check treats every response between HTTP 200 and 499 as online, so a service answering 403 still shows as reachable. The status check also uses the optional ping URL when one is set, while widgets always use the service URL itself.
 
 ## Widget catalog
 

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.16] – 2026-07-26
+
+### Fixed
+- Failing widgets name the reason again: the tile and the Nextcloud log now carry the upstream HTTP status or the cURL error number, so misconfigured credentials, wrong base URLs, and network failures can be told apart. Request URLs, headers, and upstream response details remain hidden.
+
+### Changed
+- Documented what the Immich widget requires — an API key from an administrator account with the `server.statistics` permission, and Immich 1.118 or newer — plus a troubleshooting table decoding the widget error messages.
+
 ## [1.6.15] – 2026-07-16
 
 ### Changed

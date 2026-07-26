@@ -13,6 +13,7 @@ use OCA\LinkBoard\Service\NotFoundException;
 use OCA\LinkBoard\Service\OutboundRequestGuard;
 use OCA\LinkBoard\Widget\WebSocketJsonRpcClient;
 use OCA\LinkBoard\Widget\WidgetRegistry;
+use OCA\LinkBoard\Widget\WidgetRequestException;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -141,12 +142,12 @@ class WidgetProxyController extends ApiController {
                     min($deadline, microtime(true) + self::WIDGET_TIME_BUDGET_SECONDS),
                 );
             } catch (\Throwable $e) {
-                $this->logger->warning('LinkBoard: Widget fetch failed for service ' . $service->getId(), [
-                    'exceptionClass' => $e::class,
-                    'exceptionCode' => $e->getCode(),
-                ]);
+                $this->logger->warning(
+                    'LinkBoard: Widget fetch failed for service ' . $service->getId(),
+                    $this->widgetErrorContext($e),
+                );
                 $result[$service->getId()] = [
-                    'error' => $this->l10n->t('Widget data fetch failed'),
+                    'error' => $this->widgetErrorMessage($e),
                 ];
             }
             $processed++;
@@ -267,15 +268,48 @@ class WidgetProxyController extends ApiController {
         } catch (BulkOperationInProgressException) {
             return new DataResponse([], Http::STATUS_TOO_MANY_REQUESTS);
         } catch (\Throwable $e) {
-            $this->logger->warning('LinkBoard: Widget fetch failed for service ' . $serviceId, [
-                'exceptionClass' => $e::class,
-                'exceptionCode' => $e->getCode(),
-            ]);
+            $this->logger->warning(
+                'LinkBoard: Widget fetch failed for service ' . $serviceId,
+                $this->widgetErrorContext($e),
+            );
             return new DataResponse(
-                ['error' => $this->l10n->t('Widget data fetch failed')],
+                ['error' => $this->widgetErrorMessage($e)],
                 Http::STATUS_INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    /**
+     * Log context for a failed widget fetch.
+     *
+     * Free-form detail is taken from WidgetRequestException only — its messages
+     * are app-controlled and never carry user input. Any other throwable stays
+     * limited to its class and code.
+     *
+     * @return array<string, mixed>
+     */
+    private function widgetErrorContext(\Throwable $e): array {
+        $context = [
+            'exceptionClass' => $e::class,
+            'exceptionCode' => $e->getCode(),
+        ];
+        if ($e instanceof WidgetRequestException) {
+            $context += $e->getLogContext();
+        }
+
+        return $context;
+    }
+
+    /**
+     * User-facing error for a failed widget fetch — upstream HTTP status or
+     * cURL error number at most, never request details.
+     */
+    private function widgetErrorMessage(\Throwable $e): string {
+        if ($e instanceof WidgetRequestException) {
+            return $this->l10n->t('Widget data fetch failed: %s', [$e->getPublicDetail()]);
+        }
+
+        return $this->l10n->t('Widget data fetch failed');
     }
 
     /**
@@ -423,7 +457,7 @@ class WidgetProxyController extends ApiController {
         }
 
         if ($errorCode !== CURLE_OK) {
-            throw new \RuntimeException('Widget HTTP request failed with cURL error ' . $errorCode);
+            throw WidgetRequestException::curlError($errorCode);
         }
 
         // 409 means we need the session ID — retry with it
@@ -433,7 +467,7 @@ class WidgetProxyController extends ApiController {
         }
 
         if ($httpCode >= 400) {
-            throw new \RuntimeException('Widget HTTP request returned status ' . $httpCode);
+            throw WidgetRequestException::httpStatus($httpCode);
         }
 
         return json_decode((string)$body, true) ?? [];
@@ -458,11 +492,11 @@ class WidgetProxyController extends ApiController {
         }
 
         if ($errorCode !== CURLE_OK) {
-            throw new \RuntimeException('Widget HTTP request failed with cURL error ' . $errorCode);
+            throw WidgetRequestException::curlError($errorCode);
         }
 
         if ($httpCode >= 400) {
-            throw new \RuntimeException('Widget HTTP request returned status ' . $httpCode);
+            throw WidgetRequestException::httpStatus($httpCode);
         }
 
         $decoded = json_decode((string)$body, true);
