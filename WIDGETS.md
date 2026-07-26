@@ -39,6 +39,7 @@ Notes for the Fritz!Box widget:
 - **Otherwise no credentials are required** — the four values an IP-routed box reports are public on the UPnP interface.
 - The **Nextcloud server** must be allowed to open outgoing connections to tcp/49000 on the box. A firewall that drops them produces `cURL 28` (timeout) on the tile, not a refusal — the widget is fine, the packets never arrive.
 - A box that runs no internet connection of its own — IP client mode, bridge mode, or cascaded behind another router — reports the WAN status `Unconfigured` on both interfaces and an uptime of `0`. All four values then stay at `—` and the tile names the reason underneath. That is the box's own answer, not a widget failure.
+- The **uptime is the connection uptime**, not the box's system uptime — the same "connected since" figure the box shows in its own UI. On PPPoE lines it resets whenever the provider renews the connection.
 
 Notes for the Immich widget:
 
