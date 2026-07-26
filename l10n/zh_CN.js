@@ -125,6 +125,7 @@ OC.L10N.register("linkboard", {
     "Invalid JSON": "无效的 JSON",
     "Import failed: %s": "导入失败：%s",
     "Maximum number of services reached (%s)": "已达到服务最大数量（%s）",
+    "Drag to reorder": "Drag to reorder",
     "Display mode": "Display mode",
     "Cards": "Cards",
     "Compact list": "Compact list",

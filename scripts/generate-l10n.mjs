@@ -83,6 +83,7 @@ const sourceStrings = [
 	'Clear search',
 	// ServiceCard
 	'Edit service {name}',
+	'Drag to reorder',
 	'Online',
 	'Offline',
 	'Unknown',
@@ -231,6 +232,7 @@ const translations = {
 		'Search...': 'Suche...',
 		'Clear search': 'Suche leeren',
 		'Edit service {name}': 'Service {name} bearbeiten',
+		'Drag to reorder': 'Ziehen zum Sortieren',
 		'Online': 'Online',
 		'Offline': 'Offline',
 		'Unknown': 'Unbekannt',

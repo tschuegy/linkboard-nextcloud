@@ -44,7 +44,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Flexible Icons** – Upload custom images (PNG, JPEG, WebP, GIF, ICO), use Material Design Icons (inline SVG) by name in either kebab-case (`mdi-cloud`) or camelCase (`mdiCloud`), or any URL
 - **Theming** – Dark, light, or auto mode with custom background images and blur effects
 - **Card Styles** – Glass, Solid, Flat, or Transparent card backgrounds
-- **Display Modes** – Show services as cards or as a compact single-line list, with the title, URL, or both per row
+- **Display Modes** – Show services as cards or as a compact single-line list, with the title, URL, or both per row; list rows can be reordered via drag & drop in edit mode
 - **Per-Card Scrollbar Toggle** – Hide scrollbars by default for a cleaner look; enable them per card when needed (content stays scrollable either way)
 - **Configurable Layout** – Adjust columns, card styles, search bar, and more
 - **Import / Export** – YAML & JSON support, compatible with Gethomepage services.yaml

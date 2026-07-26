@@ -2,6 +2,7 @@ OC.L10N.register("linkboard", {
     "Search...": "Suche...",
     "Clear search": "Suche leeren",
     "Edit service {name}": "Service {name} bearbeiten",
+    "Drag to reorder": "Ziehen zum Sortieren",
     "Online": "Online",
     "Offline": "Offline",
     "Unknown": "Unbekannt",

@@ -125,6 +125,7 @@ OC.L10N.register("linkboard", {
     "Invalid JSON": "Ongeldige JSON",
     "Import failed: %s": "Import mislukt: %s",
     "Maximum number of services reached (%s)": "Maximaal aantal services bereikt (%s)",
+    "Drag to reorder": "Drag to reorder",
     "Display mode": "Display mode",
     "Cards": "Cards",
     "Compact list": "Compact list",

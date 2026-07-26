@@ -14,6 +14,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         ]"
         @click="$emit('click')">
 
+        <!-- Drag handle for list reordering -->
+        <span
+            v-if="showDragHandle"
+            class="service-list-row__drag-handle"
+            role="button"
+            :aria-label="t('linkboard', 'Drag to reorder')"
+            @click.stop>
+            <DragIcon :size="16" />
+        </span>
+
         <!-- Status indicator dot -->
         <span
             v-if="showStatusDot"
@@ -47,12 +57,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 import { t } from '@nextcloud/l10n'
 import ServiceIcon from '../Shared/ServiceIcon.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
+import DragIcon from 'vue-material-design-icons/DragVertical.vue'
 export default {
     name: 'ServiceListRow',
-    components: { ServiceIcon, PencilIcon },
+    components: { ServiceIcon, PencilIcon, DragIcon },
     props: {
         service: { type: Object, required: true },
         editMode: { type: Boolean, default: false },
+        showDragHandle: { type: Boolean, default: false },
         rowContent: { type: String, default: 'title' },
         statusStyle: { type: String, default: 'dot' },
         manualColors: { type: Object, default: function() { return {} } },
@@ -108,6 +120,18 @@ export default {
     &--edit {
         border: 1px dashed var(--color-border);
         &:hover { border-color: var(--color-primary); }
+    }
+
+    &__drag-handle {
+        flex-shrink: 0;
+        display: flex; align-items: center;
+        cursor: grab;
+        color: var(--color-text-maxcontrast);
+        opacity: 0.5;
+        transition: opacity 0.15s;
+        touch-action: none;
+        &:hover { opacity: 1; }
+        &:active { cursor: grabbing; }
     }
 
     &__status {

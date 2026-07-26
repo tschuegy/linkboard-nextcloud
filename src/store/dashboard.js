@@ -349,6 +349,28 @@ export const useDashboardStore = defineStore('dashboard', {
             catch (err) { this.error = t('linkboard', 'Failed to reorder services'); throw err }
         },
 
+        async applyServiceOrder(categoryId, orderedIds) {
+            const found = findCategoryInTree(this.categories, categoryId)
+            if (!found) return
+            const cat = found.category
+            const byId = {}
+            for (const svc of (cat.services || [])) byId[svc.id] = svc
+            const next = []
+            for (const id of orderedIds) {
+                if (byId[id]) { next.push(byId[id]); delete byId[id] }
+            }
+            // Defensive: keep services the DOM did not show (e.g. filtered) in their relative order
+            for (const svc of (cat.services || [])) {
+                if (byId[svc.id]) next.push(svc)
+            }
+            next.forEach((svc, idx) => { svc.sortOrder = idx })
+            // Wholesale replace to resync Vue with Sortable's manual DOM move
+            cat.services = next
+            const order = Object.fromEntries(next.map((svc, idx) => [svc.id, idx]))
+            try { await this.reorderServices(order) }
+            catch (err) { await this.fetchDashboard() }
+        },
+
         // ── Settings Actions ────────────────────────────
         async updateSettings(settingsData) {
             try {

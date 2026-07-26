@@ -102,15 +102,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
             <transition name="collapse">
                 <div v-show="!isCollapsed">
-                    <div v-if="displayMode === 'list'" class="category-group__list">
+                    <div v-if="displayMode === 'list'" ref="listContainer" class="category-group__list">
                         <ServiceListRow
                             v-for="svc in listServices"
                             :key="svc.id"
+                            :data-service-id="String(svc.id)"
                             :service="svc"
                             :edit-mode="editMode"
                             :row-content="listRowContent"
                             :status-style="statusStyle"
                             :manual-colors="manualColors"
+                            :show-drag-handle="canSortList"
                             @click="handleServiceClick(svc)"
                             @edit="$emit('edit-service', svc.id)"
                             @status-click="$emit('status-click', $event)" />
@@ -168,6 +170,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script>
 import { t } from '@nextcloud/l10n'
+import Sortable from 'sortablejs'
 import { GridLayout, GridItem } from 'vue-grid-layout'
 import { NcButton } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
@@ -214,6 +217,7 @@ export default {
             isCollapsed: this.loadCollapsed(),
             gridLayout: [],
             gridLayoutKey: 0,
+            listSortable: null,
         }
     },
 
@@ -279,18 +283,19 @@ export default {
             }
         },
         listServices: function() {
-            // Read-only sort by grid position (y, then x) so the list order
-            // matches the visual cards order; _layout is never written here.
-            var services = (this.category.services || []).slice()
-            services.sort(function(a, b) {
-                var la = (a.widgetConfig && a.widgetConfig._layout) || null
-                var lb = (b.widgetConfig && b.widgetConfig._layout) || null
-                if (!la && !lb) return 0
-                if (!la) return 1
-                if (!lb) return -1
-                return (la.y - lb.y) || (la.x - lb.x)
-            })
-            return services
+            // Payload order = sort_order ASC, id ASC (ServiceMapper);
+            // list drag & drop persists into sort_order, never into _layout.
+            return this.category.services || []
+        },
+        isSearching: function() {
+            var store = useDashboardStore()
+            return !!store.searchQuery
+        },
+        canSortList: function() {
+            // While searching, the DOM shows a filtered subset — persisting
+            // an order from it would be ambiguous, so sorting is disabled.
+            return this.editMode && this.displayMode === 'list'
+                && !this.isSpacer && !this.isResources && !this.isSearching
         },
     },
 
@@ -322,6 +327,19 @@ export default {
         isCollapsed: function(val) {
             this.saveCollapsed(val)
         },
+        canSortList: {
+            handler: function(val) {
+                var self = this
+                this.$nextTick(function() {
+                    if (val) { self.initListSortable() } else { self.destroyListSortable() }
+                })
+            },
+            immediate: true,
+        },
+    },
+
+    beforeDestroy: function() {
+        this.destroyListSortable()
     },
 
     methods: {
@@ -385,6 +403,39 @@ export default {
             }, 300)
         },
 
+        initListSortable: function() {
+            this.destroyListSortable()
+            var el = this.$refs.listContainer
+            if (!el) return
+            var self = this
+            this.listSortable = Sortable.create(el, {
+                animation: 250,
+                draggable: '.service-list-row',
+                handle: '.service-list-row__drag-handle',
+                ghostClass: 'service-list-row--ghost',
+                onEnd: function(evt) {
+                    if (evt.oldIndex === evt.newIndex) return
+                    // Map DOM → model by id, never by index: the rendered list
+                    // may diverge from the store array (e.g. under filtering).
+                    var ids = []
+                    var rows = el.querySelectorAll('.service-list-row')
+                    for (var i = 0; i < rows.length; i++) {
+                        var id = parseInt(rows[i].dataset.serviceId)
+                        if (!isNaN(id)) ids.push(id)
+                    }
+                    var store = useDashboardStore()
+                    store.applyServiceOrder(self.category.id, ids)
+                },
+            })
+        },
+
+        destroyListSortable: function() {
+            if (this.listSortable) {
+                this.listSortable.destroy()
+                this.listSortable = null
+            }
+        },
+
         loadCollapsed: function() {
             try {
                 var stored = JSON.parse(localStorage.getItem(COLLAPSE_KEY) || '{}')
@@ -440,6 +491,10 @@ export default {
         flex-direction: column;
         gap: 2px;
         min-height: 40px;
+    }
+    .service-list-row--ghost {
+        opacity: 0.3;
+        background: var(--color-primary-element-light);
     }
     &__grid-item {
         &--editing {

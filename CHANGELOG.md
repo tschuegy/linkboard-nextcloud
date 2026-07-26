@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] – 2026-07-26
+
+### Added
+- Drag & drop reordering in the compact list display mode: in edit mode each row gets a drag handle to reorder services within their category. The order is persisted as the service sort order, so the cards grid layout stays completely untouched. This lifts the 1.8.0 limitation of switching to cards mode to reorder.
+
+### Changed
+- The compact list now displays services in their stored sort order instead of mirroring the cards-grid position — a one-time change for 1.8.0 list-mode users; the cards layout itself is unaffected. While a search filter is active, reordering is disabled.
+
 ## [1.8.0] – 2026-07-26
 
 ### Added
