@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.3] – 2026-07-26
+
+### Fixed
+- Fritz!Box widget: configuring credentials broke the tile entirely with an HTTP 500 (issue #11). Digest authentication was attached to every request up front, which makes libcurl send the first POST with an **empty body** while it waits for a 401 challenge — the credential-free IGD endpoint never challenges, processed the empty request and answered `500 "XML error"`. The proxy now sends every request plainly first and repeats it with digest credentials only after the target has answered 401.
+- Fritz!Box widget: the TR-064 `WANPPPConnection` interface reports its bit rates in **kbit/s**, not bit/s — a 226 Mbit/s PPPoE line would have shown as "0.2 Mbps". Confirmed against a capture from real FRITZ!OS hardware (issue #11), which now serves as the test fixture.
+
+### Changed
+- The Fritz!Box mock reproduces two more behaviors of a real box: control requests without a SOAP body draw `500 "XML error"`, and the unimplemented IGD `WANPPPConnection` service answers with a UPnPError instead of 404.
+
 ## [1.7.2] – 2026-07-26
 
 ### Fixed

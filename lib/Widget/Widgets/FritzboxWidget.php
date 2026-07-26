@@ -126,18 +126,23 @@ class FritzboxWidget extends AbstractWidget {
             'up' => (int)($responses[2]['NewLayer1UpstreamMaxBitRate'] ?? 0),
         ]];
 
-        // Every GetInfo reply carries the whole connection on its own.
-        foreach (array_slice($responses, 3) as $probe) {
+        // Every GetInfo reply carries the whole connection on its own. The probes
+        // sit at fixed positions — a probe the box refused is an empty array, not
+        // a gap: the IGD probe first, the TR-064 probe second. IGD reports its
+        // rates in bit/s as UPnP specifies; AVM's TR-064 reports kbit/s (issue
+        // #11: a real box answered 226415 on a 226 Mbit/s line).
+        foreach (array_slice($responses, 3) as $index => $probe) {
             if (!is_array($probe) || $probe === []) {
                 continue;
             }
 
+            $rateFactor = $index === 1 ? 1000 : 1;
             $views[] = [
                 'status' => trim((string)($probe['NewConnectionStatus'] ?? '')),
                 'ip' => trim((string)($probe['NewExternalIPAddress'] ?? '')),
                 'uptime' => (int)($probe['NewUptime'] ?? 0),
-                'down' => (int)($probe['NewDownstreamMaxBitRate'] ?? 0),
-                'up' => (int)($probe['NewUpstreamMaxBitRate'] ?? 0),
+                'down' => (int)($probe['NewDownstreamMaxBitRate'] ?? 0) * $rateFactor,
+                'up' => (int)($probe['NewUpstreamMaxBitRate'] ?? 0) * $rateFactor,
             ];
         }
 

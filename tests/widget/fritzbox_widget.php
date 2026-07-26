@@ -179,18 +179,27 @@ foreach ($expectedProbes as $index => [$url, $soapAction]) {
     }
 }
 
-// One GetInfo carries the whole connection, and it wins over the empty IGD answer.
+// One GetInfo carries the whole connection, and it wins over the empty IGD
+// answer. The fixture is a real box's reply (issue #11): its rates arrive in
+// kbit/s — a 226/36 Mbit/s line — and must be scaled, not shown as 0.2 Mbps.
 $ppp = SoapResponseParser::toArray($fixtures['GetInfo']);
 expectSameValue(
     [
         'externalIp' => '84.130.12.34',
-        'uptime' => '14d 6h',
-        'maxDown' => '246.8 Mbps',
-        'maxUp' => '48.4 Mbps',
+        'uptime' => '12h 21m',
+        'maxDown' => '226.4 Mbps',
+        'maxUp' => '36.2 Mbps',
     ],
     $widget->mapResponse([[], $unconfigured, [], [], $ppp], ['password' => 'secret']),
     'The PPP connection was not read once WANIPConnection came back empty',
 );
+
+// The same reply on the IGD probe would carry bit/s, which pass through unscaled.
+$igdPpp = ['NewConnectionStatus' => 'Connected', 'NewUptime' => '44494',
+    'NewExternalIPAddress' => '84.130.12.34',
+    'NewDownstreamMaxBitRate' => '226415000', 'NewUpstreamMaxBitRate' => '36226000'];
+expectSameValue('226.4 Mbps', $widget->mapResponse([[], $unconfigured, [], $igdPpp], [])['maxDown'],
+    'The IGD PPP probe rates were scaled although IGD reports bit/s');
 
 // The physical line rate stands in where PPP negotiated none of its own.
 $pppWithoutRates = ['NewConnectionStatus' => 'Connected', 'NewUptime' => '42', 'NewExternalIPAddress' => '84.130.12.34'];

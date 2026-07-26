@@ -27,12 +27,26 @@ declare(strict_types=1);
  *                                 "Unconfigured" and only the TR-064
  *                                 WANPPPConnection service holds the WAN data.
  *
- * Like a real box, /igdupnp/control/WANPPPConn1 is answered with 404: FRITZ!OS
- * lists no WANPPPConnection service in its IGD tree.
+ * Like a real box, /igdupnp/control/WANPPPConn1 is answered with a 500 UPnPError:
+ * FRITZ!OS lists no WANPPPConnection service in its IGD tree, and its control
+ * endpoint reports unknown services as an error rather than 404 (issue #11).
  */
 
 /** @var array<string, string> $responses */
 $responses = require __DIR__ . '/fritzbox_soap_responses.php';
+
+function upnpError(int $code, string $description): void {
+    header('HTTP/1.1 500 Internal Server Error');
+    header('Content-Type: text/xml; charset="utf-8"');
+    echo '<?xml version="1.0"?>'
+        . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">'
+        . '<s:Body><s:Fault>'
+        . '<faultcode>s:Client</faultcode><faultstring>UPnPError</faultstring>'
+        . '<detail><UPnPError xmlns="urn:schemas-upnp-org:control-1-0">'
+        . '<errorCode>' . $code . '</errorCode><errorDescription>' . $description . '</errorDescription>'
+        . '</UPnPError></detail>'
+        . '</s:Fault></s:Body></s:Envelope>';
+}
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $pppOnly = getenv('FRITZMOCK_WAN_UNCONFIGURED') === '1';
@@ -50,18 +64,30 @@ if ($path === '/igddesc.xml') {
 }
 
 // No FRITZ!OS release publishes WANPPPConnection in its IGD tree; the widget
-// probes for it anyway, and has to survive the box saying no.
+// probes for it anyway, and has to survive the box saying no. A real box says
+// it with a UPnPError, not a 404 (captured in issue #11).
 if ($path === '/igdupnp/control/WANPPPConn1') {
-    header('HTTP/1.1 404 Not Found');
+    upnpError(401, 'Invalid Action');
     return;
 }
 
 $isTr064 = str_starts_with($path, '/upnp/control/');
 
 // TR-064 always demands credentials, IGD only when status transfer is off.
+// Auth is checked before the body: a digest client's bodyless first POST is
+// answered 401, the way a real box answers it (issue #11).
 if (($isTr064 || getenv('FRITZMOCK_REQUIRE_AUTH') === '1') && ($_SERVER['HTTP_AUTHORIZATION'] ?? '') === '') {
     header('HTTP/1.1 401 Unauthorized');
     header('WWW-Authenticate: Digest realm="F!Box SOAP-Auth", nonce="' . bin2hex(random_bytes(8)) . '"');
+    return;
+}
+
+// Past auth, a control request without a SOAP envelope draws "XML error",
+// exactly as real FRITZ!OS answers it. libcurl produces such a request when
+// digest auth is attached to a POST up front — it strips the body while waiting
+// for a 401 challenge that an unauthenticated endpoint never sends (issue #11).
+if (str_contains($path, '/control/') && file_get_contents('php://input') === '') {
+    upnpError(502, 'XML error');
     return;
 }
 
@@ -90,16 +116,7 @@ if ($pppOnly && $action === 'GetExternalIPAddress') {
 }
 
 if (!isset($responses[$action])) {
-    header('HTTP/1.1 500 Internal Server Error');
-    header('Content-Type: text/xml; charset="utf-8"');
-    echo '<?xml version="1.0"?>'
-        . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">'
-        . '<s:Body><s:Fault>'
-        . '<faultcode>s:Client</faultcode><faultstring>UPnPError</faultstring>'
-        . '<detail><UPnPError xmlns="urn:schemas-upnp-org:control-1-0">'
-        . '<errorCode>401</errorCode><errorDescription>Invalid Action</errorDescription>'
-        . '</UPnPError></detail>'
-        . '</s:Fault></s:Body></s:Envelope>';
+    upnpError(401, 'Invalid Action');
     return;
 }
 

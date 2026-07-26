@@ -52,21 +52,28 @@ return [
 
     // TR-064 WANPPPConnection:1#GetInfo — the service a box uses when its internet
     // connection runs over PPPoE. One reply carries the whole connection, which is
-    // why the widget needs no second call there. Shortened to the elements the
-    // widget reads; a real box returns some thirty more (issue #11).
+    // why the widget needs no second call there. Captured from real FRITZ!OS
+    // hardware (issue #11), shortened to the elements the widget reads plus their
+    // neighbours; addresses and account name are made up. Note the bit rates:
+    // AVM reports them in kbit/s here — this line runs at 226/36 Mbit/s — while
+    // the IGD tree reports bit/s.
     'GetInfo' => '<?xml version="1.0"?>'
         . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
         . '<s:Body>'
         . '<u:GetInfoResponse xmlns:u="urn:dslforum-org:service:WANPPPConnection:1">'
         . '<NewEnable>1</NewEnable>'
         . '<NewConnectionStatus>Connected</NewConnectionStatus>'
+        . '<NewPossibleConnectionTypes>IP_Routed, IP_Bridged</NewPossibleConnectionTypes>'
         . '<NewConnectionType>IP_Routed</NewConnectionType>'
         . '<NewName>internet</NewName>'
-        . '<NewUptime>1234567</NewUptime>'
-        . '<NewUpstreamMaxBitRate>48412000</NewUpstreamMaxBitRate>'
-        . '<NewDownstreamMaxBitRate>246813000</NewDownstreamMaxBitRate>'
+        . '<NewUptime>44494</NewUptime>'
+        . '<NewUpstreamMaxBitRate>36226</NewUpstreamMaxBitRate>'
+        . '<NewDownstreamMaxBitRate>226415</NewDownstreamMaxBitRate>'
         . '<NewLastConnectionError>ERROR_NONE</NewLastConnectionError>'
+        . '<NewUserName>PPPoE-User</NewUserName>'
+        . '<NewNATEnabled>1</NewNATEnabled>'
         . '<NewExternalIPAddress>84.130.12.34</NewExternalIPAddress>'
+        . '<NewConnectionTrigger>AlwaysOn</NewConnectionTrigger>'
         . '<NewTransportType>PPPoE</NewTransportType>'
         . '</u:GetInfoResponse>'
         . '</s:Body></s:Envelope>',
