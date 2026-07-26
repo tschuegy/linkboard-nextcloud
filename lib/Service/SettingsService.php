@@ -14,6 +14,8 @@ class SettingsService {
         'max_columns' => ['2', '3', '4', '5', '6'],
         'card_style' => ['default', 'compact', 'minimal'],
         'card_background' => ['glass', 'solid', 'flat', 'transparent'],
+        'display_mode' => ['cards', 'list'],
+        'list_row_content' => ['title', 'url', 'title_description', 'title_url'],
         'status_style' => ['dot', 'basic'],
         'spacer_style' => [
             'solid', 'dashed', 'dotted', 'double', 'thin', 'heavy',

@@ -22,6 +22,8 @@ class SettingMapper extends QBMapper {
         'max_columns' => '4',
         'card_style' => 'default',
         'card_background' => 'glass',
+        'display_mode' => 'cards',
+        'list_row_content' => 'title',
         'status_style' => 'dot',
         'spacer_style' => 'solid',
         'show_search' => 'true',

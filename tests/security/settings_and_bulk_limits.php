@@ -79,6 +79,8 @@ namespace {
         ['background_url', "/image');background-image:url(https://example.com/evil)"],
         ['title', "LinkBoard\nInjected"],
         ['card_style', []],
+        ['display_mode', 'grid'],
+        ['list_row_content', 'description'],
     ];
     foreach ($invalidSettings as [$key, $value]) {
         expectValidationFailure(

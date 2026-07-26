@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] – 2026-07-26
+
+### Added
+- Compact list display mode (discussion #12): a new "Display mode" setting renders services as single-line rows instead of cards — icon, text, and inline status dot. A companion "List row content" setting selects what each row shows: title, URL, title and description, or title and URL. Widgets are not rendered in list mode. Grid layout data is preserved, so switching back to cards is lossless; to reorder services, switch to cards mode temporarily.
+
 ## [1.7.7] – 2026-07-26
 
 ### Fixed

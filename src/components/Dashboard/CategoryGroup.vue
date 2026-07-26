@@ -102,7 +102,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
             <transition name="collapse">
                 <div v-show="!isCollapsed">
+                    <div v-if="displayMode === 'list'" class="category-group__list">
+                        <ServiceListRow
+                            v-for="svc in listServices"
+                            :key="svc.id"
+                            :service="svc"
+                            :edit-mode="editMode"
+                            :row-content="listRowContent"
+                            :status-style="statusStyle"
+                            :manual-colors="manualColors"
+                            @click="handleServiceClick(svc)"
+                            @edit="$emit('edit-service', svc.id)"
+                            @status-click="$emit('status-click', $event)" />
+                    </div>
                     <grid-layout
+                        v-else
                         ref="serviceGrid"
                         :key="gridLayoutKey"
                         class="category-group__grid"
@@ -159,6 +173,7 @@ import { NcButton } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
 import { isUnicodeStyle, getSpacerChar, SPACER_CHARS } from '../../utils/spacerStyles.js'
 import ServiceCard from './ServiceCard.vue'
+import ServiceListRow from './ServiceListRow.vue'
 import ResourceDisplay from './ResourceDisplay.vue'
 import ServiceIcon from '../Shared/ServiceIcon.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
@@ -173,7 +188,7 @@ export default {
     name: 'CategoryGroup',
 
     components: {
-        NcButton, ServiceCard, ServiceIcon, ResourceDisplay,
+        NcButton, ServiceCard, ServiceListRow, ServiceIcon, ResourceDisplay,
         GridLayout, GridItem,
         PlusIcon, PencilIcon, DeleteIcon, ChevronDownIcon, DragIcon,
     },
@@ -190,6 +205,8 @@ export default {
         showStatusBars: { type: Boolean, default: true },
         statusBarsOpacity: { type: String, default: '0.8' },
         manualColors: { type: Object, default: function() { return {} } },
+        displayMode: { type: String, default: 'cards' },
+        listRowContent: { type: String, default: 'title' },
     },
 
     data: function() {
@@ -260,6 +277,20 @@ export default {
                 sm: Math.max(min, Math.round(col * 0.5)),
                 xs: min,
             }
+        },
+        listServices: function() {
+            // Read-only sort by grid position (y, then x) so the list order
+            // matches the visual cards order; _layout is never written here.
+            var services = (this.category.services || []).slice()
+            services.sort(function(a, b) {
+                var la = (a.widgetConfig && a.widgetConfig._layout) || null
+                var lb = (b.widgetConfig && b.widgetConfig._layout) || null
+                if (!la && !lb) return 0
+                if (!la) return 1
+                if (!lb) return -1
+                return (la.y - lb.y) || (la.x - lb.x)
+            })
+            return services
         },
     },
 
@@ -402,6 +433,12 @@ export default {
     }
     &__actions { display: flex; gap: 2px; }
     &__grid {
+        min-height: 40px;
+    }
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
         min-height: 40px;
     }
     &__grid-item {

@@ -94,6 +94,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <NcSelect v-model="form.max_columns" :options="columnOptions" :clearable="false" />
             </div>
             <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Display mode') }}</label>
+                <NcSelect
+                    v-model="form.display_mode"
+                    :options="displayModeOptions"
+                    :reduce="opt => opt.id"
+                    label="label"
+                    :clearable="false" />
+            </div>
+            <div v-if="form.display_mode === 'list'" class="settings-page__field">
+                <label>{{ t('linkboard', 'List row content') }}</label>
+                <NcSelect
+                    v-model="form.list_row_content"
+                    :options="listRowContentOptions"
+                    :reduce="opt => opt.id"
+                    label="label"
+                    :clearable="false" />
+            </div>
+            <div class="settings-page__field">
                 <label>{{ t('linkboard', 'Card style') }}</label>
                 <NcSelect v-model="form.card_style" :options="cardStyleOptions" :clearable="false" />
             </div>
@@ -311,6 +329,16 @@ export default {
                 { id: 'solid', label: t('linkboard', 'Solid (opaque)') },
                 { id: 'flat', label: t('linkboard', 'Flat') },
                 { id: 'transparent', label: t('linkboard', 'Transparent') },
+            ],
+            displayModeOptions: [
+                { id: 'cards', label: t('linkboard', 'Cards') },
+                { id: 'list', label: t('linkboard', 'Compact list') },
+            ],
+            listRowContentOptions: [
+                { id: 'title', label: t('linkboard', 'Title') },
+                { id: 'url', label: t('linkboard', 'URL') },
+                { id: 'title_description', label: t('linkboard', 'Title and description') },
+                { id: 'title_url', label: t('linkboard', 'Title and URL') },
             ],
             timeoutOptions: [
                 { id: '100', label: '100 ms' },
