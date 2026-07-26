@@ -106,7 +106,9 @@ expectSameValue(
     'Mapped widget values do not match the fixtures',
 );
 
-// A box that lost its WAN connection reports 0.0.0.0 and no uptime.
+// A box that lost its WAN connection reports 0.0.0.0 and no uptime. Without a
+// status it stays at dashes — a silent box is a different problem than a box
+// that answers.
 expectSameValue(
     [
         'externalIp' => '—',
@@ -117,6 +119,35 @@ expectSameValue(
     $widget->mapResponse([['NewExternalIPAddress' => '0.0.0.0'], ['NewUptime' => '0'], []], []),
     'Disconnected box was not reported as unavailable',
 );
+
+// --- Boxes without a WAN connection of their own (issue #11) ---------------
+
+$unconfigured = SoapResponseParser::toArray($fixtures['GetStatusInfoUnconfigured']);
+expectSameValue('Unconfigured', $unconfigured['NewConnectionStatus'] ?? null, 'Unconfigured status not parsed');
+expectSameValue('0', $unconfigured['NewUptime'] ?? null, 'Zero uptime not parsed');
+
+$mapped = $widget->mapResponse([[], $unconfigured, []], []);
+foreach (['externalIp', 'uptime', 'maxDown', 'maxUp'] as $field) {
+    expectSameValue('—', $mapped[$field] ?? null, 'Field ' . $field . ' should be empty on an unconfigured box');
+}
+if (!str_contains($mapped['_warning'] ?? '', 'Unconfigured')) {
+    throw new \RuntimeException('An unconfigured box does not explain its empty values');
+}
+
+// Every other state the box may report is named too, but only the documented ones.
+expectSameValue(
+    'The FRITZ!Box reports WAN status "Disconnecting", so the WAN values stay empty.',
+    $widget->mapResponse([[], ['NewConnectionStatus' => 'Disconnecting'], []], [])['_warning'] ?? null,
+    'A disconnecting box was not reported',
+);
+if (str_contains($widget->mapResponse([[], ['NewConnectionStatus' => '<b>x</b>'], []], [])['_warning'] ?? '', '<b>')) {
+    throw new \RuntimeException('An unknown status was echoed back into the tile verbatim');
+}
+
+// A connected box must not carry a warning at all.
+if (array_key_exists('_warning', $widget->mapResponse($parsed, []))) {
+    throw new \RuntimeException('A connected box was flagged with a warning');
+}
 
 // Sub-day uptimes stay readable.
 expectSameValue('3h 25m', $widget->mapResponse([[], ['NewUptime' => '12345'], []], [])['uptime'], 'Short uptime formatting is wrong');

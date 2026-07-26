@@ -33,6 +33,20 @@ return [
         . '</u:GetStatusInfoResponse>'
         . '</s:Body></s:Envelope>',
 
+    // Captured from real FRITZ!OS hardware (issue #11): a box that does not run the
+    // internet connection itself answers GetStatusInfo with exactly these values.
+    // Not served by the mock — the SoapAction it keys off is GetStatusInfo either way;
+    // swap it in there by hand to reproduce such a box end to end.
+    'GetStatusInfoUnconfigured' => '<?xml version="1.0"?>'
+        . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
+        . '<s:Body>'
+        . '<u:GetStatusInfoResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">'
+        . '<NewConnectionStatus>Unconfigured</NewConnectionStatus>'
+        . '<NewLastConnectionError>ERROR_NONE</NewLastConnectionError>'
+        . '<NewUptime>0</NewUptime>'
+        . '</u:GetStatusInfoResponse>'
+        . '</s:Body></s:Envelope>',
+
     'GetCommonLinkProperties' => '<?xml version="1.0"?>'
         . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
         . '<s:Body>'

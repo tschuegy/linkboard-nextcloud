@@ -17,6 +17,12 @@ class FritzboxWidget extends AbstractWidget {
     private const SOAP_ENVELOPE_NS = 'http://schemas.xmlsoap.org/soap/envelope/';
     private const UPNP_SERVICE_NS = 'urn:schemas-upnp-org:service:';
 
+    /** The WAN states IGD defines. Anything else is not repeated back into the tile. */
+    private const CONNECTION_STATES = [
+        'Unconfigured', 'Connecting', 'Authenticating', 'Connected',
+        'PendingDisconnect', 'Disconnecting', 'Disconnected',
+    ];
+
     public function getId(): string { return 'fritzbox'; }
     public function getLabel(): string { return 'Fritz!Box'; }
 
@@ -53,13 +59,42 @@ class FritzboxWidget extends AbstractWidget {
         $maxDown = (int)($responses[2]['NewLayer1DownstreamMaxBitRate'] ?? 0);
         $maxUp = (int)($responses[2]['NewLayer1UpstreamMaxBitRate'] ?? 0);
 
-        return [
+        $result = [
             // A disconnected box reports 0.0.0.0 rather than an empty value.
             'externalIp' => ($externalIp === '' || $externalIp === '0.0.0.0') ? '—' : $externalIp,
             'uptime' => $this->formatUptime($uptime),
             'maxDown' => $this->formatBitRate($maxDown),
             'maxUp' => $this->formatBitRate($maxUp),
         ];
+
+        $warning = $this->connectionWarning(trim((string)($responses[1]['NewConnectionStatus'] ?? '')));
+        if ($warning !== null) {
+            $result['_warning'] = $warning;
+        }
+
+        return $result;
+    }
+
+    /**
+     * A box that does not run the internet connection itself answers every WAN
+     * action with empty values, which would leave four unexplained dashes on the
+     * tile. The status the box reports alongside them says why (issue #11).
+     */
+    private function connectionWarning(string $status): ?string {
+        if ($status === '' || $status === 'Connected') {
+            return null;
+        }
+
+        if (!in_array($status, self::CONNECTION_STATES, true)) {
+            return 'The FRITZ!Box reports no WAN connection, so the WAN values stay empty.';
+        }
+
+        if ($status === 'Unconfigured') {
+            return 'The FRITZ!Box reports WAN status "Unconfigured": it has no internet connection of its own'
+                . ' (IP client or bridge mode), so the WAN values stay empty.';
+        }
+
+        return 'The FRITZ!Box reports WAN status "' . $status . '", so the WAN values stay empty.';
     }
 
     /**

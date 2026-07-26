@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.7.0] – 2026-07-26
+## [1.7.1] – 2026-07-26
+
+### Fixed
+- A Fritz!Box tile that stays empty now says why. Boxes that don't run the internet connection themselves — IP client mode, bridge mode, cascaded behind another router — report the WAN status `Unconfigured` and no uptime, which left four unexplained dashes on the tile; the reported status is now shown underneath them.
+
+### Changed
+- Documented the two things that keep the Fritz!Box widget from filling in: the Nextcloud server must be allowed to open outgoing connections to tcp/49000 on the box (a firewall dropping them shows up as `cURL 28`), and a box without its own internet connection has no WAN values to report.
 
 ### Added
 - The widget proxy can consume SOAP/XML responses in addition to JSON, and can authenticate with HTTP digest where a service demands it.

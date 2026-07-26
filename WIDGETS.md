@@ -36,6 +36,8 @@ Notes for the Fritz!Box widget:
 - Enter the box's normal address as the service URL — `http://192.168.178.1` or `http://fritz.box`. The widget appends **port 49000** itself, because that is where every FRITZ!Box serves its TR-064/IGD interface; the web interface port has no such endpoint. Naming a port explicitly overrides this.
 - Enable **Home Network → Network → Network Settings → "Transmit status information over UPnP"** on the box. Without it the interface answers HTTP 401.
 - **No credentials are normally required** — the four values the widget reads are public on that interface. Fill in username and password only if you keep UPnP status transfer switched off; they are then sent via HTTP digest authentication.
+- The **Nextcloud server** must be allowed to open outgoing connections to tcp/49000 on the box. A firewall that drops them produces `cURL 28` (timeout) on the tile, not a refusal — the widget is fine, the packets never arrive.
+- A box that does not run the internet connection itself — IP client mode, bridge mode, or cascaded behind another router — reports the WAN status `Unconfigured` and an uptime of `0`. All four values then stay at `—` and the tile names the reason underneath. That is the box's own answer, not a widget failure.
 
 Notes for the Immich widget:
 
