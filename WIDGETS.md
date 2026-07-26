@@ -99,7 +99,7 @@ A green status dot does **not** rule out an authentication problem: the status c
 | Flood | `flood` | `username` (required), `password` (required) | [ ] |
 | FreshRSS | `freshrss` | `username` (required), `password` (required) | [ ] |
 | Frigate | `frigate` | — | [ ] |
-| Fritz!Box | `fritzbox` | `username` (optional), `password` (optional) | [ ] |
+| Fritz!Box | `fritzbox` | `username` (optional), `password` (optional) | [x] |
 | GameDig | `gamedig` | — | [ ] |
 | Gatus | `gatus` | — | [ ] |
 | Ghostfolio | `ghostfolio` | `api_key` (required) | [ ] |
