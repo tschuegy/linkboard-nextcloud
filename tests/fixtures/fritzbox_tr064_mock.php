@@ -95,24 +95,15 @@ if (str_contains($path, '/control/') && file_get_contents('php://input') === '')
 $soapAction = $_SERVER['HTTP_SOAPACTION'] ?? '';
 $action = str_contains($soapAction, '#') ? substr($soapAction, strrpos($soapAction, '#') + 1) : '';
 
-// A box whose connection runs over PPPoE reports nothing on WANIPConnection, and
-// nothing on the DSL interface either once its internal modem is switched off.
+// A PPPoE box calls WANIPConnection "Unconfigured" — but still hands out the
+// external IP there, and reports its WAN as Ethernet with the configured tariff
+// rates. Both quirks captured from a real FRITZ!Box 7590 (issue #11); only the
+// status betrays that the connection lives on WANPPPConnection.
 if ($pppOnly && $action === 'GetStatusInfo') {
     $action = 'GetStatusInfoUnconfigured';
 }
 if ($pppOnly && $action === 'GetCommonLinkProperties') {
-    $action = 'GetCommonLinkPropertiesUnlinked';
-}
-if ($pppOnly && $action === 'GetExternalIPAddress') {
-    header('Content-Type: text/xml; charset="utf-8"');
-    echo '<?xml version="1.0"?>'
-        . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
-        . '<s:Body>'
-        . '<u:GetExternalIPAddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">'
-        . '<NewExternalIPAddress></NewExternalIPAddress>'
-        . '</u:GetExternalIPAddressResponse>'
-        . '</s:Body></s:Envelope>';
-    return;
+    $action = 'GetCommonLinkPropertiesEthernet';
 }
 
 if (!isset($responses[$action])) {

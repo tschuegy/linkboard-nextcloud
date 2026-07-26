@@ -153,6 +153,28 @@ expectSameValue(
     'A connected box was probed for a PPP connection anyway',
 );
 
+// A real PPPoE box hands out the external IP and its configured tariff rates on
+// the IGD tree even while calling WANIPConnection "Unconfigured" (issue #11) —
+// present values must not stop the probes, only the status decides.
+$realStageOne = [
+    SoapResponseParser::toArray($fixtures['GetExternalIPAddress']),
+    $unconfigured,
+    SoapResponseParser::toArray($fixtures['GetCommonLinkPropertiesEthernet']),
+];
+expectSameValue(
+    2,
+    count($widget->buildFollowUpRequests($realStageOne, 'http://192.168.178.1', ['username' => 'lb', 'password' => 'secret'])),
+    'A box reporting an IP next to "Unconfigured" was not probed for its PPP connection',
+);
+
+// A box that reports values but no status at all cannot be asked more precisely.
+$silent = [SoapResponseParser::toArray($fixtures['GetExternalIPAddress']), [], []];
+expectSameValue(
+    [],
+    $widget->buildFollowUpRequests($silent, 'http://192.168.178.1', ['password' => 'secret']),
+    'A box without any status was probed although its values already showed',
+);
+
 // Without credentials only the IGD tree can be probed — TR-064 would answer 401.
 $stageOne = [[], $unconfigured, []];
 $probes = $widget->buildFollowUpRequests($stageOne, 'http://192.168.178.1', []);
@@ -200,6 +222,29 @@ $igdPpp = ['NewConnectionStatus' => 'Connected', 'NewUptime' => '44494',
     'NewDownstreamMaxBitRate' => '226415000', 'NewUpstreamMaxBitRate' => '36226000'];
 expectSameValue('226.4 Mbps', $widget->mapResponse([[], $unconfigured, [], $igdPpp], [])['maxDown'],
     'The IGD PPP probe rates were scaled although IGD reports bit/s');
+
+// The real box's full sequence (issue #11): the PPP sync rates beat the tariff
+// rates the IGD tree reports, and the uptime comes from the PPP connection.
+expectSameValue(
+    [
+        'externalIp' => '84.130.12.34',
+        'uptime' => '12h 21m',
+        'maxDown' => '226.4 Mbps',
+        'maxUp' => '36.2 Mbps',
+    ],
+    $widget->mapResponse(array_merge($realStageOne, [[], $ppp]), ['password' => 'secret']),
+    'The PPP connection did not win over the IGD tariff rates',
+);
+
+// The same box without credentials: what the IGD tree offers is shown, together
+// with the advice that the rest sits behind TR-064.
+$mapped = $widget->mapResponse(array_merge($realStageOne, [[]]), []);
+expectSameValue('84.130.12.34', $mapped['externalIp'], 'The IGD external IP was withheld');
+expectSameValue('250 Mbps', $mapped['maxDown'], 'The IGD tariff rate was withheld');
+expectSameValue('—', $mapped['uptime'], 'An unknown uptime was invented');
+if (!str_contains($mapped['_warning'] ?? '', 'PPPoE')) {
+    throw new \RuntimeException('An uncredentialed PPPoE box showing IGD values lost its credentials advice');
+}
 
 // The physical line rate stands in where PPP negotiated none of its own.
 $pppWithoutRates = ['NewConnectionStatus' => 'Connected', 'NewUptime' => '42', 'NewExternalIPAddress' => '84.130.12.34'];

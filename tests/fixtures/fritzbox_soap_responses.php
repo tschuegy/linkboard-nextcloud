@@ -106,15 +106,17 @@ return [
         . '</s:Body></s:Envelope>',
 
     // A box whose internal DSL modem is switched off — the line runs over an
-    // external modem — reports no physical link and no rates on the DSL interface.
-    'GetCommonLinkPropertiesUnlinked' => '<?xml version="1.0"?>'
+    // external fiber modem — reports its WAN as Ethernet with the *configured*
+    // tariff rates in bit/s, link up. Captured from real FRITZ!OS hardware
+    // (issue #11); the PPP sync rates on WANPPPConnection are the real ones.
+    'GetCommonLinkPropertiesEthernet' => '<?xml version="1.0"?>'
         . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
         . '<s:Body>'
         . '<u:GetCommonLinkPropertiesResponse xmlns:u="urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1">'
         . '<NewWANAccessType>Ethernet</NewWANAccessType>'
-        . '<NewLayer1UpstreamMaxBitRate>0</NewLayer1UpstreamMaxBitRate>'
-        . '<NewLayer1DownstreamMaxBitRate>0</NewLayer1DownstreamMaxBitRate>'
-        . '<NewPhysicalLinkStatus>Down</NewPhysicalLinkStatus>'
+        . '<NewLayer1UpstreamMaxBitRate>40000000</NewLayer1UpstreamMaxBitRate>'
+        . '<NewLayer1DownstreamMaxBitRate>250000000</NewLayer1DownstreamMaxBitRate>'
+        . '<NewPhysicalLinkStatus>Up</NewPhysicalLinkStatus>'
         . '</u:GetCommonLinkPropertiesResponse>'
         . '</s:Body></s:Envelope>',
 ];

@@ -63,11 +63,18 @@ class FritzboxWidget extends AbstractWidget {
      * A box whose internet connection runs over PPPoE reports "Unconfigured" on
      * WANIPConnection — its actual WAN data sits on WANPPPConnection. Both places
      * that service can live are probed, and both probes are optional: a box that
-     * does not implement one answers 404, which is an answer, not a failure.
+     * does not implement one answers with an error, which is an answer, not a
+     * failure.
+     *
+     * Only the status decides whether to probe: a real box hands out the external
+     * IP on WANIPConnection even while calling that service Unconfigured (issue
+     * #11, FRITZ!Box 7590 on 154.08.20), so present values prove nothing. Values
+     * without any status still count — a box that names no state cannot be asked
+     * more precisely.
      */
     public function buildFollowUpRequests(array $responses, string $baseUrl, array $config): array {
         $igd = $this->pickConnection($this->connectionViews($responses));
-        if ($igd['status'] === 'Connected' || $this->hasValues($igd)) {
+        if ($igd['status'] === 'Connected' || ($igd['status'] === '' && $this->hasValues($igd))) {
             return [];
         }
 

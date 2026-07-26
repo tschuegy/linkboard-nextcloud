@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.4] – 2026-07-26
+
+### Fixed
+- Fritz!Box widget: a PPPoE box's uptime and line rates stayed at the IGD tariff values (issue #11). A real box hands out the external IP on `WANIPConnection` even while calling that service `Unconfigured`, and the widget took the present IP as proof of a live connection — skipping the `WANPPPConnection` probes that carry the uptime and the actual sync rates. Only the reported status decides now; values without any status still count.
+
+### Changed
+- The Fritz!Box mock's PPPoE mode matches the captured behavior of a real FRITZ!Box 7590: the external IP is served despite `Unconfigured`, and `WANCommonInterfaceConfig` reports an Ethernet WAN with the configured tariff rates instead of a dead DSL link.
+
 ## [1.7.3] – 2026-07-26
 
 ### Fixed
