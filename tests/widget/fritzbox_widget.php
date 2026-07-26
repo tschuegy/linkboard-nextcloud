@@ -85,6 +85,23 @@ expectSameValue([], SoapResponseParser::toArray(''), 'Empty body was not rejecte
 expectSameValue([], SoapResponseParser::toArray('{"json":true}'), 'Non-XML body was not rejected');
 expectSameValue([], SoapResponseParser::toArray('<s:Envelope><broken'), 'Malformed XML was not rejected');
 
+// …but parse() tells an unreadable body apart from an envelope without values,
+// so the proxy can mark the difference (issue #11).
+expectSameValue(null, SoapResponseParser::parse(''), 'An empty body did not surface as unparsable');
+expectSameValue(null, SoapResponseParser::parse('<root/>'), 'A non-SOAP document did not surface as unparsable');
+expectSameValue('Connected', SoapResponseParser::parse($fixtures['GetInfo'])['NewConnectionStatus'] ?? null, 'A valid envelope did not parse');
+
+// FRITZ!OS serves its replies without an encoding declaration but with Latin-1
+// bytes in them — the section sign in the character lists (issue #11). One such
+// byte must not cost the whole reply.
+$latin1 = mb_convert_encoding($fixtures['GetInfo'], 'ISO-8859-1', 'UTF-8');
+$parsedLatin1 = SoapResponseParser::toArray($latin1);
+expectSameValue('Connected', $parsedLatin1['NewConnectionStatus'] ?? null, 'A Latin-1 reply was not parsed');
+expectSameValue('44494', $parsedLatin1['NewUptime'] ?? null, 'A Latin-1 reply lost its values');
+if (!str_contains($parsedLatin1['NewAllowedCharsUsername'] ?? '', '§')) {
+    throw new \RuntimeException('The Latin-1 section sign was not converted back to UTF-8');
+}
+
 // Entity expansion is refused before the parser ever sees the document.
 $billionLaughs = '<?xml version="1.0"?><!DOCTYPE lolz [<!ENTITY lol "lol">'
     . '<!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">]>'
@@ -272,6 +289,11 @@ if (!str_contains($mapped['_warning'] ?? '', 'HTTP 401') || !str_contains($mappe
 }
 if (!str_contains($widget->mapResponse([[], $unconfigured, [], [], ['_probe_failure' => 'cURL 28']], ['password' => 'secret'])['_warning'] ?? '', 'cURL 28')) {
     throw new \RuntimeException('A timed-out TR-064 request does not name the cURL error');
+}
+// A 200 whose body defeats the parser is named too — the case that hid behind
+// an unexplained empty tile (issue #11).
+if (!str_contains($widget->mapResponse([[], $unconfigured, [], [], ['_parse_failure' => true]], ['password' => 'secret'])['_warning'] ?? '', 'could not be parsed')) {
+    throw new \RuntimeException('An unparsable TR-064 reply is not named in the tile');
 }
 // The IGD probe fails on every real box — that is not worth a word in the tile.
 if (str_contains($widget->mapResponse([[], $unconfigured, [], ['_probe_failure' => 'HTTP 500']], [])['_warning'] ?? '', 'HTTP 500')) {

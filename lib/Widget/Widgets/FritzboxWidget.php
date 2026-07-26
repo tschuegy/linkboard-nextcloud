@@ -127,6 +127,10 @@ class FritzboxWidget extends AbstractWidget {
      * not reported: FRITZ!OS answers it with an error on every box.
      */
     private function tr064FailureNote(array $responses): ?string {
+        if (isset($responses[4]['_parse_failure'])) {
+            return 'The TR-064 interface answered, but its reply could not be parsed.';
+        }
+
         $detail = $responses[4]['_probe_failure'] ?? null;
         if (!is_string($detail)) {
             return null;
@@ -157,7 +161,8 @@ class FritzboxWidget extends AbstractWidget {
         // rates in bit/s as UPnP specifies; AVM's TR-064 reports kbit/s (issue
         // #11: a real box answered 226415 on a 226 Mbit/s line).
         foreach (array_slice($responses, 3) as $index => $probe) {
-            if (!is_array($probe) || $probe === [] || isset($probe['_probe_failure'])) {
+            if (!is_array($probe) || $probe === []
+                || isset($probe['_probe_failure']) || isset($probe['_parse_failure'])) {
                 continue;
             }
 

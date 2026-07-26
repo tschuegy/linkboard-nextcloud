@@ -522,7 +522,9 @@ class WidgetProxyController extends ApiController {
         }
 
         if (($spec['_response_format'] ?? 'json') === 'xml') {
-            return SoapResponseParser::toArray((string)$body);
+            // A 200 whose body is not a readable SOAP envelope must stay
+            // distinguishable from an envelope without values (issue #11).
+            return SoapResponseParser::parse((string)$body) ?? ['_parse_failure' => true];
         }
 
         $decoded = json_decode((string)$body, true);

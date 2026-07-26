@@ -74,6 +74,11 @@ return [
         . '<NewNATEnabled>1</NewNATEnabled>'
         . '<NewExternalIPAddress>84.130.12.34</NewExternalIPAddress>'
         . '<NewConnectionTrigger>AlwaysOn</NewConnectionTrigger>'
+        // The character lists carry a section sign — the one non-ASCII byte in
+        // the reply, and the reason the Latin-1 fallback exists (issue #11).
+        . '<NewMaxCharsUsername>128</NewMaxCharsUsername>'
+        . '<NewAllowedCharsUsername>0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._@()#/%[]{}*+§$&amp;=?!:;,</NewAllowedCharsUsername>'
+        . '<NewAllowedCharsPassword>0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._@()#/%[]{}*+§$&amp;=?!:;,</NewAllowedCharsPassword>'
         . '<NewTransportType>PPPoE</NewTransportType>'
         . '</u:GetInfoResponse>'
         . '</s:Body></s:Envelope>',

@@ -24,6 +24,10 @@ declare(strict_types=1);
  *                                 switched off.
  *   FRITZMOCK_USER / FRITZMOCK_PASS  Digest credentials (default lb / secret).
  *                                 The digest hash is verified for real.
+ *   FRITZMOCK_LATIN1=1            Serve the SOAP replies as ISO-8859-1 without an
+ *                                 encoding declaration, the way FRITZ!OS emits
+ *                                 them — the character lists in a GetInfo reply
+ *                                 contain a section sign (issue #11).
  *   FRITZMOCK_WAN_UNCONFIGURED=1  Reproduce the box from issue #11: a PPPoE
  *                                 connection, so IGD WANIPConnection answers
  *                                 "Unconfigured" and only the TR-064
@@ -152,4 +156,6 @@ if (!isset($responses[$action])) {
 }
 
 header('Content-Type: text/xml; charset="utf-8"');
-echo $responses[$action];
+echo getenv('FRITZMOCK_LATIN1') === '1'
+    ? mb_convert_encoding($responses[$action], 'ISO-8859-1', 'UTF-8')
+    : $responses[$action];

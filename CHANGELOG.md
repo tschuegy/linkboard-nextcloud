@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.6] – 2026-07-26
+
+### Fixed
+- Fritz!Box widget: a single non-UTF-8 byte silently discarded a whole SOAP reply (issue #11). FRITZ!OS emits its replies without an encoding declaration but with ISO-8859-1 bytes in them — the character lists in a `WANPPPConnection` `GetInfo` reply contain a section sign (`§`) — and libxml rejects the entire document over that one byte, leaving the tile empty with HTTP 200 and no error anywhere. A reply that is not valid UTF-8 now gets a second parse as Latin-1.
+- Fritz!Box widget: a 200 reply whose body defeats the parser is now named in the tile ("its reply could not be parsed") instead of being indistinguishable from an unconfigured box.
+
+### Changed
+- The Fritz!Box mock serves its replies as ISO-8859-1 under `FRITZMOCK_LATIN1=1`, reproducing the FRITZ!OS encoding.
+
 ## [1.7.5] – 2026-07-26
 
 ### Added
