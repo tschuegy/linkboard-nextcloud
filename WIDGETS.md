@@ -31,6 +31,12 @@ Notes for both Proxmox widgets:
 - Proxmox VE uses `=` between token_id and secret; Proxmox Backup Server uses `:`. They are not interchangeable.
 - The token needs a role with read permissions: `PVEAuditor` on `/` for Proxmox VE, `Audit` on `/` (with Propagate) for Proxmox Backup Server.
 
+Notes for the Fritz!Box widget:
+
+- Enter the box's normal address as the service URL — `http://192.168.178.1` or `http://fritz.box`. The widget appends **port 49000** itself, because that is where every FRITZ!Box serves its TR-064/IGD interface; the web interface port has no such endpoint. Naming a port explicitly overrides this.
+- Enable **Home Network → Network → Network Settings → "Transmit status information over UPnP"** on the box. Without it the interface answers HTTP 401.
+- **No credentials are normally required** — the four values the widget reads are public on that interface. Fill in username and password only if you keep UPnP status transfer switched off; they are then sent via HTTP digest authentication.
+
 Notes for the Immich widget:
 
 - The API key must belong to an **administrator account**. Immich serves the statistics endpoint the widget reads (`/api/server/statistics`) to admins only — an API key created on a regular account returns HTTP 403 even when every permission box is ticked.
@@ -90,7 +96,7 @@ A green status dot does **not** rule out an authentication problem: the status c
 | Flood | `flood` | `username` (required), `password` (required) | [ ] |
 | FreshRSS | `freshrss` | `username` (required), `password` (required) | [ ] |
 | Frigate | `frigate` | — | [ ] |
-| Fritz!Box | `fritzbox` | `username` (optional), `password` (required) | [ ] |
+| Fritz!Box | `fritzbox` | `username` (optional), `password` (optional) | [ ] |
 | GameDig | `gamedig` | — | [ ] |
 | Gatus | `gatus` | — | [ ] |
 | Ghostfolio | `ghostfolio` | `api_key` (required) | [ ] |

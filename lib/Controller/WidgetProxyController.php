@@ -11,6 +11,7 @@ use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\ResourceService;
 use OCA\LinkBoard\Service\NotFoundException;
 use OCA\LinkBoard\Service\OutboundRequestGuard;
+use OCA\LinkBoard\Widget\SoapResponseParser;
 use OCA\LinkBoard\Widget\WebSocketJsonRpcClient;
 use OCA\LinkBoard\Widget\WidgetRegistry;
 use OCA\LinkBoard\Widget\WidgetRequestException;
@@ -499,6 +500,10 @@ class WidgetProxyController extends ApiController {
             throw WidgetRequestException::httpStatus($httpCode);
         }
 
+        if (($spec['_response_format'] ?? 'json') === 'xml') {
+            return SoapResponseParser::toArray((string)$body);
+        }
+
         $decoded = json_decode((string)$body, true);
         return $decoded ?? [];
     }
@@ -561,6 +566,14 @@ class WidgetProxyController extends ApiController {
         ]);
 
         $target = $this->requestGuard->pinCurl($ch, $url);
+
+        // Digest credentials are only sent once the target answers with a 401
+        // challenge, so widgets can offer them without changing the plain case.
+        $httpAuth = $spec['_http_auth'] ?? null;
+        if (is_array($httpAuth) && ($httpAuth['password'] ?? '') !== '') {
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+            curl_setopt($ch, CURLOPT_USERPWD, ($httpAuth['username'] ?? '') . ':' . $httpAuth['password']);
+        }
 
         if ($cookieJar) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieJar);

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] – 2026-07-26
+
+### Added
+- The widget proxy can consume SOAP/XML responses in addition to JSON, and can authenticate with HTTP digest where a service demands it.
+
+### Fixed
+- The Fritz!Box widget returned placeholders instead of data. It now reads the external IP, uptime, and maximum line rates from the TR-064/IGD interface on port 49000, which it derives from the service URL — no credentials needed when the box transmits status information over UPnP.
+
 ## [1.6.16] – 2026-07-26
 
 ### Fixed
