@@ -415,8 +415,10 @@ class WidgetProxyController extends ApiController {
                         throw $e;
                     }
                     // A service the upstream does not implement is an answer, not a
-                    // failure. Appending keeps later responses at their position.
-                    $responses[] = [];
+                    // failure. Appending keeps later responses at their position,
+                    // and the bounded failure detail lets the widget say why a
+                    // probe returned nothing (issue #11).
+                    $responses[] = ['_probe_failure' => $e->getPublicDetail()];
                 }
             }
 

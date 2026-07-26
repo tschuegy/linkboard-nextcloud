@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.5] – 2026-07-26
+
+### Added
+- Fritz!Box widget: when the TR-064 probe fails, the tile now names the failure instead of silently reporting an unconfigured box (issue #11). An `HTTP 401` is called out as the box rejecting the configured credentials; other statuses and cURL errors are shown verbatim. An empty answer and a rejected request need different fixes, and the tile no longer hides which one happened.
+
+### Changed
+- The Fritz!Box mock verifies the digest hash for real (MD5, `qop="auth"`) instead of accepting any `Authorization` header, so a broken digest implementation can no longer pass the mock and fail on real hardware. Credentials default to `lb`/`secret`, overridable via `FRITZMOCK_USER`/`FRITZMOCK_PASS`.
+
 ## [1.7.4] – 2026-07-26
 
 ### Fixed

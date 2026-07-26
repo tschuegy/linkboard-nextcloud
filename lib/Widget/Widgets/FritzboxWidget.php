@@ -112,10 +112,28 @@ class FritzboxWidget extends AbstractWidget {
 
         $warning = $this->connectionWarning($connection['status'], $this->credentials($config)['password'] !== '');
         if ($warning !== null) {
-            $result['_warning'] = $warning;
+            $note = $this->tr064FailureNote($responses);
+            $result['_warning'] = $note === null ? $warning : $warning . ' ' . $note;
         }
 
         return $result;
+    }
+
+    /**
+     * An empty tile is ambiguous once the TR-064 probe silently failed: the box
+     * may have answered "Unconfigured", or the request itself may have been
+     * rejected. Naming the failure separates the two — an HTTP 401 here means
+     * the box refused the configured credentials (issue #11). The IGD probe is
+     * not reported: FRITZ!OS answers it with an error on every box.
+     */
+    private function tr064FailureNote(array $responses): ?string {
+        $detail = $responses[4]['_probe_failure'] ?? null;
+        if (!is_string($detail)) {
+            return null;
+        }
+
+        return 'The TR-064 request itself failed (' . $detail . ') instead of answering'
+            . ($detail === 'HTTP 401' ? ' — the box rejected the configured credentials.' : '.');
     }
 
     /**
@@ -139,7 +157,7 @@ class FritzboxWidget extends AbstractWidget {
         // rates in bit/s as UPnP specifies; AVM's TR-064 reports kbit/s (issue
         // #11: a real box answered 226415 on a 226 Mbit/s line).
         foreach (array_slice($responses, 3) as $index => $probe) {
-            if (!is_array($probe) || $probe === []) {
+            if (!is_array($probe) || $probe === [] || isset($probe['_probe_failure'])) {
                 continue;
             }
 

@@ -263,6 +263,21 @@ if (!str_contains($mapped['_warning'] ?? '', 'PPPoE')) {
     throw new \RuntimeException('An uncredentialed unconfigured box is not pointed at the credentials it needs');
 }
 
+// A TR-064 probe whose request itself failed is named in the tile — an empty
+// answer and a rejected request need different fixes (issue #11).
+$mapped = $widget->mapResponse([[], $unconfigured, [], [], ['_probe_failure' => 'HTTP 401']], ['password' => 'secret']);
+expectSameValue('—', $mapped['uptime'], 'A failed probe was mistaken for data');
+if (!str_contains($mapped['_warning'] ?? '', 'HTTP 401') || !str_contains($mapped['_warning'] ?? '', 'credentials')) {
+    throw new \RuntimeException('A rejected TR-064 request does not name the 401 and the credentials');
+}
+if (!str_contains($widget->mapResponse([[], $unconfigured, [], [], ['_probe_failure' => 'cURL 28']], ['password' => 'secret'])['_warning'] ?? '', 'cURL 28')) {
+    throw new \RuntimeException('A timed-out TR-064 request does not name the cURL error');
+}
+// The IGD probe fails on every real box — that is not worth a word in the tile.
+if (str_contains($widget->mapResponse([[], $unconfigured, [], ['_probe_failure' => 'HTTP 500']], [])['_warning'] ?? '', 'HTTP 500')) {
+    throw new \RuntimeException('The expected IGD probe failure was reported as a problem');
+}
+
 // Once credentials are configured, both interfaces have been asked — the advice changes.
 $pppUnconfigured = SoapResponseParser::toArray($fixtures['GetInfoUnconfigured']);
 $mapped = $widget->mapResponse([[], $unconfigured, [], [], $pppUnconfigured], ['password' => 'secret']);

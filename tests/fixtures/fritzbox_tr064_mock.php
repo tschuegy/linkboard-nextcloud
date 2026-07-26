@@ -22,6 +22,8 @@ declare(strict_types=1);
  *   FRITZMOCK_REQUIRE_AUTH=1      Demand HTTP digest credentials on every path,
  *                                 which exercises boxes with UPnP status transfer
  *                                 switched off.
+ *   FRITZMOCK_USER / FRITZMOCK_PASS  Digest credentials (default lb / secret).
+ *                                 The digest hash is verified for real.
  *   FRITZMOCK_WAN_UNCONFIGURED=1  Reproduce the box from issue #11: a PPPoE
  *                                 connection, so IGD WANIPConnection answers
  *                                 "Unconfigured" and only the TR-064
@@ -34,6 +36,35 @@ declare(strict_types=1);
 
 /** @var array<string, string> $responses */
 $responses = require __DIR__ . '/fritzbox_soap_responses.php';
+
+function digestValid(string $header, string $method, string $user, string $pass): bool {
+    if (stripos($header, 'Digest ') !== 0) {
+        return false;
+    }
+
+    preg_match_all('/(\w+)=(?:"([^"]*)"|([^,\s]+))/', substr($header, 7), $matches, PREG_SET_ORDER);
+    $params = [];
+    foreach ($matches as $match) {
+        $params[$match[1]] = $match[2] !== '' ? $match[2] : ($match[3] ?? '');
+    }
+
+    foreach (['username', 'realm', 'nonce', 'uri', 'response'] as $required) {
+        if (!isset($params[$required])) {
+            return false;
+        }
+    }
+    if ($params['username'] !== $user) {
+        return false;
+    }
+
+    $ha1 = md5($user . ':' . $params['realm'] . ':' . $pass);
+    $ha2 = md5($method . ':' . $params['uri']);
+    $expected = ($params['qop'] ?? '') === 'auth'
+        ? md5($ha1 . ':' . $params['nonce'] . ':' . ($params['nc'] ?? '') . ':' . ($params['cnonce'] ?? '') . ':auth:' . $ha2)
+        : md5($ha1 . ':' . $params['nonce'] . ':' . $ha2);
+
+    return hash_equals($expected, $params['response']);
+}
 
 function upnpError(int $code, string $description): void {
     header('HTTP/1.1 500 Internal Server Error');
@@ -75,11 +106,20 @@ $isTr064 = str_starts_with($path, '/upnp/control/');
 
 // TR-064 always demands credentials, IGD only when status transfer is off.
 // Auth is checked before the body: a digest client's bodyless first POST is
-// answered 401, the way a real box answers it (issue #11).
-if (($isTr064 || getenv('FRITZMOCK_REQUIRE_AUTH') === '1') && ($_SERVER['HTTP_AUTHORIZATION'] ?? '') === '') {
-    header('HTTP/1.1 401 Unauthorized');
-    header('WWW-Authenticate: Digest realm="F!Box SOAP-Auth", nonce="' . bin2hex(random_bytes(8)) . '"');
-    return;
+// answered 401, the way a real box answers it (issue #11). The digest itself
+// is verified for real — a client that merely *sends* an Authorization header
+// with a wrong hash must not pass, or a broken digest implementation would go
+// unnoticed until it meets real hardware. The nonce is taken from the client
+// (php -S keeps no state between requests), which still validates the hash.
+if ($isTr064 || getenv('FRITZMOCK_REQUIRE_AUTH') === '1') {
+    $user = getenv('FRITZMOCK_USER') ?: 'lb';
+    $pass = getenv('FRITZMOCK_PASS') ?: 'secret';
+    if (!digestValid($_SERVER['HTTP_AUTHORIZATION'] ?? '', $_SERVER['REQUEST_METHOD'] ?? 'POST', $user, $pass)) {
+        header('HTTP/1.1 401 Unauthorized');
+        header('WWW-Authenticate: Digest realm="F!Box SOAP-Auth", nonce="'
+            . bin2hex(random_bytes(8)) . '", algorithm=MD5, qop="auth"');
+        return;
+    }
 }
 
 // Past auth, a control request without a SOAP envelope draws "XML error",
