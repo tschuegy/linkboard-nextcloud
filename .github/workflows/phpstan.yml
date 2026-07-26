@@ -31,3 +31,9 @@ jobs:
 
       - name: Run settings and bulk-operation security checks
         run: php tests/security/settings_and_bulk_limits.php
+
+      - name: Run widget error reporting checks
+        run: php tests/security/widget_error_reporting.php
+
+      - name: Run Fritz!Box widget checks
+        run: php tests/widget/fritzbox_widget.php

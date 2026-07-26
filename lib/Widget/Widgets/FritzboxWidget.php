@@ -5,9 +5,13 @@ namespace OCA\LinkBoard\Widget\Widgets;
 use OCA\LinkBoard\Widget\AbstractWidget;
 
 /**
- * Reads WAN status from the IGD/UPnP interface every FRITZ!Box exposes on port
- * 49000. The three actions used are readable without credentials as long as
- * "Transmit status information over UPnP" is enabled on the box.
+ * Reads WAN status from the interfaces every FRITZ!Box serves on port 49000.
+ *
+ * IGD splits WAN connections across two services and a box only fills in the one
+ * matching its connection type: WANIPConnection carries IP-routed connections,
+ * WANPPPConnection carries PPPoE. The credential-free IGD service is asked first;
+ * a box that answers it with "Unconfigured" is then probed for a PPP connection,
+ * which FRITZ!OS publishes on its TR-064 interface (issue #11).
  */
 class FritzboxWidget extends AbstractWidget {
 
@@ -15,7 +19,12 @@ class FritzboxWidget extends AbstractWidget {
     private const TR064_PORT = 49000;
 
     private const SOAP_ENVELOPE_NS = 'http://schemas.xmlsoap.org/soap/envelope/';
-    private const UPNP_SERVICE_NS = 'urn:schemas-upnp-org:service:';
+
+    /** The IGD tree on /igdupnp/…, readable without credentials. */
+    private const IGD_SERVICE_NS = 'urn:schemas-upnp-org:service:';
+
+    /** The TR-064 tree on /upnp/…, which always demands HTTP digest credentials. */
+    private const TR064_SERVICE_NS = 'urn:dslforum-org:service:';
 
     /** The WAN states IGD defines. Anything else is not repeated back into the tile. */
     private const CONNECTION_STATES = [
@@ -28,8 +37,8 @@ class FritzboxWidget extends AbstractWidget {
 
     public function getConfigFields(): array {
         return [
-            ['key' => 'username', 'label' => 'Username', 'type' => 'text', 'required' => false, 'placeholder' => 'Usually not needed'],
-            ['key' => 'password', 'label' => 'Password', 'type' => 'password', 'required' => false, 'placeholder' => 'Only if UPnP status transfer is off'],
+            ['key' => 'username', 'label' => 'Username', 'type' => 'text', 'required' => false, 'placeholder' => 'FRITZ!Box user, for PPPoE boxes'],
+            ['key' => 'password', 'label' => 'Password', 'type' => 'password', 'required' => false, 'placeholder' => 'Needed for PPPoE connections'],
         ];
     }
 
@@ -41,33 +50,60 @@ class FritzboxWidget extends AbstractWidget {
 
     public function buildRequests(string $baseUrl, array $config): array {
         $endpoint = $this->soapEndpoint($baseUrl);
-        $auth = [
-            'username' => (string)($config['username'] ?? ''),
-            'password' => (string)($config['password'] ?? ''),
-        ];
+        $auth = $this->credentials($config);
 
         return [
-            $this->soapRequest($endpoint . '/igdupnp/control/WANIPConn1', 'WANIPConnection:1', 'GetExternalIPAddress', $auth),
-            $this->soapRequest($endpoint . '/igdupnp/control/WANIPConn1', 'WANIPConnection:1', 'GetStatusInfo', $auth),
-            $this->soapRequest($endpoint . '/igdupnp/control/WANCommonIFC1', 'WANCommonInterfaceConfig:1', 'GetCommonLinkProperties', $auth),
+            $this->soapRequest($endpoint . '/igdupnp/control/WANIPConn1', self::IGD_SERVICE_NS . 'WANIPConnection:1', 'GetExternalIPAddress', $auth),
+            $this->soapRequest($endpoint . '/igdupnp/control/WANIPConn1', self::IGD_SERVICE_NS . 'WANIPConnection:1', 'GetStatusInfo', $auth),
+            $this->soapRequest($endpoint . '/igdupnp/control/WANCommonIFC1', self::IGD_SERVICE_NS . 'WANCommonInterfaceConfig:1', 'GetCommonLinkProperties', $auth),
         ];
     }
 
+    /**
+     * A box whose internet connection runs over PPPoE reports "Unconfigured" on
+     * WANIPConnection — its actual WAN data sits on WANPPPConnection. Both places
+     * that service can live are probed, and both probes are optional: a box that
+     * does not implement one answers 404, which is an answer, not a failure.
+     */
+    public function buildFollowUpRequests(array $responses, string $baseUrl, array $config): array {
+        $igd = $this->pickConnection($this->connectionViews($responses));
+        if ($igd['status'] === 'Connected' || $this->hasValues($igd)) {
+            return [];
+        }
+
+        $endpoint = $this->soapEndpoint($baseUrl);
+        $auth = $this->credentials($config);
+
+        $probes = [
+            $this->soapRequest($endpoint . '/igdupnp/control/WANPPPConn1', self::IGD_SERVICE_NS . 'WANPPPConnection:1', 'GetInfo', $auth, true),
+        ];
+
+        // TR-064 answers nothing without credentials, so asking is only worth a
+        // request once the user has supplied them.
+        if ($auth['password'] !== '') {
+            $probes[] = $this->soapRequest($endpoint . '/upnp/control/wanpppconn1', self::TR064_SERVICE_NS . 'WANPPPConnection:1', 'GetInfo', $auth, true);
+        }
+
+        return $probes;
+    }
+
     public function mapResponse(array $responses, array $config): array {
-        $externalIp = trim((string)($responses[0]['NewExternalIPAddress'] ?? ''));
-        $uptime = (int)($responses[1]['NewUptime'] ?? 0);
-        $maxDown = (int)($responses[2]['NewLayer1DownstreamMaxBitRate'] ?? 0);
-        $maxUp = (int)($responses[2]['NewLayer1UpstreamMaxBitRate'] ?? 0);
+        $connection = $this->pickConnection($this->connectionViews($responses));
+
+        // The connection service reports the rate it negotiated; where it reports
+        // none, the physical line rate from WANCommonInterfaceConfig stands in.
+        $maxDown = $connection['down'] > 0 ? $connection['down'] : (int)($responses[2]['NewLayer1DownstreamMaxBitRate'] ?? 0);
+        $maxUp = $connection['up'] > 0 ? $connection['up'] : (int)($responses[2]['NewLayer1UpstreamMaxBitRate'] ?? 0);
 
         $result = [
             // A disconnected box reports 0.0.0.0 rather than an empty value.
-            'externalIp' => ($externalIp === '' || $externalIp === '0.0.0.0') ? '—' : $externalIp,
-            'uptime' => $this->formatUptime($uptime),
+            'externalIp' => $connection['ip'] === '' || $connection['ip'] === '0.0.0.0' ? '—' : $connection['ip'],
+            'uptime' => $this->formatUptime($connection['uptime']),
             'maxDown' => $this->formatBitRate($maxDown),
             'maxUp' => $this->formatBitRate($maxUp),
         ];
 
-        $warning = $this->connectionWarning(trim((string)($responses[1]['NewConnectionStatus'] ?? '')));
+        $warning = $this->connectionWarning($connection['status'], $this->credentials($config)['password'] !== '');
         if ($warning !== null) {
             $result['_warning'] = $warning;
         }
@@ -76,11 +112,79 @@ class FritzboxWidget extends AbstractWidget {
     }
 
     /**
-     * A box that does not run the internet connection itself answers every WAN
-     * action with empty values, which would leave four unexplained dashes on the
+     * The WAN connection as each service that could carry it describes it: the IGD
+     * WANIPConnection pair first, then one view per PPP probe that answered.
+     *
+     * @return non-empty-list<array{status: string, ip: string, uptime: int, down: int, up: int}>
+     */
+    private function connectionViews(array $responses): array {
+        $views = [[
+            'status' => trim((string)($responses[1]['NewConnectionStatus'] ?? '')),
+            'ip' => trim((string)($responses[0]['NewExternalIPAddress'] ?? '')),
+            'uptime' => (int)($responses[1]['NewUptime'] ?? 0),
+            'down' => (int)($responses[2]['NewLayer1DownstreamMaxBitRate'] ?? 0),
+            'up' => (int)($responses[2]['NewLayer1UpstreamMaxBitRate'] ?? 0),
+        ]];
+
+        // Every GetInfo reply carries the whole connection on its own.
+        foreach (array_slice($responses, 3) as $probe) {
+            if (!is_array($probe) || $probe === []) {
+                continue;
+            }
+
+            $views[] = [
+                'status' => trim((string)($probe['NewConnectionStatus'] ?? '')),
+                'ip' => trim((string)($probe['NewExternalIPAddress'] ?? '')),
+                'uptime' => (int)($probe['NewUptime'] ?? 0),
+                'down' => (int)($probe['NewDownstreamMaxBitRate'] ?? 0),
+                'up' => (int)($probe['NewUpstreamMaxBitRate'] ?? 0),
+            ];
+        }
+
+        return $views;
+    }
+
+    /**
+     * @param  non-empty-list<array{status: string, ip: string, uptime: int, down: int, up: int}> $views
+     * @return array{status: string, ip: string, uptime: int, down: int, up: int}
+     */
+    private function pickConnection(array $views): array {
+        foreach ($views as $view) {
+            if ($view['status'] === 'Connected') {
+                return $view;
+            }
+        }
+
+        // A box may hold values without calling itself connected, e.g. while it
+        // is still authenticating.
+        foreach ($views as $view) {
+            if ($this->hasValues($view)) {
+                return $view;
+            }
+        }
+
+        // Nothing to show: keep whichever service at least named a state, so the
+        // tile can say why it is empty.
+        foreach ($views as $view) {
+            if ($view['status'] !== '') {
+                return $view;
+            }
+        }
+
+        return $views[0];
+    }
+
+    /** @param array{status: string, ip: string, uptime: int, down: int, up: int} $view */
+    private function hasValues(array $view): bool {
+        return ($view['ip'] !== '' && $view['ip'] !== '0.0.0.0') || $view['uptime'] > 0;
+    }
+
+    /**
+     * A box that does not run the internet connection on the service we could read
+     * answers with empty values, which would leave four unexplained dashes on the
      * tile. The status the box reports alongside them says why (issue #11).
      */
-    private function connectionWarning(string $status): ?string {
+    private function connectionWarning(string $status, bool $hasCredentials): ?string {
         if ($status === '' || $status === 'Connected') {
             return null;
         }
@@ -89,12 +193,17 @@ class FritzboxWidget extends AbstractWidget {
             return 'The FRITZ!Box reports no WAN connection, so the WAN values stay empty.';
         }
 
-        if ($status === 'Unconfigured') {
-            return 'The FRITZ!Box reports WAN status "Unconfigured": it has no internet connection of its own'
-                . ' (IP client or bridge mode), so the WAN values stay empty.';
+        if ($status !== 'Unconfigured') {
+            return 'The FRITZ!Box reports WAN status "' . $status . '", so the WAN values stay empty.';
         }
 
-        return 'The FRITZ!Box reports WAN status "' . $status . '", so the WAN values stay empty.';
+        if (!$hasCredentials) {
+            return 'The FRITZ!Box reports WAN status "Unconfigured" on its UPnP interface. A connection over PPPoE'
+                . ' is reported on the TR-064 interface instead — enter the box username and password to read it.';
+        }
+
+        return 'Neither the UPnP nor the TR-064 interface of the FRITZ!Box reports a WAN connection ("Unconfigured").'
+            . ' Allow access for applications on the box, and use an account permitted to read its settings.';
     }
 
     /**
@@ -115,10 +224,16 @@ class FritzboxWidget extends AbstractWidget {
         return 'http://' . $host . ':' . $port;
     }
 
-    /** @param array{username: string, password: string} $auth */
-    private function soapRequest(string $url, string $service, string $action, array $auth): array {
-        $serviceUrn = self::UPNP_SERVICE_NS . $service;
+    /** @return array{username: string, password: string} */
+    private function credentials(array $config): array {
+        return [
+            'username' => (string)($config['username'] ?? ''),
+            'password' => (string)($config['password'] ?? ''),
+        ];
+    }
 
+    /** @param array{username: string, password: string} $auth */
+    private function soapRequest(string $url, string $serviceUrn, string $action, array $auth, bool $optional = false): array {
         return [
             'url' => $url,
             'method' => 'POST',
@@ -131,6 +246,7 @@ class FritzboxWidget extends AbstractWidget {
                 . '<s:Body><u:' . $action . ' xmlns:u="' . $serviceUrn . '"/></s:Body></s:Envelope>',
             '_response_format' => 'xml',
             '_http_auth' => $auth,
+            '_optional' => $optional,
         ];
     }
 

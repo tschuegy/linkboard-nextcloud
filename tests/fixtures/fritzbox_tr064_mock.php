@@ -17,14 +17,25 @@ declare(strict_types=1);
  * Then point a LinkBoard service at http://<that address> and pick the Fritz!Box
  * widget; the widget appends port 49000 itself.
  *
- * Set FRITZMOCK_REQUIRE_AUTH=1 to demand HTTP digest credentials, which exercises
- * the path for boxes with UPnP status transfer switched off.
+ * Environment flags:
+ *
+ *   FRITZMOCK_REQUIRE_AUTH=1      Demand HTTP digest credentials on every path,
+ *                                 which exercises boxes with UPnP status transfer
+ *                                 switched off.
+ *   FRITZMOCK_WAN_UNCONFIGURED=1  Reproduce the box from issue #11: a PPPoE
+ *                                 connection, so IGD WANIPConnection answers
+ *                                 "Unconfigured" and only the TR-064
+ *                                 WANPPPConnection service holds the WAN data.
+ *
+ * Like a real box, /igdupnp/control/WANPPPConn1 is answered with 404: FRITZ!OS
+ * lists no WANPPPConnection service in its IGD tree.
  */
 
 /** @var array<string, string> $responses */
 $responses = require __DIR__ . '/fritzbox_soap_responses.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$pppOnly = getenv('FRITZMOCK_WAN_UNCONFIGURED') === '1';
 
 // Device description — unauthenticated on a real box, handy to confirm reachability.
 if ($path === '/igddesc.xml') {
@@ -38,7 +49,17 @@ if ($path === '/igddesc.xml') {
     return;
 }
 
-if (getenv('FRITZMOCK_REQUIRE_AUTH') === '1' && ($_SERVER['HTTP_AUTHORIZATION'] ?? '') === '') {
+// No FRITZ!OS release publishes WANPPPConnection in its IGD tree; the widget
+// probes for it anyway, and has to survive the box saying no.
+if ($path === '/igdupnp/control/WANPPPConn1') {
+    header('HTTP/1.1 404 Not Found');
+    return;
+}
+
+$isTr064 = str_starts_with($path, '/upnp/control/');
+
+// TR-064 always demands credentials, IGD only when status transfer is off.
+if (($isTr064 || getenv('FRITZMOCK_REQUIRE_AUTH') === '1') && ($_SERVER['HTTP_AUTHORIZATION'] ?? '') === '') {
     header('HTTP/1.1 401 Unauthorized');
     header('WWW-Authenticate: Digest realm="F!Box SOAP-Auth", nonce="' . bin2hex(random_bytes(8)) . '"');
     return;
@@ -47,6 +68,26 @@ if (getenv('FRITZMOCK_REQUIRE_AUTH') === '1' && ($_SERVER['HTTP_AUTHORIZATION'] 
 // A real box selects the action from the SoapAction header, not from the path.
 $soapAction = $_SERVER['HTTP_SOAPACTION'] ?? '';
 $action = str_contains($soapAction, '#') ? substr($soapAction, strrpos($soapAction, '#') + 1) : '';
+
+// A box whose connection runs over PPPoE reports nothing on WANIPConnection, and
+// nothing on the DSL interface either once its internal modem is switched off.
+if ($pppOnly && $action === 'GetStatusInfo') {
+    $action = 'GetStatusInfoUnconfigured';
+}
+if ($pppOnly && $action === 'GetCommonLinkProperties') {
+    $action = 'GetCommonLinkPropertiesUnlinked';
+}
+if ($pppOnly && $action === 'GetExternalIPAddress') {
+    header('Content-Type: text/xml; charset="utf-8"');
+    echo '<?xml version="1.0"?>'
+        . '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
+        . '<s:Body>'
+        . '<u:GetExternalIPAddressResponse xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">'
+        . '<NewExternalIPAddress></NewExternalIPAddress>'
+        . '</u:GetExternalIPAddressResponse>'
+        . '</s:Body></s:Envelope>';
+    return;
+}
 
 if (!isset($responses[$action])) {
     header('HTTP/1.1 500 Internal Server Error');

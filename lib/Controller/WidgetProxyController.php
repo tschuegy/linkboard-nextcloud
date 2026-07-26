@@ -321,6 +321,8 @@ class WidgetProxyController extends ApiController {
      * - _session_login / _session_needs_cookie: Cookie-jar session auth (qBittorrent, Deluge, etc.)
      * - _*_login / _*_needs_token: Generic token auth (Kavita, PhotoPrism, Flood, etc.)
      * - _transmission_rpc: Transmission CSRF retry (409 → X-Transmission-Session-Id)
+     * - _optional: follow-up probe whose failure yields an empty response instead
+     *   of failing the widget (Fritz!Box: services a box may not implement)
      */
     private function fetchWidgetData(\OCA\LinkBoard\Widget\AbstractWidget $widget, ?string $baseUrl, array $config, bool $verifyTls, float $deadline): array {
         if ($widget->isLocal()) {
@@ -405,7 +407,17 @@ class WidgetProxyController extends ApiController {
                 $this->assertWidgetRequestBudget($requestCount, $deadline);
                 $spec['_timeout_seconds'] = $this->remainingWidgetTimeout($deadline);
                 $spec['_verify_tls'] = $verifyTls;
-                $responses[] = $this->executeRequest($spec, null);
+
+                try {
+                    $responses[] = $this->executeRequest($spec, null);
+                } catch (WidgetRequestException $e) {
+                    if (empty($spec['_optional'])) {
+                        throw $e;
+                    }
+                    // A service the upstream does not implement is an answer, not a
+                    // failure. Appending keeps later responses at their position.
+                    $responses[] = [];
+                }
             }
 
             return $widget->mapResponse($responses, $config);

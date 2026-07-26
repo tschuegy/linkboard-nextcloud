@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.2] – 2026-07-26
+
+### Fixed
+- Fritz!Box widget: boxes whose internet connection runs over **PPPoE** stayed empty. UPnP splits the WAN across two services and a box fills in only the one matching its connection type — the widget asked `WANIPConnection` alone, which a PPPoE box answers with the status `Unconfigured` and no values. It now falls back to `WANPPPConnection`, on the IGD interface and, once box credentials are configured, on the TR-064 interface where FRITZ!OS actually serves it.
+- The 1.7.1 explanation for an empty tile named only IP client and bridge mode as the cause of `Unconfigured`, which is wrong for a PPPoE box. The tile now points at the credentials such a box needs, and says so differently once both interfaces have been asked.
+
+### Changed
+- Documented what separates the two Fritz!Box cases in `WIDGETS.md`: an IP-routed line needs no credentials, a PPPoE line needs "Allow access for applications" plus a FRITZ!Box user permitted to read the box settings.
+- The widget proxy accepts follow-up requests marked optional: a probe for a service the upstream may not implement no longer fails the whole tile.
+- The Fritz!Box widget checks and the widget error-reporting checks now run in CI.
+
 ## [1.7.1] – 2026-07-26
 
 ### Fixed

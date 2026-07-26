@@ -144,6 +144,79 @@ if (str_contains($widget->mapResponse([[], ['NewConnectionStatus' => '<b>x</b>']
     throw new \RuntimeException('An unknown status was echoed back into the tile verbatim');
 }
 
+// --- PPPoE boxes: the WAN data sits on WANPPPConnection (issue #11) --------
+
+// A box that answered WANIPConnection is not asked anything further.
+expectSameValue(
+    [],
+    $widget->buildFollowUpRequests($parsed, 'http://192.168.178.1', []),
+    'A connected box was probed for a PPP connection anyway',
+);
+
+// Without credentials only the IGD tree can be probed — TR-064 would answer 401.
+$stageOne = [[], $unconfigured, []];
+$probes = $widget->buildFollowUpRequests($stageOne, 'http://192.168.178.1', []);
+expectSameValue(1, count($probes), 'An uncredentialed box was probed on TR-064');
+expectSameValue('http://192.168.178.1:49000/igdupnp/control/WANPPPConn1', $probes[0]['url'], 'IGD PPP probe targets the wrong URL');
+
+$probes = $widget->buildFollowUpRequests($stageOne, 'http://192.168.178.1', ['username' => 'lb', 'password' => 'secret']);
+expectSameValue(2, count($probes), 'A credentialed box was not probed on TR-064');
+$expectedProbes = [
+    ['http://192.168.178.1:49000/igdupnp/control/WANPPPConn1', 'urn:schemas-upnp-org:service:WANPPPConnection:1#GetInfo'],
+    ['http://192.168.178.1:49000/upnp/control/wanpppconn1', 'urn:dslforum-org:service:WANPPPConnection:1#GetInfo'],
+];
+foreach ($expectedProbes as $index => [$url, $soapAction]) {
+    expectSameValue($url, $probes[$index]['url'], 'PPP probe ' . $index . ' targets the wrong URL');
+    expectSameValue('xml', $probes[$index]['_response_format'], 'PPP probe ' . $index . ' is not parsed as XML');
+    // A box that does not implement the service answers 404; that must not fail the tile.
+    expectSameValue(true, $probes[$index]['_optional'], 'PPP probe ' . $index . ' is not optional');
+    expectSameValue(['username' => 'lb', 'password' => 'secret'], $probes[$index]['_http_auth'], 'PPP probe ' . $index . ' lost its credentials');
+    if (!in_array('SoapAction: ' . $soapAction, $probes[$index]['headers'], true)) {
+        throw new \RuntimeException('PPP probe ' . $index . ' is missing SoapAction ' . $soapAction);
+    }
+    if (!str_contains($probes[$index]['body'], '<u:GetInfo xmlns:u="' . substr($soapAction, 0, strrpos($soapAction, '#')) . '"/>')) {
+        throw new \RuntimeException('PPP probe ' . $index . ' envelope does not call GetInfo on its own service');
+    }
+}
+
+// One GetInfo carries the whole connection, and it wins over the empty IGD answer.
+$ppp = SoapResponseParser::toArray($fixtures['GetInfo']);
+expectSameValue(
+    [
+        'externalIp' => '84.130.12.34',
+        'uptime' => '14d 6h',
+        'maxDown' => '246.8 Mbps',
+        'maxUp' => '48.4 Mbps',
+    ],
+    $widget->mapResponse([[], $unconfigured, [], [], $ppp], ['password' => 'secret']),
+    'The PPP connection was not read once WANIPConnection came back empty',
+);
+
+// The physical line rate stands in where PPP negotiated none of its own.
+$pppWithoutRates = ['NewConnectionStatus' => 'Connected', 'NewUptime' => '42', 'NewExternalIPAddress' => '84.130.12.34'];
+$layer1 = SoapResponseParser::toArray($fixtures['GetCommonLinkProperties']);
+$mapped = $widget->mapResponse([[], $unconfigured, $layer1, $pppWithoutRates], ['password' => 'secret']);
+expectSameValue('249.9 Mbps', $mapped['maxDown'], 'Layer 1 downstream rate was not used as a fallback');
+expectSameValue('49.8 Mbps', $mapped['maxUp'], 'Layer 1 upstream rate was not used as a fallback');
+if (array_key_exists('_warning', $mapped)) {
+    throw new \RuntimeException('A box connected over PPP was still flagged with a warning');
+}
+
+// A probe the box refused arrives as an empty response and changes nothing.
+$mapped = $widget->mapResponse([[], $unconfigured, [], []], []);
+expectSameValue('—', $mapped['uptime'], 'A refused probe was mistaken for data');
+if (!str_contains($mapped['_warning'] ?? '', 'PPPoE')) {
+    throw new \RuntimeException('An uncredentialed unconfigured box is not pointed at the credentials it needs');
+}
+
+// Once credentials are configured, both interfaces have been asked — the advice changes.
+$pppUnconfigured = SoapResponseParser::toArray($fixtures['GetInfoUnconfigured']);
+$mapped = $widget->mapResponse([[], $unconfigured, [], [], $pppUnconfigured], ['password' => 'secret']);
+expectSameValue('—', $mapped['externalIp'], 'A box without any WAN connection reported an address');
+if (!str_contains($mapped['_warning'] ?? '', 'TR-064')) {
+    throw new \RuntimeException('A credentialed box that answers nowhere does not say both interfaces were asked');
+}
+
 // A connected box must not carry a warning at all.
 if (array_key_exists('_warning', $widget->mapResponse($parsed, []))) {
     throw new \RuntimeException('A connected box was flagged with a warning');

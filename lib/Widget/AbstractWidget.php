@@ -50,7 +50,7 @@ abstract class AbstractWidget {
      *
      * @param  string $baseUrl   The service's base URL (from Service.href)
      * @param  array  $config    Decoded widgetConfig from the database
-     * @return array<array{url: string, headers?: array, method?: string, body?: string, auth?: array, calls?: array, _websocket_jsonrpc?: bool, _session_login?: bool, _session_needs_cookie?: bool, _transmission_rpc?: bool}>
+     * @return array<array{url: string, headers?: array, method?: string, body?: string, auth?: array, calls?: array, _websocket_jsonrpc?: bool, _session_login?: bool, _session_needs_cookie?: bool, _transmission_rpc?: bool, _response_format?: string, _http_auth?: array{username: string, password: string}, _optional?: bool}>
      */
     abstract public function buildRequests(string $baseUrl, array $config): array;
 
@@ -81,10 +81,14 @@ abstract class AbstractWidget {
      * Override this when a widget needs two-stage requests
      * (e.g. discover an ID first, then fetch data based on it).
      *
+     * A spec marked '_optional' may fail without failing the widget: the proxy
+     * appends an empty response in its place, which suits probing an upstream for
+     * a capability it may not have.
+     *
      * @param  array  $responses  Responses from buildRequests()
      * @param  string $baseUrl    The service's base URL
      * @param  array  $config     Decoded widgetConfig
-     * @return array<array{url: string, headers?: array, method?: string, body?: string}>
+     * @return array<array{url: string, headers?: array, method?: string, body?: string, _response_format?: string, _http_auth?: array{username: string, password: string}, _optional?: bool}>
      */
     public function buildFollowUpRequests(array $responses, string $baseUrl, array $config): array {
         return [];
