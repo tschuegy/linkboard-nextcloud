@@ -87,54 +87,67 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- Dashboard Grid -->
         <div v-else ref="categoryList" class="linkboard__grid">
-            <div v-for="cat in displayCategories" :key="cat.id"
-                 :data-category-id="String(cat.id)"
-                 class="linkboard__row">
-                <span v-if="editMode" class="linkboard__row-handle">
-                    <DragVerticalIcon :size="18" />
-                </span>
-                <CategoryGroup
-                    :data-category-id="String(cat.id)"
-                    :category="stripChildren(cat)"
-                    :edit-mode="editMode"
-                    :max-columns="settings.max_columns"
-                    :card-style="settings.card_style"
-                    :card-background="settings.card_background || 'glass'"
-                    :status-style="settings.status_style"
-                    :show-count="settings.show_category_count !== 'false'"
-                    :spacer-style="settings.spacer_style || 'solid'"
-                    :show-status-bars="settings.show_status_bars !== 'false'"
-                    :status-bars-opacity="settings.status_bars_opacity || '0.8'"
-                    :manual-colors="manualColors"
-                    :display-mode="settings.display_mode || 'cards'"
-                    :list-row-content="settings.list_row_content || 'title'"
-                    @edit-category="selectCategoryForEdit"
-                    @edit-service="selectServiceForEdit"
-                    @delete-category="handleDeleteCategory"
-                    @add-service="showNewServiceDialog"
-                    @status-click="openStatusHistory" />
-                <CategoryGroup
-                    v-for="child in (cat.children || [])" :key="child.id"
-                    :data-category-id="String(child.id)"
-                    :category="child"
-                    :edit-mode="editMode"
-                    :max-columns="settings.max_columns"
-                    :card-style="settings.card_style"
-                    :card-background="settings.card_background || 'glass'"
-                    :status-style="settings.status_style"
-                    :show-count="settings.show_category_count !== 'false'"
-                    :spacer-style="settings.spacer_style || 'solid'"
-                    :show-status-bars="settings.show_status_bars !== 'false'"
-                    :status-bars-opacity="settings.status_bars_opacity || '0.8'"
-                    :manual-colors="manualColors"
-                    :display-mode="settings.display_mode || 'cards'"
-                    :list-row-content="settings.list_row_content || 'title'"
-                    @edit-category="selectCategoryForEdit"
-                    @edit-service="selectServiceForEdit"
-                    @delete-category="handleDeleteCategory"
-                    @add-service="showNewServiceDialog"
-                    @status-click="openStatusHistory" />
-            </div>
+            <template v-for="(cat, idx) in displayCategories">
+                <div v-if="editMode"
+                     :key="'dropzone-' + cat.id"
+                     class="linkboard__dropzone"
+                     :class="{ 'linkboard__dropzone--active': categoryDragActive }"
+                     :data-drop-index="String(idx)"></div>
+                <div :key="cat.id"
+                     :data-category-id="String(cat.id)"
+                     class="linkboard__row">
+                    <span v-if="editMode" class="linkboard__row-handle">
+                        <DragVerticalIcon :size="18" />
+                    </span>
+                    <CategoryGroup
+                        :data-category-id="String(cat.id)"
+                        :category="stripChildren(cat)"
+                        :edit-mode="editMode"
+                        :max-columns="settings.max_columns"
+                        :card-style="settings.card_style"
+                        :card-background="settings.card_background || 'glass'"
+                        :status-style="settings.status_style"
+                        :show-count="settings.show_category_count !== 'false'"
+                        :spacer-style="settings.spacer_style || 'solid'"
+                        :show-status-bars="settings.show_status_bars !== 'false'"
+                        :status-bars-opacity="settings.status_bars_opacity || '0.8'"
+                        :manual-colors="manualColors"
+                        :display-mode="settings.display_mode || 'cards'"
+                        :list-row-content="settings.list_row_content || 'title'"
+                        @edit-category="selectCategoryForEdit"
+                        @edit-service="selectServiceForEdit"
+                        @delete-category="handleDeleteCategory"
+                        @add-service="showNewServiceDialog"
+                        @status-click="openStatusHistory" />
+                    <CategoryGroup
+                        v-for="child in (cat.children || [])" :key="child.id"
+                        :data-category-id="String(child.id)"
+                        :category="child"
+                        :edit-mode="editMode"
+                        :max-columns="settings.max_columns"
+                        :card-style="settings.card_style"
+                        :card-background="settings.card_background || 'glass'"
+                        :status-style="settings.status_style"
+                        :show-count="settings.show_category_count !== 'false'"
+                        :spacer-style="settings.spacer_style || 'solid'"
+                        :show-status-bars="settings.show_status_bars !== 'false'"
+                        :status-bars-opacity="settings.status_bars_opacity || '0.8'"
+                        :manual-colors="manualColors"
+                        :display-mode="settings.display_mode || 'cards'"
+                        :list-row-content="settings.list_row_content || 'title'"
+                        @edit-category="selectCategoryForEdit"
+                        @edit-service="selectServiceForEdit"
+                        @delete-category="handleDeleteCategory"
+                        @add-service="showNewServiceDialog"
+                        @status-click="openStatusHistory" />
+                </div>
+            </template>
+
+            <div v-if="editMode"
+                 key="dropzone-end"
+                 class="linkboard__dropzone"
+                 :class="{ 'linkboard__dropzone--active': categoryDragActive }"
+                 :data-drop-index="String(displayCategories.length)"></div>
 
             <div v-if="editMode && canEdit" class="linkboard__add-category" @click="showNewCategoryDialog">
                 <PlusIcon :size="32" />
@@ -261,6 +274,8 @@ export default {
             showShortcutHint: false,
             categorySortable: null,
             rowSortables: [],
+            zoneSortables: [],
+            categoryDragActive: false,
             resourceRefreshInterval: null,
             showStatusHistory: false,
             statusHistoryServiceId: null,
@@ -508,26 +523,87 @@ export default {
                     ghostClass: 'category-group--ghost',
                     filter: '.linkboard__row-handle',
                     preventOnFilter: false,
+                    onStart: function() {
+                        self.categoryDragActive = true
+                    },
                     onAdd: function(evt) {
                         var categoryId = parseInt(evt.item.dataset.categoryId)
                         self.handleRowAdd(categoryId, rowLeaderId)
                     },
                     onEnd: function() {
-                        // Categories reordered within same row — no action needed
+                        // Fires on the source list for every drop target
+                        // (same row, other row, or a drop zone).
+                        self.categoryDragActive = false
                     },
                 })
                 self.rowSortables.push(s)
+            })
+            // Drop zones between rows: empty same-group lists, so a category
+            // dragged by its handle can become its own row at that position.
+            var zones = el.querySelectorAll('.linkboard__dropzone')
+            zones.forEach(function(zone) {
+                var z = Sortable.create(zone, {
+                    // No `put` here: without it only the same-named group is
+                    // accepted, which keeps row-handle drags out of the zones.
+                    group: { name: 'categories', pull: false },
+                    animation: 200,
+                    ghostClass: 'category-group--ghost',
+                    onAdd: function(evt) {
+                        self.handleDropBetweenRows(evt)
+                    },
+                })
+                self.zoneSortables.push(z)
             })
         },
 
         destroyRowSortables() {
             this.rowSortables.forEach(function(s) { s.destroy() })
             this.rowSortables = []
+            this.zoneSortables.forEach(function(s) { s.destroy() })
+            this.zoneSortables = []
+            this.categoryDragActive = false
         },
 
         async handleRowAdd(categoryId, rowLeaderId) {
             try {
                 await this.moveCategoryToParent(categoryId, rowLeaderId)
+                await this.fetchDashboard()
+            } catch (err) { await this.fetchDashboard() }
+        },
+
+        async handleDropBetweenRows(evt) {
+            var categoryId = parseInt(evt.item.dataset.categoryId)
+            var dropIndex = parseInt(evt.to.dataset.dropIndex)
+            if (isNaN(categoryId) || isNaN(dropIndex)) {
+                await this.fetchDashboard()
+                return
+            }
+            // Resolve the anchor by id, not by raw index: displayCategories
+            // may be a filtered subset while searching.
+            var anchor = this.displayCategories[dropIndex] || null
+            var anchorId = anchor ? anchor.id : null
+            var wasTopLevel = parseInt(evt.from.dataset.categoryId) === categoryId
+            try {
+                if (!wasTopLevel) {
+                    await this.moveCategoryToParent(categoryId, null)
+                }
+                var store = useDashboardStore()
+                var cats = store.categories.slice()
+                var fromIdx = cats.findIndex(function(c) { return c.id === categoryId })
+                if (fromIdx === -1) {
+                    await this.fetchDashboard()
+                    return
+                }
+                var insertAt = anchorId === null
+                    ? cats.length
+                    : cats.findIndex(function(c) { return c.id === anchorId })
+                if (insertAt === -1) insertAt = cats.length
+                var moved = cats.splice(fromIdx, 1)[0]
+                if (fromIdx < insertAt) insertAt--
+                cats.splice(insertAt, 0, moved)
+                store.categories = cats
+                var order = Object.fromEntries(cats.map(function(cat, idx) { return [cat.id, idx] }))
+                await this.reorderCategories(order)
                 await this.fetchDashboard()
             } catch (err) { await this.fetchDashboard() }
         },
@@ -702,6 +778,21 @@ export default {
         opacity: 0.3;
         background: var(--color-primary-element-light);
         border-radius: 12px;
+    }
+    &__dropzone {
+        // Idle: net-zero footprint — the grid gap is 24px and a zone between
+        // two rows adds two gaps, so collapse them back to a single one.
+        height: 0;
+        margin: -12px 0;
+        transition: min-height 0.15s, margin 0.15s;
+        &--active {
+            min-height: 24px;
+            height: auto;
+            margin: 0;
+            border: 2px dashed var(--color-border);
+            border-radius: 12px;
+            background: var(--color-primary-element-light);
+        }
     }
     &__shortcut-hint {
         display: flex; align-items: center; gap: 16px;

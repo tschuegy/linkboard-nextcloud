@@ -192,6 +192,18 @@ class ServiceService {
         $sortOrder = $this->serviceMapper->getMaxSortOrder($newCategoryId, $userId) + 1;
         $service->setCategoryId($newCategoryId);
         $service->setSortOrder($sortOrder);
+
+        // The grid position belongs to the old category's layout; drop it so
+        // card mode assigns a fresh default position in the new category.
+        $widgetConfigJson = $service->getWidgetConfig();
+        if ($widgetConfigJson !== null) {
+            $decoded = json_decode($widgetConfigJson, true);
+            if (is_array($decoded) && array_key_exists('_layout', $decoded)) {
+                unset($decoded['_layout']);
+                $service->setWidgetConfig($decoded !== [] ? json_encode($decoded) : null);
+            }
+        }
+
         $service->setUpdatedAt((new DateTime())->format('Y-m-d H:i:s'));
 
         return $this->serviceMapper->update($service);

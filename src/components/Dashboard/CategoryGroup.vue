@@ -409,11 +409,16 @@ export default {
             if (!el) return
             var self = this
             this.listSortable = Sortable.create(el, {
+                group: 'linkboard-services',
                 animation: 250,
                 draggable: '.service-list-row',
                 handle: '.service-list-row__drag-handle',
                 ghostClass: 'service-list-row--ghost',
                 onEnd: function(evt) {
+                    // Cross-category drags are handled by the target's onAdd;
+                    // acting here would persist a wrong source order because
+                    // onAdd re-appends the dragged node to the source list.
+                    if (evt.from !== evt.to) return
                     if (evt.oldIndex === evt.newIndex) return
                     // Map DOM → model by id, never by index: the rendered list
                     // may diverge from the store array (e.g. under filtering).
@@ -425,6 +430,26 @@ export default {
                     }
                     var store = useDashboardStore()
                     store.applyServiceOrder(self.category.id, ids)
+                },
+                onAdd: function(evt) {
+                    // Fires on the drop target when a service arrives from
+                    // another category's list.
+                    var serviceId = parseInt(evt.item.dataset.serviceId)
+                    // Read the intended target order while the dropped node
+                    // is still in place.
+                    var ids = []
+                    var rows = el.querySelectorAll('.service-list-row')
+                    for (var i = 0; i < rows.length; i++) {
+                        var id = parseInt(rows[i].dataset.serviceId)
+                        if (!isNaN(id)) ids.push(id)
+                    }
+                    // Undo Sortable's physical DOM move so Vue stays the sole
+                    // owner of both lists; the store mutation re-renders the
+                    // row in its new category.
+                    evt.from.appendChild(evt.item)
+                    if (isNaN(serviceId)) return
+                    var store = useDashboardStore()
+                    store.moveServiceToCategory(serviceId, self.category.id, ids)
                 },
             })
         },

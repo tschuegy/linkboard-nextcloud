@@ -25,7 +25,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 
 ## Features
 
-- **Service Dashboard** – Organize services in categories with drag & drop sorting
+- **Service Dashboard** – Organize services in categories with drag & drop sorting; sections can be placed side by side in a row or dropped between rows
 - **Grid Layout** – Grafana-style grid layout with free drag, resize, and placement of cards within categories
 - **Configurable Grid** – Set grid granularity per category (6, 12, or 24 columns) with auto-arrange and row-height options
 - **Edit Mode** – Lock/unlock edit mode toggle to prevent accidental changes
@@ -44,7 +44,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Flexible Icons** – Upload custom images (PNG, JPEG, WebP, GIF, ICO), use Material Design Icons (inline SVG) by name in either kebab-case (`mdi-cloud`) or camelCase (`mdiCloud`), or any URL
 - **Theming** – Dark, light, or auto mode with custom background images and blur effects
 - **Card Styles** – Glass, Solid, Flat, or Transparent card backgrounds
-- **Display Modes** – Show services as cards or as a compact single-line list, with the title, URL, or both per row; list rows can be reordered via drag & drop in edit mode
+- **Display Modes** – Show services as cards or as a compact single-line list, with the title, URL, or both per row; list rows can be reordered and moved between categories via drag & drop in edit mode
 - **Per-Card Scrollbar Toggle** – Hide scrollbars by default for a cleaner look; enable them per card when needed (content stays scrollable either way)
 - **Configurable Layout** – Adjust columns, card styles, search bar, and more
 - **Import / Export** – YAML & JSON support, compatible with Gethomepage services.yaml

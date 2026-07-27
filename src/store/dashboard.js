@@ -371,6 +371,59 @@ export const useDashboardStore = defineStore('dashboard', {
             catch (err) { await this.fetchDashboard() }
         },
 
+        async moveServiceToCategory(serviceId, targetCategoryId, orderedTargetIds) {
+            const targetFound = findCategoryInTree(this.categories, targetCategoryId)
+            if (!targetFound) return
+            const target = targetFound.category
+            // Detach from the source category (wholesale replace to resync Vue)
+            let svc = null
+            forEachCategory(this.categories, function(cat) {
+                if (svc || cat.id === targetCategoryId) return
+                const idx = cat.services?.findIndex(function(s) { return s.id === serviceId })
+                if (idx !== undefined && idx !== -1) {
+                    svc = cat.services[idx]
+                    cat.services = cat.services.filter(function(s) { return s.id !== serviceId })
+                }
+            })
+            if (!svc) {
+                // Defensive: already in the target category → plain reorder
+                return this.applyServiceOrder(targetCategoryId, orderedTargetIds)
+            }
+            svc.categoryId = targetCategoryId
+            // The old grid position is meaningless in the new category; the
+            // backend clears it too, and card mode assigns a fresh default
+            // when _layout is missing.
+            if (svc.widgetConfig && svc.widgetConfig._layout) {
+                const cfg = Object.assign({}, svc.widgetConfig)
+                delete cfg._layout
+                svc.widgetConfig = cfg
+            }
+            const byId = {}
+            for (const s of (target.services || [])) byId[s.id] = s
+            byId[serviceId] = svc
+            const next = []
+            for (const id of orderedTargetIds) {
+                if (byId[id]) { next.push(byId[id]); delete byId[id] }
+            }
+            // Defensive: keep services the DOM did not show, and never lose
+            // the moved service itself
+            for (const s of (target.services || [])) {
+                if (byId[s.id]) next.push(s)
+            }
+            if (byId[serviceId]) next.push(svc)
+            next.forEach((s, idx) => { s.sortOrder = idx })
+            // Wholesale replace to resync Vue with Sortable's manual DOM move
+            target.services = next
+            const order = Object.fromEntries(next.map((s, idx) => [s.id, idx]))
+            try {
+                await serviceApi.move(serviceId, targetCategoryId)
+                await this.reorderServices(order)
+            } catch (err) {
+                this.error = t('linkboard', 'Failed to move service')
+                await this.fetchDashboard()
+            }
+        },
+
         // ── Settings Actions ────────────────────────────
         async updateSettings(settingsData) {
             try {

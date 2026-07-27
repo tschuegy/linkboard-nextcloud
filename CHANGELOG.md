@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] – 2026-07-27
+
+### Added
+- Services can be dragged between categories in the compact list display mode: dropping a row into another category's list moves the service there at the exact drop position. The stored card-grid position is cleared on the move, so the service gets a fresh default spot when switching back to cards mode.
+
+### Fixed
+- Sections can now be dropped vertically between two rows (issue #13). While dragging a category by its handle, drop zones appear above, between, and below the rows; dropping there makes the category its own row at that position. Previously a dragged section could only be placed side by side into an existing row.
+
 ## [1.9.0] – 2026-07-26
 
 ### Added
