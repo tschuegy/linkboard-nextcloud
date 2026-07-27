@@ -258,6 +258,7 @@ export default {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    overflow-y: auto;
 
     &__header {
         display: flex;

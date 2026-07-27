@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] – 2026-07-27
+
+### Fixed
+- The "Edit category" panel now scrolls when its content is taller than the window (issue #14). Previously the panel was cut off at the bottom on short viewports (e.g. small window with 120% zoom) and wheel scrolling moved the dashboard behind it instead.
+
 ## [1.10.0] – 2026-07-27
 
 ### Added
