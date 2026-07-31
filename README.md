@@ -45,6 +45,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Theming** – Dark, light, or auto mode with custom background images and blur effects
 - **Card Styles** – Glass, Solid, Flat, or Transparent card backgrounds
 - **Display Modes** – Show services as cards or as a compact single-line list, with the title, URL, or both per row; list rows can be reordered and moved between categories via drag & drop in edit mode
+- **Link Target** – Open service links in a new tab, the same tab, or configure it per service
 - **Per-Card Scrollbar Toggle** – Hide scrollbars by default for a cleaner look; enable them per card when needed (content stays scrollable either way)
 - **Configurable Layout** – Adjust columns, card styles, search bar, and more
 - **Import / Export** – YAML & JSON support, compatible with Gethomepage services.yaml

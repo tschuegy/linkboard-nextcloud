@@ -23,9 +23,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <NcTextField v-model="form.icon" :label="t('linkboard', 'Icon')" placeholder="proxmox.png, https://..., mdi-cloud, mdiCloud" />
             <NcTextField v-model="form.iconColor" :label="t('linkboard', 'Icon color (optional)')" placeholder="#FF6600" />
 
-            <div class="service-editor__field">
+            <div v-if="isPerServiceTarget" class="service-editor__field">
                 <label>{{ t('linkboard', 'Link target') }}</label>
-                <NcSelect v-model="form.target" :options="targetOptions" :clearable="false" />
+                <NcSelect v-model="form.target" :options="targetOptions" label="label" :reduce="opt => opt.id" :clearable="false" />
             </div>
 
             <div class="service-editor__field">
@@ -185,7 +185,10 @@ export default {
                 widgetConfig: this.service.widgetConfig ? { ...this.service.widgetConfig } : {},
                 notificationOverrides: this.service.notificationOverrides ? { ...this.service.notificationOverrides } : {},
             },
-            targetOptions: ['_blank', '_self'],
+            targetOptions: [
+                { id: '_blank', label: t('linkboard', 'New tab') },
+                { id: '_self', label: t('linkboard', 'Same tab') },
+            ],
             notificationChannels: [],
         }
     },
@@ -211,6 +214,9 @@ export default {
         },
         tlsVerificationEnabled() {
             return useDashboardStore().adminSettings.tls_verification_enabled !== false
+        },
+        isPerServiceTarget() {
+            return useDashboardStore().settings.link_target === 'per_service'
         },
         selectedWidgetDef() {
             if (!this.form.widgetType) return null

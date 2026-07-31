@@ -24,6 +24,7 @@ class SettingMapper extends QBMapper {
         'card_background' => 'glass',
         'display_mode' => 'cards',
         'list_row_content' => 'title',
+        'link_target' => 'new_tab',
         'status_style' => 'dot',
         'spacer_style' => 'solid',
         'show_search' => 'true',

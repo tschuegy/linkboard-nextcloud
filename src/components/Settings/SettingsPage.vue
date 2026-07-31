@@ -20,6 +20,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="settings-page__section">
             <h3>{{ t('linkboard', 'General') }}</h3>
             <NcTextField v-model="form.title" :label="t('linkboard', 'LinkBoard title')" />
+            <div class="settings-page__field">
+                <label>{{ t('linkboard', 'Link target') }}</label>
+                <NcSelect
+                    v-model="form.link_target"
+                    :options="linkTargetOptions"
+                    :reduce="opt => opt.id"
+                    label="label"
+                    :clearable="false" />
+            </div>
 
         <div class="settings-page__section">
             <h3>{{ t('linkboard', 'Font colors') }}</h3>
@@ -333,6 +342,11 @@ export default {
             displayModeOptions: [
                 { id: 'cards', label: t('linkboard', 'Cards') },
                 { id: 'list', label: t('linkboard', 'Compact list') },
+            ],
+            linkTargetOptions: [
+                { id: 'new_tab', label: t('linkboard', 'New tab') },
+                { id: 'same_tab', label: t('linkboard', 'Same tab') },
+                { id: 'per_service', label: t('linkboard', 'Per service') },
             ],
             listRowContentOptions: [
                 { id: 'title', label: t('linkboard', 'Title') },

@@ -67,6 +67,7 @@ namespace {
     expectSameValue('#aBc123', SettingsService::normalizeValue('manual_color_title', '#aBc123'), 'Color normalization failed');
     expectSameValue('/apps/linkboard/background.png', SettingsService::normalizeValue('background_url', '/apps/linkboard/background.png'), 'Relative URL rejected');
     expectSameValue('https://example.com/background.png', SettingsService::normalizeValue('background_url', 'https://example.com/background.png'), 'HTTPS URL rejected');
+    expectSameValue('same_tab', SettingsService::normalizeValue('link_target', 'same_tab'), 'Link target normalization failed');
 
     $invalidSettings = [
         ['unknown_key', 'value'],
@@ -81,6 +82,7 @@ namespace {
         ['card_style', []],
         ['display_mode', 'grid'],
         ['list_row_content', 'description'],
+        ['link_target', 'popup'],
     ];
     foreach ($invalidSettings as [$key, $value]) {
         expectValidationFailure(

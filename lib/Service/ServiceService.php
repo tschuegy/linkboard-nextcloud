@@ -91,7 +91,7 @@ class ServiceService {
         $service->setHref($href);
         $service->setIcon($icon);
         $service->setIconColor($iconColor);
-        $service->setTarget($target);
+        $service->setTarget(in_array($target, ['_blank', '_self'], true) ? $target : '_blank');
         $service->setSortOrder($sortOrder);
         $service->setPingUrl($pingUrl);
         $service->setPingEnabled($pingEnabled);
@@ -140,7 +140,7 @@ class ServiceService {
         if ($href !== null) { $service->setHref($href); }
         if ($icon !== null) { $service->setIcon($icon); }
         if ($iconColor !== null) { $service->setIconColor($iconColor); }
-        if ($target !== null) { $service->setTarget($target); }
+        if ($target !== null) { $service->setTarget(in_array($target, ['_blank', '_self'], true) ? $target : '_blank'); }
         if ($pingUrl !== null) { $service->setPingUrl($pingUrl); }
         if ($pingEnabled !== null) {
             $service->setPingEnabled($pingEnabled);

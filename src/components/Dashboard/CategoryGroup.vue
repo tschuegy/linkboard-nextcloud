@@ -210,6 +210,7 @@ export default {
         manualColors: { type: Object, default: function() { return {} } },
         displayMode: { type: String, default: 'cards' },
         listRowContent: { type: String, default: 'title' },
+        linkTarget: { type: String, default: 'new_tab' },
     },
 
     data: function() {
@@ -361,9 +362,16 @@ export default {
         },
 
         handleServiceClick: function(service) {
-            if (!this.editMode && service.href) {
-                window.open(service.href, service.target || '_blank')
+            if (this.editMode || !service.href) {
+                return
             }
+            var target = '_blank'
+            if (this.linkTarget === 'same_tab') {
+                target = '_self'
+            } else if (this.linkTarget === 'per_service') {
+                target = service.target || '_blank'
+            }
+            window.open(service.href, target)
         },
 
         getServiceById: function(itemI) {

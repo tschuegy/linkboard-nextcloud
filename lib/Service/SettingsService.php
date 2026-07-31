@@ -16,6 +16,7 @@ class SettingsService {
         'card_background' => ['glass', 'solid', 'flat', 'transparent'],
         'display_mode' => ['cards', 'list'],
         'list_row_content' => ['title', 'url', 'title_description', 'title_url'],
+        'link_target' => ['new_tab', 'same_tab', 'per_service'],
         'status_style' => ['dot', 'basic'],
         'spacer_style' => [
             'solid', 'dashed', 'dotted', 'double', 'thin', 'heavy',
