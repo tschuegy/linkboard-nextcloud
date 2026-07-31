@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] – 2026-07-31
+
+### Added
+- New "Link target" setting (issue #15): choose whether service links open in a new tab, in the same tab, or per service. The default is "New tab". With "Per service", each service's own "Link target" field in the service editor decides (defaulting to "New tab").
+
+### Changed
+- The "Link target" field in the service editor is only shown while the global setting is "Per service", and now displays labeled options ("New tab" / "Same tab") instead of the raw values `_blank` / `_self`.
+- Behavior change: the stored per-service link target was previously always honored. With the new global default "New tab", services configured to open in the same tab do so again only after selecting "Per service" in the settings.
+- The per-service link target is now validated server-side; values other than `_blank` / `_self` are stored as `_blank`.
+
 ## [1.10.1] – 2026-07-27
 
 ### Fixed
