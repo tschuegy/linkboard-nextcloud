@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.1] – 2026-08-06
+
+### Fixed
+- The dashboard now scrolls automatically while dragging when the cursor approaches the top or bottom edge of the visible area (issue #16). Previously a service in the compact list mode could not be dropped into a category outside the viewport, because nothing scrolled during the drag: SortableJS' auto-scroll listens for `dragover` on the document in the bubble phase, while Sortable itself stops that event's propagation as soon as the cursor is over one of its lists — which is precisely the case when a list is taller than the screen. The scrolling is now driven by LinkBoard itself from a capture-phase listener. It applies to all drags on the dashboard: service rows, categories between rows, and row reordering.
+
 ## [1.11.0] – 2026-07-31
 
 ### Added
