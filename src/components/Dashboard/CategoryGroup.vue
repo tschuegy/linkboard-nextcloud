@@ -175,6 +175,7 @@ import { GridLayout, GridItem } from 'vue-grid-layout'
 import { NcButton } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
 import { isUnicodeStyle, getSpacerChar, SPACER_CHARS } from '../../utils/spacerStyles.js'
+import { withAutoScroll } from '../../utils/dragAutoScroll.js'
 import ServiceCard from './ServiceCard.vue'
 import ServiceListRow from './ServiceListRow.vue'
 import ResourceDisplay from './ResourceDisplay.vue'
@@ -416,7 +417,7 @@ export default {
             var el = this.$refs.listContainer
             if (!el) return
             var self = this
-            this.listSortable = Sortable.create(el, {
+            this.listSortable = Sortable.create(el, withAutoScroll({
                 group: 'linkboard-services',
                 animation: 250,
                 draggable: '.service-list-row',
@@ -459,7 +460,7 @@ export default {
                     var store = useDashboardStore()
                     store.moveServiceToCategory(serviceId, self.category.id, ids)
                 },
-            })
+            }))
         },
 
         destroyListSortable: function() {

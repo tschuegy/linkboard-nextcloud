@@ -249,6 +249,7 @@ import RefreshIcon from 'vue-material-design-icons/Refresh.vue'
 import DragVerticalIcon from 'vue-material-design-icons/DragVertical.vue'
 import ChartLineIcon from 'vue-material-design-icons/ChartLine.vue'
 import { detectBackgroundLuminance } from '../../utils/contrastDetect.js'
+import { withAutoScroll } from '../../utils/dragAutoScroll.js'
 
 export default {
     name: 'DashboardView',
@@ -481,7 +482,7 @@ export default {
             var el = this.$refs.categoryList
             if (!el) return
             var self = this
-            this.categorySortable = Sortable.create(el, {
+            this.categorySortable = Sortable.create(el, withAutoScroll({
                 animation: 250,
                 draggable: '.linkboard__row',
                 handle: '.linkboard__row-handle',
@@ -499,7 +500,7 @@ export default {
                         self.fetchDashboard()
                     })
                 },
-            })
+            }))
         },
 
         destroyCategorySortable() {
@@ -518,7 +519,7 @@ export default {
             var rows = el.querySelectorAll('.linkboard__row')
             rows.forEach(function(row) {
                 var rowLeaderId = parseInt(row.dataset.categoryId)
-                var s = Sortable.create(row, {
+                var s = Sortable.create(row, withAutoScroll({
                     group: 'categories',
                     animation: 200,
                     handle: '.category-group__drag-handle',
@@ -537,14 +538,14 @@ export default {
                         // (same row, other row, or a drop zone).
                         self.categoryDragActive = false
                     },
-                })
+                }))
                 self.rowSortables.push(s)
             })
             // Drop zones between rows: empty same-group lists, so a category
             // dragged by its handle can become its own row at that position.
             var zones = el.querySelectorAll('.linkboard__dropzone')
             zones.forEach(function(zone) {
-                var z = Sortable.create(zone, {
+                var z = Sortable.create(zone, withAutoScroll({
                     // No `put` here: without it only the same-named group is
                     // accepted, which keeps row-handle drags out of the zones.
                     group: { name: 'categories', pull: false },
@@ -553,7 +554,7 @@ export default {
                     onAdd: function(evt) {
                         self.handleDropBetweenRows(evt)
                     },
-                })
+                }))
                 self.zoneSortables.push(z)
             })
         },
