@@ -297,7 +297,11 @@ export const useDashboardStore = defineStore('dashboard', {
                             cat.services.splice(idx, 1)
                             removed = true
                         } else {
-                            cat.services[idx] = data
+                            // splice(), not `services[idx] = data`: Vue 2 cannot
+                            // intercept assignment by array index, so the card
+                            // kept rendering stale data until an unrelated
+                            // re-render happened (issue #17).
+                            cat.services.splice(idx, 1, data)
                             removed = true
                         }
                     }

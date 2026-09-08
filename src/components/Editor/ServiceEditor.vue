@@ -351,7 +351,13 @@ export default {
                 payload.widgetType = this.form.widgetType
                 payload.widgetConfig = this.form.widgetConfig || {}
             } else {
+                // widgetType '' clears widgetType *and* widgetConfig on the
+                // backend, so the grid position stored in _layout has to be
+                // sent back explicitly or the card would jump to a default
+                // slot on the next render (issue #17).
                 payload.widgetType = ''
+                var savedLayout = (this.form.widgetConfig || {})._layout
+                if (savedLayout) payload.widgetConfig = { _layout: savedLayout }
             }
             payload.notificationOverrides = this.form.notificationOverrides || {}
             this.$emit('save', payload)
