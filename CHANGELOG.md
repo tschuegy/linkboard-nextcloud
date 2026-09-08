@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.2] – 2026-09-08
+
+### Fixed
+- Editing a service now updates its card immediately after clicking "Save" instead of only after leaving edit mode (issue #17). The store replaced the updated service via `services[idx] = data`; Vue 2 cannot intercept an assignment by array index, so no dependency was notified and neither the card grid nor the compact list re-rendered. Leaving edit mode changed an unrelated reactive flag, which forced the re-render that finally showed the new values. The service is now replaced with `splice()`.
+- Saving a service that has no widget no longer discards its position in the card grid. The service editor sent `widgetType: ''` without a `widgetConfig`, and clearing the widget type also clears `widget_config` server-side — which is where the grid position `_layout` is stored. The editor now sends the stored `_layout` back explicitly; widget credentials are still cleared as before.
+
 ## [1.11.1] – 2026-08-06
 
 ### Fixed
