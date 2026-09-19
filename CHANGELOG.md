@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.2] – 2026-09-19
+
+### Fixed
+- `occ upgrade` on Nextcloud 35 no longer reports a database schema mismatch for LinkBoard ("column 'collapsed' differs in: nullable", likewise for `ping_enabled`, `show_scrollbar`, `ignore_tls` and `notified`). Installations created with releases before 1.4.4 or 1.6.7 still had these boolean columns as NOT NULL, because the earlier fix only changed the migrations for new installations. A new migration now makes them nullable, matching fresh installations; existing values are kept.
+
 ## [1.12.1] – 2026-09-19
 
 ### Fixed
