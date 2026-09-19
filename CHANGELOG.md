@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.1] – 2026-09-19
+
+### Fixed
+- Updated the bundled frontend dependencies to resolve published security advisories: axios 1.13.6 → 1.20.0 (prototype pollution, denial of service, `maxBodyLength` bypass), DOMPurify 3.3.1 → 3.4.15 (XSS), fast-xml-parser 5.4.1 → 5.11.1 (via webdav), form-data 4.0.5 → 4.0.6, follow-redirects 1.15.11 → 1.16.0, plus postcss, nanoid and brace-expansion. This also updates @nextcloud/vue from 8.36.0 to 8.41.0. Only semver-compatible updates (`npm audit fix`); LinkBoard's own code is unchanged. The remaining low-severity advisories concern Vue 2 itself, which is end-of-life and can only be resolved by migrating to Vue 3.
+
 ## [1.12.0] – 2026-09-19
 
 ### Added
