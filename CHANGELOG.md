@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] – 2026-09-19
+
+### Added
+- Nextcloud 35 compatibility (`max-version` raised from 34 to 35 in `appinfo/info.xml`). Nextcloud 35 disables every app that does not declare support for it during the upgrade, so LinkBoard 1.11.x disappears after upgrading to Nextcloud 35. No code changes were needed: LinkBoard was checked against the Nextcloud 35 public API (the new `OCP\DB\Schema` migration wrappers, the `ColumnType` enum used by `Entity::addType()`, the typed `ICache` and `IQueryBuilder` signatures, and the removed front-end globals). Nextcloud 32–34 remain supported.
+
 ## [1.11.2] – 2026-09-08
 
 ### Fixed

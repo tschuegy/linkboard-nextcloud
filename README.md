@@ -80,8 +80,8 @@ import as-is and edit each service afterwards.
 
 ## Requirements
 
-- Nextcloud 32, 33, or 34
-- PHP 8.2 – 8.5
+- Nextcloud 32, 33, 34, or 35
+- PHP 8.2 – 8.5 (Nextcloud 35 requires PHP 8.3 or later)
 
 ## Administration
 
