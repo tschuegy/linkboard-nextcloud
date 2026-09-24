@@ -3,16 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#content-vue {
-    height: 100%;
-}
-
-#linkboard-app {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
 .app-content {
     overflow-y: auto;
 }

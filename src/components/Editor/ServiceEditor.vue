@@ -199,7 +199,17 @@ export default {
     },
     computed: {
         categoryOptions() {
-            return this.categories.map(cat => ({ value: cat.id, label: cat.name }))
+            // Include sub-categories, otherwise a service inside one has no
+            // matching option and the select shows its raw id
+            var options = []
+            this.categories.forEach(function(cat) {
+                options.push({ value: cat.id, label: cat.name })
+                var children = cat.children || []
+                children.forEach(function(child) {
+                    options.push({ value: child.id, label: cat.name + ' › ' + child.name })
+                })
+            })
+            return options
         },
         widgetCatalog() {
             return useDashboardStore().widgetCatalog
@@ -369,10 +379,10 @@ export default {
 <style lang="scss" scoped>
 .service-editor {
     position: fixed;
-    top: 50px;
+    top: 0;
     right: 0;
+    bottom: 0;
     width: 360px;
-    height: calc(100vh - 50px);
     background: var(--color-main-background);
     border-left: 1px solid var(--color-border);
     box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);

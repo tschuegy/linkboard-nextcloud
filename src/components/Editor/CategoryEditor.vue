@@ -248,10 +248,10 @@ export default {
 <style lang="scss" scoped>
 .category-editor {
     position: fixed;
-    top: 50px;
+    top: 0;
     right: 0;
+    bottom: 0;
     width: 360px;
-    height: calc(100vh - 50px);
     background: var(--color-main-background);
     border-left: 1px solid var(--color-border);
     box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);

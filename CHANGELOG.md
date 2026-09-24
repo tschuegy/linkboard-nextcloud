@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.3] – 2026-09-24
+
+### Fixed
+- The "Save" and "Delete" buttons at the bottom of the service editor were not visible, so changes to a service could not be saved (discussion #18). The bottom of the whole app was cut off by the height of the Nextcloud header. The Vue app was mounted inside Nextcloud's `#content` container instead of replacing it, so both containers applied the header offset, and `css/styles.css` also stretched the inner container to the full window height. LinkBoard now mounts on `#content` like other Nextcloud apps, and the height override is removed. The bottom of the dashboard is no longer cut off either.
+- The service and category editor sidebars are now positioned inside the app container in every browser. Before, their position depended on whether Nextcloud's background blur was active (Firefox, Safari and all browsers on macOS) or not, and with the blur they started 50 px too low.
+- The category selector in the service editor now lists sub-categories as "Parent › Child". A service inside a sub-category used to show the category's numeric ID, and services could not be moved into a sub-category from the editor.
+
 ## [1.12.2] – 2026-09-19
 
 ### Fixed

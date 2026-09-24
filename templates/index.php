@@ -14,6 +14,4 @@ use OCP\Util;
 Util::addScript('linkboard', 'linkboard-vendors');
 Util::addScript('linkboard', 'linkboard-main');
 
-?>
-
-<div id="linkboard-app"></div>
+// No markup: the Vue app mounts on the server's #content element

@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 <template>
-    <NcContent app-name="linkboard">
+    <NcContent app-name="linkboard" class="linkboard-root">
         <NcAppContent class="linkboard-content">
             <router-view />
         </NcAppContent>
@@ -126,6 +126,15 @@ export default {
 </script>
 
 <style lang="scss">
+// Anchor fixed-position overlays (editor sidebars, background image) to the
+// app container. NcContent's backdrop-filter already does this whenever the
+// background blur is active (Firefox, Safari, macOS); without the blur they
+// would be positioned against the viewport instead. Containing them in every
+// browser keeps the editor sidebars inside the visible area (discussion #18).
+.linkboard-root {
+    contain: layout;
+}
+
 // Fix scrolling - NC app content needs explicit overflow
 .linkboard-content {
     overflow-y: auto !important;
