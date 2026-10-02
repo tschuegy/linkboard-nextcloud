@@ -77,7 +77,7 @@ class OutboundRequestGuard {
 
         $addresses = $isIpAddress ? [$host] : $this->resolve($host);
         if ($addresses === []) {
-            throw new \InvalidArgumentException('Outbound host cannot be resolved');
+            throw new UnresolvableHostException('Outbound host cannot be resolved');
         }
 
         foreach ($addresses as $address) {

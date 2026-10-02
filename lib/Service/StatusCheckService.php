@@ -192,6 +192,17 @@ class StatusCheckService {
      * Perform HTTP check
      */
     private function performCheck(int $serviceId, string $url, int $timeoutMs = 5000, bool $ignoreTls = false): StatusCache {
+        try {
+            return $this->performHttpCheck($serviceId, $url, $timeoutMs, $ignoreTls);
+        } catch (UnresolvableHostException) {
+            // A host that no longer resolves is down, same as a cURL DNS error
+            return $this->saveStatus($serviceId, 'offline', null, [
+                'error' => 'Could not resolve host',
+            ]);
+        }
+    }
+
+    private function performHttpCheck(int $serviceId, string $url, int $timeoutMs, bool $ignoreTls): StatusCache {
         $verifyTls = $this->appConfig->getValueBool(Application::APP_ID, 'tls_verification_enabled', true) || !$ignoreTls;
         $ch = curl_init();
         try {

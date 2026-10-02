@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.4] – 2026-10-02
+
+### Fixed
+- LinkBoard no longer fills `nextcloud.log` with "`OCA\LinkBoard\Notification\Notifier::prepare() threw \InvalidArgumentException which is deprecated`" warnings (issue #19). Nextcloud asks every app's notifier about every notification, on every poll of the notifications endpoint and in cron. LinkBoard rejected notifications of other apps with the deprecated `\InvalidArgumentException`, which logged one warning per foreign notification and request. It now throws `\OCP\Notification\UnknownNotificationException`, as Nextcloud has required since version 30.
+- A service whose hostname no longer resolves is now shown as offline. Before, the background status check failed before the request was sent: it only logged "Status check failed for service <id>" and never saved a result, so the card kept its last state (often "online") indefinitely and no offline notification was sent. A failed DNS lookup is now recorded as offline ("Could not resolve host"), the same as other connection errors, and counts towards the offline notification threshold (issue #19).
+
 ## [1.12.3] – 2026-09-24
 
 ### Fixed

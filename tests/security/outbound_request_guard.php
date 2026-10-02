@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use OCA\LinkBoard\NotificationProvider\Providers\SmtpProvider;
 use OCA\LinkBoard\Service\OutboundRequestGuard;
+use OCA\LinkBoard\Service\UnresolvableHostException;
 use OCA\LinkBoard\Widget\WebSocketJsonRpcClient;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
@@ -50,6 +51,13 @@ foreach ([
         fn() => $guard->resolveAllowed($url),
         $url,
     );
+}
+
+// Unresolvable hosts get a dedicated exception so status checks can mark them offline.
+try {
+    $guard->resolveAllowed('http://linkboard-test.invalid');
+    throw new \RuntimeException('Expected rejection: unresolvable host');
+} catch (UnresolvableHostException) {
 }
 
 // Equivalent IPv6 spellings must compare by their packed address.
