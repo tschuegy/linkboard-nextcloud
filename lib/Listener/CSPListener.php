@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Listener;
 
 use OCA\LinkBoard\Db\ServiceMapper;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\SettingsService;
 use OCP\AppFramework\Http\EmptyContentSecurityPolicy;
 use OCP\EventDispatcher\Event;
@@ -18,6 +19,7 @@ class CSPListener implements IEventListener {
 		private IUserSession $userSession,
 		private SettingsService $settingsService,
 		private ServiceMapper $serviceMapper,
+		private GlobalBoardService $globalBoardService,
 	) {
 	}
 
@@ -30,7 +32,8 @@ class CSPListener implements IEventListener {
 
 		$user = $this->userSession->getUser();
 		if ($user !== null) {
-			$userId = $user->getUID();
+			// Global Board viewers see the source user's icons and background
+			$userId = $this->globalBoardService->resolve($user->getUID())['sourceUserId'];
 
 			// Auto-extract domains from service icon URLs
 			$services = $this->serviceMapper->findAllByUser($userId);

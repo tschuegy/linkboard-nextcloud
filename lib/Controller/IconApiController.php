@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -13,6 +14,7 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\FileDisplayResponse;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException as FilesNotFoundException;
+use OCP\Files\SimpleFS\ISimpleFile;
 use OCP\Files\SimpleFS\ISimpleFolder;
 use OCP\IL10N;
 use OCP\IRequest;
@@ -33,6 +35,7 @@ class IconApiController extends ApiController {
         IRequest $request,
         private IAppData $appData,
         private IL10N $l10n,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
@@ -114,8 +117,7 @@ class IconApiController extends ApiController {
             return new DataResponse(['error' => $this->l10n->t('Icon not found')], Http::STATUS_NOT_FOUND);
         }
         try {
-            $folder = $this->getUserIconFolder();
-            $file = $folder->getFile($filename);
+            $file = $this->findIcon($filename);
 
             $response = new FileDisplayResponse($file);
             $response->cacheFor(3600 * 24 * 7); // 7 days cache
@@ -138,8 +140,32 @@ class IconApiController extends ApiController {
         }
     }
 
-    private function getUserIconFolder(bool $create = false): ISimpleFolder {
-        $folderName = 'icons_' . $this->userId;
+    /**
+     * Global Board editors manage the source user's icons; everyone else their own.
+     */
+    private function iconOwnerId(): string {
+        $resolved = $this->globalBoardService->resolve($this->userId);
+        return $resolved['canEdit'] ? $resolved['sourceUserId'] : $this->userId;
+    }
+
+    /**
+     * Look up an icon in the board owner's folder (Global Board source user),
+     * falling back to the current user's own folder.
+     */
+    private function findIcon(string $filename): ISimpleFile {
+        $sourceUserId = $this->globalBoardService->resolve($this->userId)['sourceUserId'];
+        $userIds = array_unique([$sourceUserId, $this->userId]);
+        foreach ($userIds as $userId) {
+            try {
+                return $this->getUserIconFolder(false, $userId)->getFile($filename);
+            } catch (FilesNotFoundException) {
+            }
+        }
+        throw new FilesNotFoundException();
+    }
+
+    private function getUserIconFolder(bool $create = false, ?string $userId = null): ISimpleFolder {
+        $folderName = 'icons_' . ($userId ?? $this->iconOwnerId());
 
         try {
             return $this->appData->getFolder($folderName);

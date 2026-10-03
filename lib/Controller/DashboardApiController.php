@@ -41,7 +41,7 @@ class DashboardApiController extends ApiController {
         $resolved = $this->globalBoardService->resolve($this->userId);
         $sourceUserId = $resolved['sourceUserId'];
 
-        $settings = $this->settingsService->getAll($this->userId);
+        $settings = $this->settingsService->getAll($sourceUserId);
         $categories = $this->categoryService->findAll($sourceUserId);
         $allServices = $this->serviceService->findAll($sourceUserId);
 

@@ -135,6 +135,8 @@ export const useDashboardStore = defineStore('dashboard', {
             try {
                 const { data } = await dashboardApi.getAll()
                 this.categories = data.categories || []
+                this.globalBoardActive = data.globalBoardActive || false
+                this.canEdit = data.canEdit !== false
 				// Migrate legacy grid data to vue-grid-layout format
 				this.migrateGridLayouts()
                 this.settings = data.settings || {}
@@ -143,8 +145,6 @@ export const useDashboardStore = defineStore('dashboard', {
                 this.latestVersionUrl = data.latestVersionUrl || null
                 this.isAdmin = data.isAdmin || false
                 this.adminSettings = data.adminSettings || {}
-                this.globalBoardActive = data.globalBoardActive || false
-                this.canEdit = data.canEdit !== false
                 // Fetch widget catalog, widget data, and resource data in parallel
                 this.fetchWidgetCatalog()
                 this.fetchAllWidgetData()
@@ -614,6 +614,11 @@ export const useDashboardStore = defineStore('dashboard', {
 					}
 				}
 			})
+
+			// Read-only Global Board viewers keep the migrated layout in memory only
+			if (!this.canEdit) {
+				return
+			}
 
 			// Persist category config changes
 			for (var i = 0; i < categoryUpdates.length; i++) {

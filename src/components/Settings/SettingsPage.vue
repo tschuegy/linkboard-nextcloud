@@ -394,6 +394,11 @@ export default {
     async mounted() {
         const store = useDashboardStore()
         if (!store.categories.length) { await store.fetchDashboard() }
+        // Read-only Global Board viewers have no settings of their own to edit
+        if (!store.canEdit) {
+            this.$router.replace('/')
+            return
+        }
         this.form = { ...store.settings }
         this.loadIcons()
     },

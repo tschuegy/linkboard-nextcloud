@@ -6,6 +6,7 @@ namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Db\CategoryMapper;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\SettingsService;
 use OCA\LinkBoard\Service\ValidationException;
 use OCP\AppFramework\ApiController;
@@ -28,22 +29,34 @@ class SettingsApiController extends ApiController {
         private IUserManager $userManager,
         private CategoryMapper $categoryMapper,
         private IL10N $l10n,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
     }
 
+    private function effectiveUserId(): string {
+        return $this->globalBoardService->resolve($this->userId)['sourceUserId'];
+    }
+
+    private function canWrite(): bool {
+        return $this->globalBoardService->resolve($this->userId)['canEdit'];
+    }
+
     #[NoAdminRequired]
     public function index(): DataResponse {
-        $settings = $this->settingsService->getAll($this->userId);
+        $settings = $this->settingsService->getAll($this->effectiveUserId());
         return new DataResponse($settings);
     }
 
     #[NoAdminRequired]
     public function updateAll(array $settings): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         try {
-            $this->settingsService->setMultiple($settings, $this->userId);
-            $allSettings = $this->settingsService->getAll($this->userId);
+            $this->settingsService->setMultiple($settings, $this->effectiveUserId());
+            $allSettings = $this->settingsService->getAll($this->effectiveUserId());
             return new DataResponse($allSettings);
         } catch (ValidationException) {
             return new DataResponse(
@@ -55,8 +68,11 @@ class SettingsApiController extends ApiController {
 
     #[NoAdminRequired]
     public function updateSingle(string $key, string $value): DataResponse {
+        if (!$this->canWrite()) {
+            return new DataResponse(['error' => 'Read-only access'], Http::STATUS_FORBIDDEN);
+        }
         try {
-            $normalized = $this->settingsService->set($key, $value, $this->userId);
+            $normalized = $this->settingsService->set($key, $value, $this->effectiveUserId());
             return new DataResponse(['key' => $key, 'value' => $normalized]);
         } catch (ValidationException) {
             return new DataResponse(
