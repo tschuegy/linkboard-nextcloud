@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.6] – 2026-10-03
+
+### Fixed
+- Admins who edit the Global Board but are not its source user now export and import the Global Board. Before, export and import used their own board, which is hidden while the Global Board is active: the export did not contain the board they were looking at, and an import seemed to succeed but did not change it.
+- Notification channels created by such admins now trigger for the Global Board. Status alerts for Global Board services are sent through the source user's channels, but the settings page created and listed the admin's own channels, which never fired for these services. Global Board editors now see and manage the source user's channels.
+
+### Security
+- Read-only viewers of the Global Board can still only reach their own notification channels and their own export, so the source user's channel configuration and the widget credentials in the export stay hidden from them.
+
 ## [1.12.5] – 2026-10-03
 
 ### Fixed
