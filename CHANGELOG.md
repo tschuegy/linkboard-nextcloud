@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.5] – 2026-10-03
+
+### Fixed
+- The Global Board now looks the same for non-admin users as for its source user (issue #20). Several parts of LinkBoard still used the viewer's own data instead of the source user's:
+  - External icon URLs were blocked by the Content Security Policy, because the allowed image domains were collected from the viewer's services and background.
+  - Uploaded icons returned HTTP 404, because they were looked up in the viewer's icon folder.
+  - The viewer's own display settings were applied, so card style, sizes, spacing and layout differed from the source user's board.
+  - The layout migration on page load tried to save every service for read-only viewers, which produced a series of HTTP 403 errors in the browser console. Read-only viewers now only apply the migrated layout locally.
+- Admins who edit the Global Board but are not its source user now change the source user's settings and upload, list and delete icons in the source user's icon folder. Icons they uploaded to their own folder before are still shown.
+
+### Changed
+- Read-only viewers of the Global Board no longer see the Settings button, and the settings API rejects their changes, because their own settings have no effect on the Global Board.
+
 ## [1.12.4] – 2026-10-02
 
 ### Fixed
