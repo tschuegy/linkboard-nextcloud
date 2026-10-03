@@ -6,6 +6,7 @@ use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Db\NotificationChannel;
 use OCA\LinkBoard\Db\NotificationChannelMapper;
 use OCA\LinkBoard\NotificationProvider\NotificationProviderRegistry;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\NotificationDispatcherService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
@@ -20,9 +21,15 @@ class NotificationChannelApiController extends ApiController {
         private NotificationChannelMapper $mapper,
         private NotificationProviderRegistry $providerRegistry,
         private NotificationDispatcherService $dispatcher,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
+    }
+
+    /** Global Board editors manage the source user's channels, which receive the board's alerts */
+    private function ownerId(): string {
+        return $this->globalBoardService->resolveOwner($this->userId);
     }
 
     /**
@@ -38,7 +45,7 @@ class NotificationChannelApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function index(): DataResponse {
-        $channels = $this->mapper->findAllByUser($this->userId);
+        $channels = $this->mapper->findAllByUser($this->ownerId());
         return new DataResponse(array_map(fn($c) => $this->serializeChannel($c), $channels));
     }
 
@@ -53,7 +60,7 @@ class NotificationChannelApiController extends ApiController {
         }
 
         $channel = new NotificationChannel();
-        $channel->setUserId($this->userId);
+        $channel->setUserId($this->ownerId());
         $channel->setName($name);
         $channel->setProviderType($providerType);
         $channel->setConfig($config);
@@ -68,7 +75,7 @@ class NotificationChannelApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function update(int $id, ?string $name = null, ?string $providerType = null, ?string $config = null, ?bool $enabled = null): DataResponse {
-        $channel = $this->mapper->findById($id, $this->userId);
+        $channel = $this->mapper->findById($id, $this->ownerId());
         if (!$channel) {
             return new DataResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
@@ -94,7 +101,7 @@ class NotificationChannelApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function destroy(int $id): DataResponse {
-        $channel = $this->mapper->findById($id, $this->userId);
+        $channel = $this->mapper->findById($id, $this->ownerId());
         if (!$channel) {
             return new DataResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
@@ -108,7 +115,7 @@ class NotificationChannelApiController extends ApiController {
      */
     #[NoAdminRequired]
     public function test(int $id): DataResponse {
-        $result = $this->dispatcher->testChannel($id, $this->userId);
+        $result = $this->dispatcher->testChannel($id, $this->ownerId());
         $status = $result['success'] ? Http::STATUS_OK : Http::STATUS_BAD_REQUEST;
         return new DataResponse($result, $status);
     }

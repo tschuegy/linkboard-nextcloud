@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\LinkBoard\Controller;
 
 use OCA\LinkBoard\AppInfo\Application;
+use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\ImportExportService;
 use OCA\LinkBoard\Service\ValidationException;
 use OCP\AppFramework\ApiController;
@@ -22,15 +23,21 @@ class ImportExportController extends ApiController {
         private ImportExportService $importExportService,
         private LoggerInterface $logger,
         private IL10N $l10n,
+        private GlobalBoardService $globalBoardService,
         private ?string $userId,
     ) {
         parent::__construct(Application::APP_ID, $request);
     }
 
+    /** Global Board editors export/import the Global Board, everyone else their own board */
+    private function ownerId(): string {
+        return $this->globalBoardService->resolveOwner($this->userId);
+    }
+
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function exportJson(): DataDownloadResponse {
-        $data = $this->importExportService->export($this->userId);
+        $data = $this->importExportService->export($this->ownerId());
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         return new DataDownloadResponse($json, 'linkboard-export.json', 'application/json');
     }
@@ -38,7 +45,7 @@ class ImportExportController extends ApiController {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function exportYaml(): DataDownloadResponse {
-        $data = $this->importExportService->export($this->userId);
+        $data = $this->importExportService->export($this->ownerId());
         $yaml = $this->importExportService->toYaml($data);
         return new DataDownloadResponse($yaml, 'linkboard-export.yaml', 'text/yaml');
     }
@@ -117,7 +124,7 @@ class ImportExportController extends ApiController {
     private function doImport(array $data, string $mode): DataResponse {
 
         try {
-            $stats = $this->importExportService->import($this->userId, $data, $mode);
+            $stats = $this->importExportService->import($this->ownerId(), $data, $mode);
             return new DataResponse([
                 'success' => true,
                 'stats' => $stats,

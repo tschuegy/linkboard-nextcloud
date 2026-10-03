@@ -51,4 +51,14 @@ class GlobalBoardService {
             'globalBoardActive' => false,
         ];
     }
+
+    /**
+     * Owner of per-user data that editors manage on behalf of the board
+     * (icons, notification channels, import/export): Global Board editors
+     * act as the source user, read-only viewers only see their own data.
+     */
+    public function resolveOwner(string $currentUserId): string {
+        $resolved = $this->resolve($currentUserId);
+        return $resolved['canEdit'] ? $resolved['sourceUserId'] : $currentUserId;
+    }
 }

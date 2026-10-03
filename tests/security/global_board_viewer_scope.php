@@ -231,5 +231,72 @@ namespace {
     $iconController('viewer')->index();
     expectSameValue(['icons_viewer'], $requestedFolders, 'Viewer lists only own icons');
 
+    // ── 4. Notification channels: editors manage the source user's, viewers only their own ──
+    $channelMapper = new class extends \OCA\LinkBoard\Db\NotificationChannelMapper {
+        public array $queried = [];
+        public function __construct() {
+        }
+        public function findAllByUser(string $userId): array {
+            $this->queried[] = $userId;
+            return [];
+        }
+        public function findById(int $id, string $userId): ?\OCA\LinkBoard\Db\NotificationChannel {
+            $this->queried[] = $userId;
+            return null;
+        }
+    };
+    $dispatcher = new class extends \OCA\LinkBoard\Service\NotificationDispatcherService {
+        public array $tested = [];
+        public function __construct() {
+        }
+        public function testChannel(int $channelId, string $userId): array {
+            $this->tested[] = $userId;
+            return ['success' => true];
+        }
+    };
+    $channelController = fn (string $userId) => build(\OCA\LinkBoard\Controller\NotificationChannelApiController::class, [
+        'mapper' => $channelMapper,
+        'dispatcher' => $dispatcher,
+        'globalBoardService' => $globalBoard,
+        'userId' => $userId,
+    ]);
+    $channelController('otheradmin')->index();
+    $channelController('otheradmin')->destroy(1);
+    $channelController('otheradmin')->test(1);
+    $channelController('viewer')->index();
+    expectSameValue(['admin', 'admin', 'viewer'], $channelMapper->queried, 'Channel reads are scoped to the board owner');
+    expectSameValue(['admin'], $dispatcher->tested, 'Editing admin tests source user channels');
+
+    // ── 5. Import/export: editors work on the Global Board, viewers on their own data ──
+    $importExport = new class extends \OCA\LinkBoard\Service\ImportExportService {
+        public array $calls = [];
+        public function __construct() {
+        }
+        public function export(string $userId): array {
+            $this->calls[] = 'export:' . $userId;
+            return [];
+        }
+        public function import(string $userId, array $data, string $mode = 'replace'): array {
+            $this->calls[] = 'import:' . $userId;
+            return [];
+        }
+    };
+    $request = stubOf(\OCP\IRequest::class, [
+        'getParams' => fn () => [],
+        'getParam' => fn (string $key, $default = null) => $key === 'payload' ? '{"categories":[]}' : $default,
+    ]);
+    $importController = fn (string $userId) => build(\OCA\LinkBoard\Controller\ImportExportController::class, [
+        'request' => $request,
+        'importExportService' => $importExport,
+        'l10n' => $l10n,
+        'globalBoardService' => $globalBoard,
+        'userId' => $userId,
+    ]);
+    $importController('otheradmin')->exportJson();
+    $importController('otheradmin')->importJson();
+    $importController('viewer')->exportJson();
+    $importController('viewer')->importJson();
+    expectSameValue(['export:admin', 'import:admin', 'export:viewer', 'import:viewer'], $importExport->calls, 'Import/export scoped to the board owner');
+
     echo "OK\n";
 }

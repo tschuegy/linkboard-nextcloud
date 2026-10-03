@@ -141,14 +141,6 @@ class IconApiController extends ApiController {
     }
 
     /**
-     * Global Board editors manage the source user's icons; everyone else their own.
-     */
-    private function iconOwnerId(): string {
-        $resolved = $this->globalBoardService->resolve($this->userId);
-        return $resolved['canEdit'] ? $resolved['sourceUserId'] : $this->userId;
-    }
-
-    /**
      * Look up an icon in the board owner's folder (Global Board source user),
      * falling back to the current user's own folder.
      */
@@ -165,7 +157,7 @@ class IconApiController extends ApiController {
     }
 
     private function getUserIconFolder(bool $create = false, ?string $userId = null): ISimpleFolder {
-        $folderName = 'icons_' . ($userId ?? $this->iconOwnerId());
+        $folderName = 'icons_' . ($userId ?? $this->globalBoardService->resolveOwner($this->userId));
 
         try {
             return $this->appData->getFolder($folderName);
