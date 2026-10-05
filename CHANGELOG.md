@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.7] – 2026-10-05
+
+### Fixed
+- Read-only viewers of the Global Board now see the source user's card positions and sizes (issue #20). Their board received no grid layout, because it was removed together with the widget configuration, so the cards were arranged differently. Only the layout is sent to read-only viewers; widget credentials stay hidden.
+- With "Responsive layout" enabled, cards in narrow categories now wrap row by row in the same order as on the desktop layout. Before, the cards kept their desktop positions squeezed into fewer columns, so their order got mixed up.
+- Responsive categories narrower than 480 px (e.g. on phones) no longer fail to render the card grid.
+- Status updates no longer reset the cards of a narrow responsive category to their desktop positions.
+
+### Changed
+- In edit mode, responsive categories always show the desktop layout, so moving or resizing a card always changes the stored layout.
+
 ## [1.12.6] – 2026-10-03
 
 ### Fixed
