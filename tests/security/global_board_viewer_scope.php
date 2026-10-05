@@ -298,5 +298,13 @@ namespace {
     $importController('viewer')->importJson();
     expectSameValue(['export:admin', 'import:admin', 'export:viewer', 'import:viewer'], $importExport->calls, 'Import/export scoped to the board owner');
 
+    // Read-only viewers receive the card layout, but no widget secrets
+    $widgetService = new Service();
+    $widgetService->setWidgetConfig(json_encode(['url' => 'http://x', 'key' => 'secret', '_layout' => ['x' => 3, 'y' => 0, 'w' => 3, 'h' => 2]]));
+    expectSameValue(['_layout' => ['x' => 3, 'y' => 0, 'w' => 3, 'h' => 2]], $widgetService->toArray(false)['widgetConfig'], 'Viewer gets only _layout');
+    expectSameValue('secret', $widgetService->toArray(true)['widgetConfig']['key'], 'Editor gets full widget config');
+    $widgetService->setWidgetConfig(json_encode(['key' => 'secret']));
+    expectSameValue(null, $widgetService->toArray(false)['widgetConfig'], 'Viewer gets null without _layout');
+
     echo "OK\n";
 }

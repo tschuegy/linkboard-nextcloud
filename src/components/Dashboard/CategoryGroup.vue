@@ -124,14 +124,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         class="category-group__grid"
                         :style="gridMinHeight"
                         :layout.sync="gridLayout"
-                        :col-num="gridSettings.colCount"
+                        :col-num="activeColCount"
                         :row-height="gridSettings.rowHeight"
                         :is-draggable="editMode"
                         :is-resizable="editMode"
                         :vertical-compact="gridSettings.autoCompress"
                         :use-css-transforms="true"
-                        :responsive="gridSettings.responsiveLayout"
-                        :cols="responsiveCols"
                         :margin="[12, 12]"
                         >
                         <grid-item
@@ -176,6 +174,7 @@ import { NcButton } from '@nextcloud/vue'
 import { useDashboardStore } from '../../store/dashboard.js'
 import { isUnicodeStyle, getSpacerChar, SPACER_CHARS } from '../../utils/spacerStyles.js'
 import { withAutoScroll } from '../../utils/dragAutoScroll.js'
+import { getResponsiveCols, getBreakpoint, reflowLayout } from '../../utils/responsiveLayout.js'
 import ServiceCard from './ServiceCard.vue'
 import ServiceListRow from './ServiceListRow.vue'
 import ResourceDisplay from './ResourceDisplay.vue'
@@ -220,6 +219,7 @@ export default {
             gridLayout: [],
             gridLayoutKey: 0,
             listSortable: null,
+            containerWidth: 0,
         }
     },
 
@@ -274,15 +274,34 @@ export default {
             }
             return {}
         },
-        responsiveCols: function() {
-            var col = this.gridSettings.colCount
-            var min = Math.max(1, Math.round(col * 0.25))
-            return {
-                lg: col,
-                md: Math.max(min, Math.round(col * 0.67)),
-                sm: Math.max(min, Math.round(col * 0.5)),
-                xs: min,
+        desktopLayout: function() {
+            // Stored grid positions (_layout) of the services
+            var layout = []
+            var svcs = this.category.services || []
+            for (var i = 0; i < svcs.length; i++) {
+                var svc = svcs[i]
+                var cfg = svc.widgetConfig || {}
+                var l = cfg._layout || { x: 0, y: i, w: 3, h: 2 }
+                layout.push({
+                    i: String(svc.id),
+                    x: l.x,
+                    y: l.y,
+                    w: l.w,
+                    h: l.h,
+                })
             }
+            return layout
+        },
+        activeBreakpoint: function() {
+            // Edit mode always works on the stored desktop layout, so that
+            // moving or resizing a card never persists re-flowed positions.
+            if (!this.gridSettings.responsiveLayout || this.editMode || !this.containerWidth) {
+                return 'lg'
+            }
+            return getBreakpoint(this.containerWidth)
+        },
+        activeColCount: function() {
+            return getResponsiveCols(this.gridSettings.colCount)[this.activeBreakpoint]
         },
         listServices: function() {
             // Payload order = sort_order ASC, id ASC (ServiceMapper);
@@ -302,29 +321,14 @@ export default {
     },
 
     watch: {
-        'category.services': {
-            handler: function(services) {
-                var layout = []
-                var svcs = services || []
-                for (var i = 0; i < svcs.length; i++) {
-                    var svc = svcs[i]
-                    var cfg = svc.widgetConfig || {}
-                    var l = cfg._layout || { x: 0, y: i, w: 3, h: 2 }
-                    layout.push({
-                        i: String(svc.id),
-                        x: l.x,
-                        y: l.y,
-                        w: l.w,
-                        h: l.h,
-                    })
-                }
-                // Only update if layout actually changed (avoid feedback loops)
-                if (JSON.stringify(layout) !== JSON.stringify(this.gridLayout)) {
-                    this.gridLayout = layout
-                }
+        desktopLayout: {
+            handler: function() {
+                this.applyGridLayout()
             },
             immediate: true,
-            deep: true,
+        },
+        activeBreakpoint: function() {
+            this.applyGridLayout()
         },
         isCollapsed: function(val) {
             this.saveCollapsed(val)
@@ -340,7 +344,22 @@ export default {
         },
     },
 
+    mounted: function() {
+        var self = this
+        this.measureWidth()
+        if (typeof ResizeObserver !== 'undefined') {
+            this.resizeObserver = new ResizeObserver(function() {
+                self.measureWidth()
+            })
+            this.resizeObserver.observe(this.$el)
+        }
+    },
+
     beforeDestroy: function() {
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect()
+            this.resizeObserver = null
+        }
         this.destroyListSortable()
     },
 
@@ -384,6 +403,24 @@ export default {
             return null
         },
 
+        measureWidth: function() {
+            var grid = this.$refs.serviceGrid
+            var el = grid ? grid.$el : this.$el
+            if (el && el.clientWidth) {
+                this.containerWidth = el.clientWidth
+            }
+        },
+
+        applyGridLayout: function() {
+            var layout = this.activeBreakpoint === 'lg'
+                ? this.desktopLayout.map(function(item) { return Object.assign({}, item) })
+                : reflowLayout(this.desktopLayout, this.activeColCount)
+            // Only update if layout actually changed (avoid feedback loops)
+            if (JSON.stringify(layout) !== JSON.stringify(this.gridLayout)) {
+                this.gridLayout = layout
+            }
+        },
+
         onItemMoved: function(i, newX, newY) {
             this.scheduleLayoutPersist()
         },
@@ -393,7 +430,7 @@ export default {
         },
 
         scheduleLayoutPersist: function() {
-            if (!this.editMode) return
+            if (!this.editMode || this.activeBreakpoint !== 'lg') return
             var self = this
             clearTimeout(this.layoutUpdateTimer)
             this.layoutUpdateTimer = setTimeout(function() {

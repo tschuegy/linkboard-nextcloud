@@ -83,6 +83,23 @@ class Service extends Entity implements JsonSerializable {
         return $copy;
     }
 
+    /**
+     * Without secrets only the grid position (_layout) is exposed, so read-only
+     * Global Board viewers see the source user's card layout but no credentials.
+     */
+    private function serializeWidgetConfig(bool $includeSecrets): ?array {
+        $config = $this->getWidgetConfig() ? json_decode($this->getWidgetConfig(), true) : null;
+        if (!is_array($config)) {
+            return null;
+        }
+        if ($includeSecrets) {
+            return $config;
+        }
+        return isset($config['_layout']) && is_array($config['_layout'])
+            ? ['_layout' => $config['_layout']]
+            : null;
+    }
+
     public function toArray(bool $includeSecrets = false): array {
         return [
             'id' => $this->getId(),
@@ -98,7 +115,7 @@ class Service extends Entity implements JsonSerializable {
             'pingUrl' => $this->getPingUrl(),
             'pingEnabled' => $this->getPingEnabled(),
             'widgetType' => $this->getWidgetType(),
-            'widgetConfig' => $includeSecrets && $this->getWidgetConfig() ? json_decode($this->getWidgetConfig(), true) : null,
+            'widgetConfig' => $this->serializeWidgetConfig($includeSecrets),
             'notificationOverrides' => $this->getNotificationOverrides() ? json_decode($this->getNotificationOverrides(), true) : null,
             'ignoreTls' => $this->getIgnoreTls(),
             'showScrollbar' => $this->getShowScrollbar(),
