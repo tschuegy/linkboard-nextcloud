@@ -40,14 +40,14 @@ class Notifier implements INotifier {
                 $notification->setParsedSubject(
                     $l->t('%1$s has been offline for %2$s consecutive checks', [$params['service'], $params['count']])
                 );
-                $notification->setIcon($this->urlGenerator->imagePath(Application::APP_ID, 'app.svg'));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath(Application::APP_ID, 'app.svg')));
                 break;
 
             case 'service_recovered':
                 $notification->setParsedSubject(
                     $l->t('%1$s is back online', [$params['service']])
                 );
-                $notification->setIcon($this->urlGenerator->imagePath(Application::APP_ID, 'app.svg'));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath(Application::APP_ID, 'app.svg')));
                 break;
 
             default:

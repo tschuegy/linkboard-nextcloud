@@ -37,3 +37,6 @@ jobs:
 
       - name: Run Fritz!Box widget checks
         run: php tests/widget/fritzbox_widget.php
+
+      - name: Run notification checks
+        run: php tests/notification/notifier_icon.php
