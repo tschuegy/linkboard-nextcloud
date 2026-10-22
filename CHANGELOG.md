@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.8] – 2026-10-22
+
+### Fixed
+- LinkBoard's own "service offline" and "service back online" notifications no longer log a deprecation warning ("Notifier::prepare() threw \InvalidArgumentException which is deprecated") on Nextcloud 30 and newer (issue #21). The notification icon was set with a relative path, which Nextcloud rejects since version 30. Because of this, the notifications were shown without the app icon and without the link to the board. The icon is now passed as an absolute URL.
+
 ## [1.12.7] – 2026-10-05
 
 ### Fixed
