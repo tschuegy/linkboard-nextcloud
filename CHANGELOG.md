@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.10] – 2026-11-09
+
+### Fixed
+- 84 user interface texts were missing from the German translation and were shown in English, for example the notification channel settings, font colors, card background, resources category, table widget, layout lock and the "service offline" / "service back online" notifications. All texts are now translated. The other languages received the missing keys as English placeholders.
+
 ## [1.12.9] – 2026-11-09
 
 ### Changed
