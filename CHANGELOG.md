@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.9] – 2026-11-09
+
+### Changed
+- Failed status checks now show the reason in the status indicator tooltip, e.g. "TLS certificate could not be verified (self-signed or expired?)", "Connection timed out", "Connection refused or host unreachable" or "Host name could not be resolved" (issue #22). For certificate errors the tooltip also says how to allow an exception.
+- Widgets that fail because of a certificate error now say "TLS certificate could not be verified" instead of only the cURL error number.
+- The service editor explains that TLS certificates are verified for `https://` services, and that an administrator must allow per-service exceptions before self-signed certificates can be accepted. Before, the per-service option was hidden without any hint.
+
+### Fixed
+- German translations for the TLS certificate verification settings were missing.
+
 ## [1.12.8] – 2026-10-22
 
 ### Fixed
