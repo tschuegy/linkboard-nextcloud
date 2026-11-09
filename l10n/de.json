@@ -156,7 +156,20 @@
     "No boards found": "Keine Boards gefunden",
     "These settings apply to all users.": "Diese Einstellungen gelten für alle Benutzer.",
     "Administration": "Administration",
-    "Save admin settings": "Admin-Einstellungen speichern"
+    "Save admin settings": "Admin-Einstellungen speichern",
+    "Widget data fetch failed: TLS certificate could not be verified (%s)": "Widget-Daten konnten nicht abgerufen werden: TLS-Zertifikat konnte nicht überprüft werden (%s)",
+    "TLS certificate could not be verified (self-signed or expired?)": "TLS-Zertifikat konnte nicht überprüft werden (selbstsigniert oder abgelaufen?)",
+    "An administrator can allow per-service exceptions in the LinkBoard admin settings.": "Ein Administrator kann in den LinkBoard-Admin-Einstellungen Ausnahmen pro Service erlauben.",
+    "Enable \"Ignore TLS certificate errors for this service\" in the service settings.": "Aktiviere „TLS-Zertifikatsfehler für diesen Service ignorieren“ in den Service-Einstellungen.",
+    "TLS handshake failed": "TLS-Handshake fehlgeschlagen",
+    "Connection timed out": "Zeitüberschreitung der Verbindung",
+    "Connection refused or host unreachable": "Verbindung abgelehnt oder Host nicht erreichbar",
+    "Host name could not be resolved": "Hostname konnte nicht aufgelöst werden",
+    "TLS certificates are verified. If this service uses a self-signed certificate, an administrator must first allow per-service exceptions in the LinkBoard admin settings.": "TLS-Zertifikate werden überprüft. Verwendet dieser Service ein selbstsigniertes Zertifikat, muss ein Administrator zuerst in den LinkBoard-Admin-Einstellungen Ausnahmen pro Service erlauben.",
+    "Ignore TLS certificate errors for this service": "TLS-Zertifikatsfehler für diesen Service ignorieren",
+    "Enforce TLS certificate verification for all services": "TLS-Zertifikatsprüfung für alle Services erzwingen",
+    "TLS certificate verification": "TLS-Zertifikatsprüfung",
+    "When disabled, users can ignore TLS certificate errors for individual services.": "Wenn deaktiviert, können Benutzer TLS-Zertifikatsfehler für einzelne Services ignorieren."
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

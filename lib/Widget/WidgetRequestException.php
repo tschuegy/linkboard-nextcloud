@@ -41,6 +41,10 @@ class WidgetRequestException extends \RuntimeException {
         return $this->curlErrno !== null ? ['curlErrno' => $this->curlErrno] : [];
     }
 
+    public function getCurlErrno(): ?int {
+        return $this->curlErrno;
+    }
+
     /**
      * Short technical detail safe to show the service owner, e.g. "HTTP 403".
      */

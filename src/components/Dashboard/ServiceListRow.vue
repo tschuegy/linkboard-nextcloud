@@ -55,6 +55,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script>
 import { t } from '@nextcloud/l10n'
+import { useDashboardStore } from '../../store/dashboard.js'
+import { statusTooltip as buildStatusTooltip } from '../../utils/statusTooltip.js'
 import ServiceIcon from '../Shared/ServiceIcon.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 import DragIcon from 'vue-material-design-icons/DragVertical.vue'
@@ -92,11 +94,8 @@ export default {
             return 'service-list-row--status-' + this.service.status.status
         },
         statusTooltip: function() {
-            var s = this.service.status
-            if (!s) return ''
-            var status = s.status === 'online' ? t('linkboard', 'Online') : s.status === 'offline' ? t('linkboard', 'Offline') : t('linkboard', 'Unknown')
-            var ms = s.responseMs ? ' (' + s.responseMs + 'ms)' : ''
-            return status + ms
+            var tlsVerificationEnabled = useDashboardStore().adminSettings.tls_verification_enabled !== false
+            return buildStatusTooltip(this.service.status, tlsVerificationEnabled)
         },
     },
 }

@@ -18,6 +18,7 @@ namespace OCP\AppFramework {
 
 namespace {
     use OCA\LinkBoard\Controller\WidgetProxyController;
+    use OCA\LinkBoard\Service\CurlErrorType;
     use OCA\LinkBoard\Widget\WidgetRequestException;
     use OCP\IL10N;
 
@@ -65,6 +66,29 @@ namespace {
         $message($curlFailure),
         'cURL errno missing from user-facing message',
     );
+
+    // Certificate failures say so in plain words: self-signed homelab certificates
+    // are the most common reason a widget on https://<LAN IP> fetches nothing (#22).
+    foreach ([51, 60, 83, 90, 91] as $tlsErrno) {
+        expectSameValue(
+            'Widget data fetch failed: TLS certificate could not be verified (cURL ' . $tlsErrno . ')',
+            $message(WidgetRequestException::curlError($tlsErrno)),
+            'TLS certificate failure not named for cURL ' . $tlsErrno,
+        );
+    }
+
+    // Error type classification shared with status checks.
+    foreach ([
+        60 => 'tls_certificate',
+        51 => 'tls_certificate',
+        35 => 'tls_handshake',
+        28 => 'timeout',
+        7 => 'connect',
+        6 => 'dns',
+        52 => null,
+    ] as $errno => $expectedType) {
+        expectSameValue($expectedType, CurlErrorType::fromErrno($errno), 'Wrong error type for cURL ' . $errno);
+    }
 
     // Every failure keeps the exception class and code for correlation.
     foreach ([$httpFailure, $curlFailure] as $failure) {

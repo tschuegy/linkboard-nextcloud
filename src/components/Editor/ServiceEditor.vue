@@ -56,6 +56,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 @update:checked="form.ignoreTls = $event">
                 {{ t('linkboard', 'Ignore TLS certificate errors for this service') }}
             </NcCheckboxRadioSwitch>
+            <p v-else-if="usesHttps" class="service-editor__hint">
+                {{ t('linkboard', 'TLS certificates are verified. If this service uses a self-signed certificate, an administrator must first allow per-service exceptions in the LinkBoard admin settings.') }}
+            </p>
 
             <template v-if="form.pingEnabled && notificationChannels.length">
                 <div class="service-editor__field">
@@ -224,6 +227,10 @@ export default {
         },
         tlsVerificationEnabled() {
             return useDashboardStore().adminSettings.tls_verification_enabled !== false
+        },
+        usesHttps() {
+            var url = (this.form.pingUrl || this.form.href || '').trim().toLowerCase()
+            return url.indexOf('https://') === 0
         },
         isPerServiceTarget() {
             return useDashboardStore().settings.link_target === 'per_service'

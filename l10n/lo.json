@@ -137,7 +137,20 @@
     "Invalid JSON in payload: %s": "Invalid JSON in payload: %s",
     "Invalid JSON": "Invalid JSON",
     "Import failed: %s": "Import failed: %s",
-    "Maximum number of services reached (%s)": "Maximum number of services reached (%s)"
+    "Maximum number of services reached (%s)": "Maximum number of services reached (%s)",
+    "Widget data fetch failed: TLS certificate could not be verified (%s)": "Widget data fetch failed: TLS certificate could not be verified (%s)",
+    "TLS certificate could not be verified (self-signed or expired?)": "TLS certificate could not be verified (self-signed or expired?)",
+    "An administrator can allow per-service exceptions in the LinkBoard admin settings.": "An administrator can allow per-service exceptions in the LinkBoard admin settings.",
+    "Enable \"Ignore TLS certificate errors for this service\" in the service settings.": "Enable \"Ignore TLS certificate errors for this service\" in the service settings.",
+    "TLS handshake failed": "TLS handshake failed",
+    "Connection timed out": "Connection timed out",
+    "Connection refused or host unreachable": "Connection refused or host unreachable",
+    "Host name could not be resolved": "Host name could not be resolved",
+    "TLS certificates are verified. If this service uses a self-signed certificate, an administrator must first allow per-service exceptions in the LinkBoard admin settings.": "TLS certificates are verified. If this service uses a self-signed certificate, an administrator must first allow per-service exceptions in the LinkBoard admin settings.",
+    "Ignore TLS certificate errors for this service": "Ignore TLS certificate errors for this service",
+    "Enforce TLS certificate verification for all services": "Enforce TLS certificate verification for all services",
+    "TLS certificate verification": "TLS certificate verification",
+    "When disabled, users can ignore TLS certificate errors for individual services.": "When disabled, users can ignore TLS certificate errors for individual services."
   },
   "pluralForm": "nplurals=1; plural=0;"
 }

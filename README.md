@@ -30,7 +30,7 @@ Inspired by [Gethomepage](https://gethomepage.dev), but deeply integrated into N
 - **Configurable Grid** – Set grid granularity per category (6, 12, or 24 columns) with auto-arrange and row-height options
 - **Edit Mode** – Lock/unlock edit mode toggle to prevent accidental changes
 - **Status Checks** – Live health checks with dot or border indicators; manual refreshes are rate-limited, deduplicated, runtime-bounded, and prioritize the stalest services
-- **TLS Policy** – Administrators can enforce certificate verification globally or permit per-service exceptions for self-signed homelab services
+- **TLS Policy** – Administrators can enforce certificate verification globally or permit per-service exceptions for self-signed homelab services; failed checks name the reason (certificate, timeout, connection, DNS) in the status tooltip
 - **Outbound Request Protection** – User-configured hosts are validated, pinned to their checked DNS addresses, and prevented from reaching loopback, link-local, multicast, or reserved targets
 - **Validated Settings** – Dashboard settings use a typed server-side allowlist with strict normalization before persistence or import
 - **Status History** – Response time charts, uptime tracking, and a dedicated status overview page

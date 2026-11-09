@@ -198,6 +198,7 @@ class StatusCheckService {
             // A host that no longer resolves is down, same as a cURL DNS error
             return $this->saveStatus($serviceId, 'offline', null, [
                 'error' => 'Could not resolve host',
+                'errorType' => CurlErrorType::DNS,
             ]);
         }
     }
@@ -237,6 +238,7 @@ class StatusCheckService {
             return $this->saveStatus($serviceId, 'offline', $responseMs, [
                 'error' => $error,
                 'errno' => $errno,
+                'errorType' => CurlErrorType::fromErrno($errno),
             ]);
         }
 
@@ -275,6 +277,7 @@ class StatusCheckService {
                 return $this->saveStatus($serviceId, 'offline', $responseMs, [
                     'error' => $error,
                     'errno' => $errno,
+                    'errorType' => CurlErrorType::fromErrno($errno),
                 ]);
             }
         }

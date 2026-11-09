@@ -6,6 +6,7 @@ use OCA\LinkBoard\AppInfo\Application;
 use OCA\LinkBoard\Db\Service;
 use OCA\LinkBoard\Service\BulkOperationGuard;
 use OCA\LinkBoard\Service\BulkOperationInProgressException;
+use OCA\LinkBoard\Service\CurlErrorType;
 use OCA\LinkBoard\Service\GlobalBoardService;
 use OCA\LinkBoard\Service\ServiceService;
 use OCA\LinkBoard\Service\ResourceService;
@@ -307,6 +308,10 @@ class WidgetProxyController extends ApiController {
      */
     private function widgetErrorMessage(\Throwable $e): string {
         if ($e instanceof WidgetRequestException) {
+            $errno = $e->getCurlErrno();
+            if ($errno !== null && CurlErrorType::fromErrno($errno) === CurlErrorType::TLS_CERTIFICATE) {
+                return $this->l10n->t('Widget data fetch failed: TLS certificate could not be verified (%s)', [$e->getPublicDetail()]);
+            }
             return $this->l10n->t('Widget data fetch failed: %s', [$e->getPublicDetail()]);
         }
 
